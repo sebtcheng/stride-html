@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRIDE Data Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #08315F;
+      --blue: #075985;
+      --text: #0F172A;
+      --muted: #64748B;
+      --line: #E2E8F0;
+      --bg: #F8FAFC;
+      --font-heading: "Plus Jakarta Sans", sans-serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font-body); color: var(--text); background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
+    
+    /* Data Controls Card */
+    .command-bar { margin: 20px 24px; display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius: 20px; background: rgba(255,255,255,.94); flex-shrink: 0; }
+    .filter-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 2px; }
+    .filter-heading h2 { margin: 0; color: var(--navy); font: 900 18px var(--font-heading); letter-spacing: -0.02em; }
+    .filter-heading p { margin: 4px 0 0; color: var(--muted); font: 700 11px var(--font-body); line-height: 1.3; }
+    .filters-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .select-pill { height: 32px; padding: 0 30px 0 14px; border: 1px solid var(--line); border-radius: 999px; background: #F8FCFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--text); font: 700 10.5px var(--font-body); appearance: none; cursor: pointer; }
+    .select-pill:focus { border-color: var(--blue); outline: none; }
+    .dropdown-check { position: relative; }
+    .dropdown-check-content { display: none; position: absolute; top: calc(100% + 4px); left: 0; width: 240px; max-height: 280px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: 0 12px 24px rgba(15,23,42,0.12); z-index: 100; }
+    .dropdown-check:hover .dropdown-check-content { display: flex; flex-direction: column; gap: 8px; }
+    .dropdown-check-content label { display: flex; align-items: center; gap: 8px; font: 600 11.5px var(--font-body); color: var(--text); cursor: pointer; }
+    .dropdown-check-content input { accent-color: var(--navy); width: 14px; height: 14px; margin: 0; cursor: pointer; }
+    .dropdown-check-content::-webkit-scrollbar { width: 6px; }
+    .dropdown-check-content::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    
+    /* Main Content */
+    .main-content { flex: 1; display: flex; flex-direction: column; background: #fff; min-width: 0; }
+    
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .header-left .title-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .header-left h1 { margin: 0; font: 900 24px var(--font-heading); color: var(--navy); display: flex; align-items: center; gap: 8px; }
+    .header-left h1::before { content: "🗄️"; font-size: 20px; color: var(--gold); }
+    .batch-pill { display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 4px 10px; border-radius: 999px; font: 800 9px var(--font-heading); letter-spacing: 0.05em; }
+    .batch-pill .dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; }
+    .header-left .subtitle { font: 700 10px var(--font-heading); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .school-count { font: 800 14px var(--font-heading); color: var(--navy); }
+    .action-btns { display: flex; gap: 8px; }
+    .btn { padding: 8px 16px; border-radius: 6px; font: 800 11px var(--font-heading); cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+    .btn-navy { background: var(--navy); color: #fff; border: 1px solid var(--navy); }
+    .btn-outline { background: #fff; color: var(--navy); border: 1px solid var(--line); }
+    .btn-outline:hover { background: var(--bg); }
+    
+    /* Table Area */
+    .table-container { flex: 1; overflow: auto; position: relative; background: #fff; }
+    .table-container::-webkit-scrollbar { width: 10px; height: 10px; }
+    .table-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; border: 2px solid #fff; }
+    .table-container::-webkit-scrollbar-track { background: #F8FAFC; }
+    
+    table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+    th { background: var(--navy); padding: 12px 16px; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--navy); border-right: 1px solid rgba(255,255,255,0.1); min-width: 160px; }
+    th:last-child { border-right: none; }
+    .th-label { font: 900 11px var(--font-heading); color: #fff; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; white-space: nowrap; }
+    .th-search { width: 100%; background: #fff; border: none; border-radius: 4px; padding: 6px 10px; font: 500 12px var(--font-body); color: var(--text); outline: none; }
+    .th-search::placeholder { color: #94A3B8; }
+    
+    td { padding: 14px 16px; font: 500 13px var(--font-body); color: var(--text); border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); background: #fff; white-space: nowrap; }
+    td:last-child { border-right: none; }
+    tr:hover td { background: #F8FAFC; }
+    
+    /* Frozen columns */
+    th.frozen-col, td.frozen-col { position: sticky; z-index: 12; }
+    th.frozen-col { z-index: 15; } /* Above top header and other cells */
+    
+    /* Pagination */
+    .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding: 14px 24px; border-top: 1px solid var(--line); flex-shrink: 0; background: #fff; }
+    .page-info { font: 500 13px var(--font-body); color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .page-info select { border: none; font: inherit; color: inherit; outline: none; cursor: pointer; }
+    .page-nav { display: flex; gap: 4px; }
+    .page-nav button { border: none; background: transparent; color: var(--muted); font-size: 16px; padding: 4px 8px; cursor: pointer; }
+    .page-nav button:hover { color: var(--navy); }
+  </style>
+</head>
+<body>
+  <main class="main-content" style="width: 100vw;">
+    <header class="header">
+      <div class="header-left">
+        <div class="title-row">
+          <h1>Information Database</h1>
+          <span class="batch-pill"><span class="dot"></span> READY • JAN 2026 BATCH</span>
+        </div>
+        <div class="subtitle">STRIDE UNIFIED MASTER RECORD • AUTHENTICATED</div>
+      </div>
+      <div class="header-right">
+        <span class="school-count">48,423 Schools Visible</span>
+        <div class="action-btns">
+          <button class="btn btn-navy">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            CSV
+          </button>
+          <button class="btn btn-outline">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            PRINT
+          </button>
+          <button class="btn btn-outline">Excel</button>
+          <button class="btn btn-outline">PDF</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="command-bar">
+      <div class="filter-header">
+        <div class="filter-heading">
+          <h2>Data Controls</h2>
+          <p>Filter the dataset view and configure columns.</p>
+        </div>
+        <button class="btn btn-outline" id="resetControlsBtn" type="button" style="height: 32px; padding: 0 16px; font-size: 10px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+          RESET
+        </button>
+      </div>
+      <div class="filters-row">
+        <select class="select-pill">
+          <option>All Regions</option>
+          <option>Region I</option>
+        </select>
+        <select class="select-pill">
+          <option>All Divisions</option>
+          <option>San Carlos City</option>
+        </select>
+        
+        <div class="dropdown-check">
+          <button class="select-pill" type="button" style="padding-right:14px; background-image:none;">School Info Columns ▼</button>
+          <div class="dropdown-check-content column-toggles">
+              <label><input type="checkbox" value="Region" checked> Region</label>
+              <label><input type="checkbox" value="Division" checked> Division</label>
+              <label><input type="checkbox" value="District" checked> District</label>
+              <label><input type="checkbox" value="School ID" checked> School ID</label>
+              <label><input type="checkbox" value="School Name" checked> School Name</label>
+              <label><input type="checkbox" value="GMIS Region"> GMIS Region</label>
+              <label><input type="checkbox" value="GMIS Division"> GMIS Division</label>
+              <label><input type="checkbox" value="Street Address"> Street Address</label>
+              <label><input type="checkbox" value="Province"> Province</label>
+              <label><input type="checkbox" value="Municipality"> Municipality</label>
+              <label><input type="checkbox" value="Legislative District"> Legislative District</label>
+              <label><input type="checkbox" value="Barangay"> Barangay</label>
+              <label><input type="checkbox" value="Implementing Unit"> Implementing Unit</label>
+              <label><input type="checkbox" value="Modified COC"> Modified COC</label>
+              <label><input type="checkbox" value="School Size Typology"> School Size Typology</label>
+              <label><input type="checkbox" value="Latitude"> Latitude</label>
+              <label><input type="checkbox" value="Longitude"> Longitude</label>
+          </div>
+        </div>
+
+        <div class="dropdown-check">
+          <button class="select-pill" type="button" style="padding-right:14px; background-image:none;">Teaching Columns ▼</button>
+          <div class="dropdown-check-content column-toggles">
+              <label><input type="checkbox" value="Total Teachers"> Total Teachers</label>
+              <label><input type="checkbox" value="RO Filling Up"> RO Filling Up</label>
+              <label><input type="checkbox" value="SDO Filling Up"> SDO Filling Up</label>
+              <label><input type="checkbox" value="ES Excess"> ES Excess</label>
+              <label><input type="checkbox" value="ES Shortage"> ES Shortage</label>
+              <label><input type="checkbox" value="JHS Excess"> JHS Excess</label>
+              <label><input type="checkbox" value="JHS Shortage"> JHS Shortage</label>
+              <label><input type="checkbox" value="SHS Excess"> SHS Excess</label>
+              <label><input type="checkbox" value="SHS Shortage"> SHS Shortage</label>
+              <label><input type="checkbox" value="Total Excess"> Total Excess</label>
+              <label><input type="checkbox" value="Total Shortage"> Total Shortage</label>
+          </div>
+        </div>
+
+        <div class="dropdown-check">
+          <button class="select-pill" type="button" style="padding-right:14px; background-image:none;">Non-Teaching Columns ▼</button>
+          <div class="dropdown-check-content column-toggles">
+              <label><input type="checkbox" value="PDO I Deployment"> PDO I Deployment</label>
+              <label><input type="checkbox" value="AO II Deployment"> AO II Deployment</label>
+          </div>
+        </div>
+
+        <div class="dropdown-check">
+          <button class="select-pill" type="button" style="padding-right:14px; background-image:none;">Enrolment Columns ▼</button>
+          <div class="dropdown-check-content column-toggles">
+              <label><input type="checkbox" value="Total Enrolment"> Total Enrolment</label>
+          </div>
+        </div>
+
+        <div class="dropdown-check">
+          <button class="select-pill" type="button" style="padding-right:14px; background-image:none;">Specialization Columns ▼</button>
+          <div class="dropdown-check-content column-toggles">
+              <label><input type="checkbox" value="Specialization English"> Specialization English</label>
+              <label><input type="checkbox" value="Specialization Mathematics"> Specialization Mathematics</label>
+              <label><input type="checkbox" value="Specialization Science"> Specialization Science</label>
+              <label><input type="checkbox" value="Specialization Biological Sciences"> Specialization Biological Sciences</label>
+              <label><input type="checkbox" value="Specialization Physical Sciences"> Specialization Physical Sciences</label>
+              <label><input type="checkbox" value="Specialization General Education"> Specialization General Education</label>
+              <label><input type="checkbox" value="Specialization Araling Panlipunan"> Specialization Araling Panlipunan</label>
+              <label><input type="checkbox" value="Specialization TLE"> Specialization TLE</label>
+              <label><input type="checkbox" value="No Specialization"> No Specialization</label>
+              <label><input type="checkbox" value="Specialization MAPEH"> Specialization MAPEH</label>
+              <label><input type="checkbox" value="Specialization Filipino"> Specialization Filipino</label>
+              <label><input type="checkbox" value="Specialization ESP"> Specialization ESP</label>
+              <label><input type="checkbox" value="Specialization Agriculture"> Specialization Agriculture</label>
+              <label><input type="checkbox" value="Specialization ECE"> Specialization ECE</label>
+              <label><input type="checkbox" value="Specialization SPED"> Specialization SPED</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="table-container">
+      <table id="dataTable">
+        <thead id="dataHead"></thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+
+    <footer class="pagination">
+      <div class="page-info">
+        Rows per page: 
+        <select>
+          <option>20</option>
+          <option>50</option>
+          <option>100</option>
+        </select>
+      </div>
+      <div class="page-info">
+        1-20 of 48423
+      </div>
+      <div class="page-nav">
+        <button aria-label="First page">|&lt;</button>
+        <button aria-label="Previous page">&lt;</button>
+        <button aria-label="Next page">&gt;</button>
+        <button aria-label="Last page">&gt;|</button>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    (function(){
+      // Sample data
+      var rawRows = [
+        { "School ID": "100000", "School Name": "Balayong Elementary School", "Region": "Region I", "Division": "San Carlos City", "District": "San Carlos City District" },
+        { "School ID": "100001", "School Name": "Apaleng-Libtong ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100002", "School Name": "Bacarra CES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100003", "School Name": "Buyon ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100004", "School Name": "Ganagan Elementary School", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100005", "School Name": "Macupit ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100006", "School Name": "Nambaran ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100007", "School Name": "Pasiocan ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100008", "School Name": "Pulangi ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
+        { "School ID": "100009", "School Name": "Sabas-Sagisi Memorial Elem. School", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" }
+      ];
+
+      function getCheckedColumns() {
+        var cols = [];
+        var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+          if (checkboxes[i].checked) {
+            cols.push(checkboxes[i].value);
+          }
+        }
+        return cols;
+      }
+
+      function renderTable() {
+        var cols = getCheckedColumns();
+        var thead = document.getElementById('dataHead');
+        var tbody = document.getElementById('dataBody');
+        
+        var frozenWidths = { "School ID": "100px", "School Name": "240px" };
+        var frozenLeft = 0;
+
+        // Render Head
+        var headHtml = "<tr>";
+        for (var i = 0; i < cols.length; i++) {
+          var col = cols[i];
+          var isFrozen = (col === "School ID" || col === "School Name");
+          var style = "";
+          if (isFrozen) {
+            var w = frozenWidths[col];
+            style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + ";";
+            frozenLeft += parseInt(w, 10);
+            if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06);";
+          }
+          headHtml += "<th class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'><span class='th-label'>" + col + "</span><input type='text' class='th-search' placeholder='Search...'></th>";
+        }
+        headHtml += "</tr>";
+        thead.innerHTML = headHtml;
+
+        // Render Body
+        var bodyHtml = "";
+        for (var r = 0; r < rawRows.length; r++) {
+          var row = rawRows[r];
+          bodyHtml += "<tr>";
+          frozenLeft = 0;
+          for (var c = 0; c < cols.length; c++) {
+            var col = cols[c];
+            var isFrozen = (col === "School ID" || col === "School Name");
+            var val = row[col] || "";
+            var style = "";
+            if (isFrozen) {
+              var w = frozenWidths[col];
+              style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + "; overflow: hidden; text-overflow: ellipsis;";
+              frozenLeft += parseInt(w, 10);
+              if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06); font-weight: 700; color: var(--navy);";
+            }
+            bodyHtml += "<td class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'>" + val + "</td>";
+          }
+          bodyHtml += "</tr>";
+        }
+        tbody.innerHTML = bodyHtml;
+      }
+
+      // Wire checkboxes
+      var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].addEventListener('change', renderTable);
+      }
+
+      // Initial render
+      renderTable();
+
+      // Wire reset button
+      document.getElementById('resetControlsBtn').addEventListener('click', function() {
+        var selects = document.querySelectorAll('.filters-row select.select-pill');
+        for (var i = 0; i < selects.length; i++) selects[i].selectedIndex = 0;
+        
+        var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = checkboxes[i].defaultChecked;
+        
+        renderTable();
+      });
+    })();
+  </script>
+</body>
+</html>

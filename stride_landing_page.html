@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STRIDE — Strategic Resource Inventory</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+  :root {
+    --navy:#08315F; --blue:#075985; --blue600:#0284C7; --blue400:#7DD3FC;
+    --blue100:#E0F2FE; --blue50:#F0F9FF; --gold:#FBBF24; --amber:#D97706;
+    --text:#0F172A; --muted:#64748B; --line:#BAE6FD;
+    --font:'Plus Jakarta Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { min-height:100%; }
+  a { text-decoration:none; color:inherit; }
+  body {
+    font-family:var(--font); color:var(--text); min-height:100vh;
+    background-color:var(--blue50); background-attachment:fixed;
+    background-image:
+      radial-gradient(43.5% 49.5% at 10% 12%, rgba(7,89,133,.30) 0 34%, transparent 78%),
+      radial-gradient(46.5% 54% at 92% 10%, rgba(251,191,36,.42) 0 36%, transparent 80%),
+      radial-gradient(40.5% 48% at 84% 92%, rgba(125,211,252,.30) 0 34%, transparent 78%),
+      radial-gradient(45% 52.5% at 8% 92%, rgba(217,119,6,.26) 0 28%, rgba(251,191,36,.18) 42%, transparent 80%);
+  }
+
+
+
+  /* ---------- HERO ---------- */
+  .hero { text-align:center; padding:60px 6vw 90px; max-width:1100px; margin:0 auto; }
+  .logos { display:flex; gap:22px; justify-content:center; align-items:center; margin-bottom:32px; }
+  .logo-slot { width:78px; height:78px; border-radius:50%; display:grid; place-items:center; text-align:center; background:rgba(255,255,255,.55); border:2px dashed var(--blue400); color:var(--blue); font-size:11px; font-weight:700; letter-spacing:.5px; backdrop-filter:blur(2px); transition:transform .2s ease; }
+  .logo-slot:hover { transform:translateY(-3px); }
+  .hero h1 { color:var(--navy); font-weight:800; font-size:clamp(40px,6.4vw,78px); line-height:1.04; letter-spacing:-1px; cursor:default; filter:drop-shadow(0 10px 16px rgba(8,49,95,.30)); transition:transform .25s ease, text-shadow .25s ease; }
+  .hero h1:hover { transform:translateY(-3px); text-shadow:0 12px 26px rgba(8,49,95,.18); }
+  .hero h1 .mark { position:relative; overflow:hidden; background:var(--gold); color:var(--navy); padding:2px 22px 14px; border-radius:14px; display:inline-block; margin-top:16px; box-shadow:0 14px 40px rgba(251,191,36,.4); }
+  .hero h1 .mark::after {
+    content:""; position:absolute; top:0; left:-75%; width:50%; height:100%; pointer-events:none;
+    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.18) 35%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.18) 65%, transparent 100%);
+    transform:skewX(-20deg); animation:markShine 5.8s ease-in-out infinite;
+  }
+  @keyframes markShine {
+    0%   { left:-75%; }
+    14%  { left:150%; }
+    100% { left:150%; }
+  }
+  .hero p.sub { color:var(--muted); font-weight:500; max-width:560px; margin:26px auto 40px; font-size:18px; line-height:1.6; }
+
+  /* ---------- ENTER BUTTON ---------- */
+  .enter-btn {
+    display:inline-flex; align-items:center; gap:16px;
+    padding:12px 12px 12px 34px; border-radius:50px; cursor:pointer; border:none;
+    font-family:var(--font); font-weight:700; font-size:17px; color:var(--navy);
+    background:linear-gradient(135deg,#FDD34D 0%,var(--gold) 55%,var(--amber) 130%);
+    box-shadow:0 16px 34px rgba(251,191,36,.42), inset 0 1px 0 rgba(255,255,255,.55);
+    filter:drop-shadow(0 10px 16px rgba(8,49,95,.30));
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .enter-btn:hover { transform:translateY(-3px); box-shadow:0 24px 46px rgba(251,191,36,.55), inset 0 1px 0 rgba(255,255,255,.6); }
+  .enter-btn:active { transform:translateY(-1px); }
+  .enter-btn .arw {
+    width:40px; height:40px; border-radius:50%; background:var(--navy); color:#fff;
+    display:grid; place-items:center; font-size:17px; transition:transform .25s ease;
+  }
+  .enter-btn:hover .arw { transform:translateX(5px); }
+
+  @media (max-width:720px){
+    .hero { padding-top:44px; }
+  }
+</style>
+</head>
+<body>
+
+
+  <section class="hero">
+    <div class="logos">
+      <div class="logo-slot">Logo 1</div>
+      <div class="logo-slot">Logo 2</div>
+      <div class="logo-slot">Logo 3</div>
+    </div>
+    <h1>Strategic Resource<br>Inventory for<br><span class="mark">Deployment Efficiency</span></h1>
+    <p class="sub">Consolidating disparate education data sources into one trusted database for faster, evidence-informed decisions.</p>
+    <a class="enter-btn">Enter STRIDE <span class="arw">→</span></a>
+  </section>
+</body>
+</html>

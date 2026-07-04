@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STRIDE Quick Search</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+
+  <style>
+    :root{
+      --navy:#08315F; --blue:#075985; --blue-600:#0284C7; --blue-400:#7DD3FC;
+      --blue-100:#E0F2FE; --blue-50:#F0F9FF; --gold:#FBBF24; --red:#B91C1C;
+      --green:#16A34A; --card:#FFFFFF; --text:#0F172A; --muted:#64748B; --line:#BAE6FD;
+      --font-heading:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
+      --font-body:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+      --radius:22px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0; min-height:100vh; color:var(--text); font-family:var(--font-body);
+      background-color:var(--blue-50); background-attachment:fixed;
+      background-image:
+        radial-gradient(43.5% 49.5% at 10% 12%, rgba(7,89,133,.24) 0 34%, transparent 78%),
+        radial-gradient(46.5% 54% at 92% 10%, rgba(251,191,36,.30) 0 36%, transparent 80%),
+        radial-gradient(40.5% 48% at 84% 92%, rgba(125,211,252,.22) 0 34%, transparent 78%);
+    }
+    .qs-shell{ padding:16px 20px 24px; }
+    .qs-searchbar{
+      display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:16px;
+      border:2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);
+      border-radius:999px; background:rgba(255,255,255,.92);
+    }
+    .qs-searchbar .qs-icon{ font-size:16px; color:var(--blue); }
+    .qs-searchbar input{ flex:1; border:0; outline:0; background:transparent; font:700 14px var(--font-body); color:var(--text); }
+    .qs-searchbar button{
+      border:0; border-radius:999px; padding:9px 22px; cursor:pointer; background:var(--navy); color:#fff;
+      font:800 12px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; box-shadow:inset 0 -3px 0 var(--gold);
+    }
+    .qs-body{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:16px; align-items:stretch; min-height:calc(100vh - 130px); }
+    .card{ overflow:hidden; background:var(--card); border:2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius:16px; display:flex; flex-direction:column; min-width:0; }
+    .results-panel{ min-height:calc(100vh - 130px); }
+    .results-header{ padding:14px 16px 10px; border-bottom:1px solid var(--line); background:rgba(240,249,255,.6); }
+    .results-header h2{ margin:0 0 10px; color:var(--navy); font:900 16px var(--font-heading); letter-spacing:-.01em; }
+    .quick-filter{ display:flex; align-items:center; gap:8px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#F8FCFF; min-height:34px; }
+    .quick-filter span{ color:var(--muted); font-size:12px; }
+    .quick-filter input{ flex:1; border:0; outline:0; background:transparent; font:700 11px var(--font-body); color:var(--text); }
+    .results-list{ flex:1 1 auto; overflow:auto; padding:8px; }
+    .results-empty{ padding:40px 20px; text-align:center; color:var(--muted); font:700 12px var(--font-body); line-height:1.5; }
+    .result-item{ padding:10px 12px; margin:6px 4px; border:1px solid var(--line); border-radius:12px; background:#fff; cursor:pointer; transition:all .15s; }
+    .result-item:hover, .result-item.active{ background:var(--blue-50); border-color:var(--blue-400); }
+    .result-item .r-name{ color:var(--navy); font:900 12.5px var(--font-heading); line-height:1.2; }
+    .result-item .r-meta{ margin-top:3px; color:var(--muted); font:700 10px var(--font-body); }
+    .result-item .r-id{ display:inline-block; margin-top:5px; margin-right:5px; padding:2px 8px; border-radius:999px; background:var(--blue-100); color:var(--navy); font:800 9px var(--font-heading); letter-spacing:.05em; }
+    .result-item.no-coord{ opacity:.66; }
+    .results-list{ padding:0; overflow:hidden; }
+    .results-table-wrap{ position:relative; width:100%; height:100%; overflow:auto; background:#fff; }
+    .results-table-wrap::-webkit-scrollbar{ width:11px; height:11px; }
+    .results-table-wrap::-webkit-scrollbar-thumb{ border:3px solid #fff; border-radius:999px; background:#94A3B8; }
+    .results-table-wrap::-webkit-scrollbar-track{ background:#F8FAFC; }
+    table.results-table{ width:max-content; min-width:100%; border-collapse:separate; border-spacing:0; font-size:11px; }
+    .results-table th, .results-table td{ width:120px; min-width:120px; max-width:120px; padding:7px 9px; border-bottom:1px solid #E2E8F0; text-align:left; vertical-align:middle; background:#fff; overflow-wrap:normal; white-space:normal; }
+    .results-table th{ position:sticky; top:0; z-index:4; vertical-align:top; background:#fff; }
+    .results-table th.num-col, .results-table td.num-col{ text-align:center; }
+    .results-table th:nth-child(1), .results-table td:nth-child(1){ position:sticky; left:0; z-index:3; width:120px; min-width:120px; max-width:120px; }
+    .results-table th:nth-child(2), .results-table td:nth-child(2){ position:sticky; left:120px; z-index:3; width:120px; min-width:120px; max-width:120px; }
+    .results-table th:nth-child(3), .results-table td:nth-child(3){ position:sticky; left:240px; z-index:3; width:160px; min-width:160px; max-width:160px; box-shadow:8px 0 12px rgba(15,23,42,.06); }
+    .results-table th:nth-child(1), .results-table th:nth-child(2), .results-table th:nth-child(3){ z-index:6; }
+    .results-table tbody tr{ cursor:pointer; transition:background .15s ease, color .15s ease; }
+    .results-table tbody tr:hover td, .results-table tbody tr.active-row td{ background:var(--blue-50); color:var(--navy); }
+    .col-sort-btn{ display:flex; align-items:center; gap:4px; width:100%; padding:0; border:0; background:transparent; color:#111827; font:900 10px var(--font-heading); text-align:left; cursor:pointer; }
+    .results-table th.num-col .col-sort-btn{ justify-content:center; }
+    .col-sort-btn:hover{ color:var(--blue); }
+    .col-sort-arrow{ color:var(--blue); font-size:9px; }
+    .col-filter-input{ width:100%; min-height:24px; margin-top:6px; padding:0 8px; border:1px solid var(--line); border-radius:999px; outline:0; background:#F8FCFF; color:var(--text); font:700 8.5px var(--font-body); }
+    .col-filter-input:focus{ border-color:var(--blue); box-shadow:0 0 0 2px color-mix(in srgb, var(--blue-100) 70%, transparent); }
+    .results-table td .cell-id{ display:inline-block; padding:2px 8px; border-radius:999px; background:var(--blue-100); color:var(--navy); font:800 9px var(--font-heading); letter-spacing:.04em; }
+    .results-table td.name-cell{ color:var(--navy); font-weight:900; }
+    .card-title{ display:flex; align-items:center; min-height:34px; padding:0 14px; color:#fff; background:var(--blue); font:900 11px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; }
+    .map-panel{ min-height:calc(100vh - 130px); }
+    #quickMap{ flex:1 1 auto; width:100%; min-height:520px; background:var(--blue-100); z-index:1; }
+    .leaflet-container{ font-family:var(--font-body); }
+    .school-marker{ display:grid; place-items:center; width:30px; height:30px; color:#fff; background:#3B82F6; border:2px solid rgba(255,255,255,.95); border-radius:999px; font-family:var(--font-heading); font-size:15px; font-weight:900; box-shadow:0 3px 8px rgba(0,0,0,.28); transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease; }
+    .school-marker.fly-focus{ z-index:1000; box-shadow:0 0 0 5px rgba(251,191,36,.34), 0 0 0 11px rgba(251,191,36,.14), 0 10px 24px rgba(15,23,42,.32); }
+    .school-cluster{ display:grid; place-items:center; width:38px; height:38px; color:var(--navy); background:#fff; border:3px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%); border-radius:999px; font-family:var(--font-heading); font-size:12px; font-weight:900; box-shadow:0 4px 12px rgba(15,23,42,.28); }
+    .leaflet-popup-content-wrapper,
+    .leaflet-tooltip.school-hover-card{ overflow:hidden; border:2px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%); border-radius:18px; background:rgba(255,255,255,.98); box-shadow:0 18px 40px rgba(15,23,42,.24); color:var(--text); }
+    .leaflet-popup-content-wrapper{ padding:0; }
+    .leaflet-popup-content{ width:min(300px,78vw) !important; margin:0; font-family:var(--font-body); font-weight:700; }
+    .leaflet-popup-tip{ border:2px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%); background:#fff; }
+    .leaflet-tooltip.school-hover-card{ width:min(340px,90vw); padding:0; opacity:1; pointer-events:none; }
+    .leaflet-tooltip.school-hover-card::before{ display:none; }
+    .map-card{ overflow:hidden; background:#fff; }
+    .map-card-header{ position:relative; padding:12px 14px 10px; color:#fff; background:linear-gradient(135deg, var(--navy), var(--blue)); border-bottom:3px solid var(--gold); }
+    .map-card-eyebrow{ margin:0 0 3px; color:#BAE6FD; font:900 7px var(--font-heading); letter-spacing:.16em; text-transform:uppercase; }
+    .map-card-title{ margin:0; font:900 14px var(--font-heading); line-height:1.1; }
+    .map-card-location{ margin-top:4px; color:#E0F2FE; font:900 8.5px var(--font-body); }
+    .map-card-body{ display:grid; gap:0; padding:8px 14px 12px; }
+    .map-card-row{ display:grid; grid-template-columns:minmax(96px,.9fr) minmax(0,1.2fr); gap:8px; padding:6px 0; border-bottom:1px solid #E2E8F0; font-size:10px; line-height:1.2; }
+    .map-card-row:last-child{ border-bottom:0; }
+    .map-card-label{ color:var(--muted); font:900 8px var(--font-heading); letter-spacing:.08em; text-transform:uppercase; }
+    .map-card-value{ color:var(--navy); font-weight:900; overflow-wrap:anywhere; }
+    .map-status{ padding:8px 9px; border:1px solid #CBD5E1; border-radius:6px; background:rgba(255,255,255,.92); box-shadow:0 4px 12px rgba(15,23,42,.18); color:var(--muted); font:800 8px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; }
+    .detail-modal{ position:fixed; inset:0; display:none; place-items:center; padding:24px; background:rgba(8,49,95,.42); backdrop-filter:blur(6px); z-index:9999; }
+    .detail-modal.open{ display:grid; }
+    .detail-modal-panel{ width:min(860px,94vw); max-height:min(760px,88vh); overflow:hidden; border:3px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%); border-radius:26px; background:#fff; box-shadow:0 28px 70px rgba(15,23,42,.34); animation:detailModalIn .22s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes detailModalIn{ from{ opacity:0; transform:translateY(14px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+    .detail-modal-top{ position:relative; min-height:106px; padding:16px 116px 14px 18px; color:#fff; background:linear-gradient(135deg, var(--navy), var(--blue)); border-bottom:4px solid var(--gold); }
+    .detail-modal-kicker{ margin:0 0 5px; color:#BAE6FD; font:900 8px var(--font-heading); line-height:1; letter-spacing:.16em; text-transform:uppercase; }
+    .detail-modal-title{ margin:0; font:900 20px var(--font-heading); line-height:1.08; letter-spacing:-.01em; }
+    .detail-modal-location{ margin-top:5px; color:#E0F2FE; font:900 9px var(--font-body); line-height:1.15; text-transform:uppercase; opacity:.96; }
+    .detail-modal-actions{ position:absolute; top:14px; right:16px; display:flex; align-items:center; gap:8px; }
+    .detail-modal-download, .detail-modal-close{ display:grid; place-items:center; height:34px; border:1px solid rgba(255,255,255,.28); border-radius:999px; color:#fff; background:rgba(255,255,255,.12); line-height:1; cursor:pointer; }
+    .detail-modal-close{ width:34px; font-size:20px; }
+    .detail-modal-download{ min-width:104px; padding:0 12px; font:900 8px var(--font-heading); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+    .detail-modal-download:hover, .detail-modal-close:hover{ background:rgba(255,255,255,.22); }
+    .detail-modal-body{ max-height:calc(min(760px,88vh) - 124px); overflow:auto; background:#F8FCFF; }
+    .modal-section-grid{ display:grid; gap:12px; padding:14px 18px 24px; background:#F8FCFF; }
+    .modal-section{ overflow:hidden; border:1px solid #BAE6FD; border-radius:18px; background:#fff; box-shadow:0 8px 18px rgba(15,23,42,.07); }
+    .modal-section-title{ display:flex; align-items:center; gap:8px; padding:9px 12px; color:var(--navy); background:linear-gradient(90deg,#E0F2FE,#F8FCFF); border-bottom:1px solid #BAE6FD; font:900 10px var(--font-heading); letter-spacing:.12em; text-transform:uppercase; }
+    .modal-section-title::before{ content:""; display:block; width:8px; height:8px; border-radius:999px; background:var(--gold); box-shadow:0 0 0 3px rgba(251,191,36,.18); flex:0 0 auto; }
+    .modal-section-body{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; padding:8px 12px 10px; }
+    .modal-section .map-card-row{ grid-template-columns:minmax(100px,.9fr) minmax(0,1.1fr); padding:8px 0; font-size:10.5px; }
+    .modal-section .map-card-label{ font-size:8.5px; }
+    .modal-section .map-card-value{ font-size:10.5px; }
+    @media (max-width:680px){ .modal-section-body{ grid-template-columns:1fr; } }
+    @media (max-width:900px){ .qs-body{ grid-template-columns:1fr; } .results-panel, .map-panel{ min-height:0; } #quickMap{ min-height:420px; } }
+  </style>
+</head>
+<body>
+  <div class="qs-shell">
+    <div class="qs-searchbar">
+      <span class="qs-icon">🔍</span>
+      <input id="schoolSearchInput" type="text" placeholder="Search school name or school ID..." autocomplete="off" />
+      <button id="schoolSearchBtn" type="button">Search</button>
+    </div>
+    <div class="qs-body">
+      <section class="card results-panel">
+        <div class="results-header">
+          <h2>Search Results (<span id="resultCount">0</span>)</h2>
+          <div class="quick-filter">
+            <span>🔍</span>
+            <input id="resultFilterInput" type="text" placeholder="Quick filter results..." autocomplete="off" />
+          </div>
+        </div>
+        <div class="results-list" id="resultsList">
+          <div class="results-empty" id="resultsEmpty">Search a school name or ID to plot it on the map.</div>
+        </div>
+      </section>
+      <article class="card map-panel">
+        <div class="card-title" id="mapTitle">School Location Map</div>
+        <div id="quickMap" aria-label="School location map"></div>
+      </article>
+    </div>
+  </div>
+
+  <div class="detail-modal" id="schoolDetailModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="schoolDetailModalTitle">
+    <div class="detail-modal-panel" role="document">
+      <div class="detail-modal-top">
+        <div class="detail-modal-kicker" id="schoolDetailModalKicker">School Detail</div>
+        <h2 class="detail-modal-title" id="schoolDetailModalTitle">School Detail</h2>
+        <div class="detail-modal-location" id="schoolDetailModalLocation"></div>
+        <div class="detail-modal-actions">
+          <button type="button" class="detail-modal-download" id="schoolDetailModalDownload" aria-label="Print school profile to PDF">Print PDF</button>
+          <button type="button" class="detail-modal-close" id="schoolDetailModalClose" aria-label="Close school detail">×</button>
+        </div>
+      </div>
+      <div class="detail-modal-body" id="schoolDetailModalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var CSV_FILE = "./stride_school_unique.csv";
+      var CSV_CACHE_BUST = Date.now();
+      var PH_CENTER = [12.8797, 121.7740];
+      var PH_ZOOM = 5;
+      var MAX_RESULTS = 10;
+
+      var FIELD = {
+        name: ["school_name","school name","school"],
+        schoolId: ["school_id","school id"],
+        region: ["beis_region","region"],
+        division: ["beis_division","division"],
+        district: ["district","school district"],
+        province: ["province"],
+        municipality: ["municipality"],
+        barangay: ["barangay"],
+        legislativeDistrict: ["legislative_district","legislative district"],
+        street: ["street_address","street address"],
+        sector: ["sector"],
+        ownership: ["ownership_type","ownership type"],
+        enrolment: ["total_enrolment","total enrolment","total enrollment"],
+        rooms: ["instructional_rooms","instructional rooms"],
+        lat: ["latitude"],
+        lng: ["longitude"]
+      };
+
+      var allRecords = [];
+      var currentResults = [];
+      var map, cluster, activeMarkers = {}, flySeq = 0;
+      var TABLE_COLUMNS = [
+        { key:"region", label:"Region" },
+        { key:"division", label:"Division" },
+        { key:"name", label:"School Name" },
+        { key:"schoolId", label:"School ID" },
+        { key:"municipality", label:"Municipality" },
+        { key:"district", label:"School District" }
+      ];
+      var tableSortKey = "";
+      var tableSortDir = "asc";
+      var columnFilters = {};
+      var columnFilterTimers = {};
+
+      function safeText(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
+      function normalizeCsvHeader(value){ return String(value||"").replace(/^\uFEFF/,"").trim().toLowerCase().replace(/[\s_\-]+/g," "); }
+      function isBlankCsvValue(value){ var n=String(value||"").trim().toUpperCase(); return ["","NA","N/A","#N/A","NONE","NULL","NIL","-"].indexOf(n)>=0; }
+      function toNumber(value){ var c=String(value||"").replace(/[%₱,]/g,"").trim(); if(isBlankCsvValue(c)) return null; var p=Number(c); return isFinite(p)?p:null; }
+      function getVal(record, aliases, fallback){ for(var i=0;i<aliases.length;i++){ var key=normalizeCsvHeader(aliases[i]); var v=record[key]; if(v!==undefined && !isBlankCsvValue(v)) return String(v).trim(); } return fallback||""; }
+
+      function parseCsv(text){
+        var rows=[], row=[], cell="", quote=false;
+        for(var i=0;i<text.length;i++){
+          var ch=text[i], next=text[i+1];
+          if(ch==='"' && quote && next==='"'){ cell+='"'; i++; }
+          else if(ch==='"'){ quote=!quote; }
+          else if(ch==="," && !quote){ row.push(cell); cell=""; }
+          else if((ch==="\n"||ch==="\r") && !quote){ if(ch==="\r" && next==="\n") i++; row.push(cell); if(row.some(function(x){return String(x).trim()!=="";})) rows.push(row); row=[]; cell=""; }
+          else { cell+=ch; }
+        }
+        if(cell||row.length){ row.push(cell); if(row.some(function(x){return String(x).trim()!=="";})) rows.push(row); }
+        if(!rows.length) return [];
+        var headers=rows.shift().map(normalizeCsvHeader);
+        return rows.map(function(values){ var rec={}; headers.forEach(function(h,idx){ rec[h]=String(values[idx]||"").trim(); }); return rec; });
+      }
+
+      function buildRecords(rawRows){
+        return rawRows.map(function(rec, idx){
+          var lat=toNumber(getVal(rec, FIELD.lat, ""));
+          var lng=toNumber(getVal(rec, FIELD.lng, ""));
+          var valid = lat!==null && lng!==null && Math.abs(lat)<=90 && Math.abs(lng)<=180;
+          return {
+            key:"row-"+idx,
+            name:getVal(rec, FIELD.name, "Unnamed School"),
+            schoolId:getVal(rec, FIELD.schoolId, ""),
+            region:getVal(rec, FIELD.region, ""),
+            division:getVal(rec, FIELD.division, ""),
+            district:getVal(rec, FIELD.district, ""),
+            province:getVal(rec, FIELD.province, ""),
+            municipality:getVal(rec, FIELD.municipality, ""),
+            barangay:getVal(rec, FIELD.barangay, ""),
+            legislativeDistrict:getVal(rec, FIELD.legislativeDistrict, ""),
+            street:getVal(rec, FIELD.street, ""),
+            sector:getVal(rec, FIELD.sector, ""),
+            ownership:getVal(rec, FIELD.ownership, ""),
+            enrolment:getVal(rec, FIELD.enrolment, ""),
+            rooms:getVal(rec, FIELD.rooms, ""),
+            lat:valid?lat:null, lng:valid?lng:null, valid:valid
+          };
+        }).filter(function(r){ return !isBlankCsvValue(r.name); });
+      }
+
+      function rowsHtml(pairs){
+        return pairs.filter(function(p){ return !isBlankCsvValue(p[1]); })
+          .map(function(p){ return '<div class="map-card-row"><span class="map-card-label">'+safeText(p[0])+'</span><span class="map-card-value">'+safeText(p[1])+'</span></div>'; })
+          .join("");
+      }
+
+      function hoverCardHtml(r){
+        var loc=[r.region, r.division].filter(function(x){return !isBlankCsvValue(x);}).join(" | ");
+        return '<div class="map-card"><div class="map-card-header"><div class="map-card-eyebrow">'+(r.schoolId?"School ID "+safeText(r.schoolId):"School")+'</div><div class="map-card-title">'+safeText(r.name)+'</div>'+(loc?'<div class="map-card-location">'+safeText(loc)+'</div>':'')+'</div><div class="map-card-body">'+rowsHtml([["Municipality", r.municipality],["School District", r.district],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]])+'</div></div>';
+      }
+
+      function popupHtml(r){
+        var loc=[r.region, r.division].filter(function(x){return !isBlankCsvValue(x);}).join(" | ");
+        return '<div class="map-card"><div class="map-card-header"><div class="map-card-eyebrow">'+(r.schoolId?"School ID "+safeText(r.schoolId):"School")+'</div><div class="map-card-title">'+safeText(r.name)+'</div>'+(loc?'<div class="map-card-location">'+safeText(loc)+'</div>':'')+'</div><div class="map-card-body">'+rowsHtml([["Province", r.province],["Municipality", r.municipality],["Barangay", r.barangay],["Legislative District", r.legislativeDistrict],["School District", r.district],["Street Address", r.street],["Sector", r.sector],["Ownership Type", r.ownership],["Total Enrolment", r.enrolment],["Instructional Rooms", r.rooms],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]])+'</div></div>';
+      }
+
+      var currentRecord=null;
+
+      function buildModalSections(r){
+        var groups=[
+          ["School Identity", [["School ID", r.schoolId],["School Name", r.name],["Sector", r.sector],["Ownership Type", r.ownership]]],
+          ["Geography and Address", [["Region", r.region],["Division", r.division],["Province", r.province],["Municipality", r.municipality],["Barangay", r.barangay],["Legislative District", r.legislativeDistrict],["School District", r.district],["Street Address", r.street],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]]],
+          ["Enrollment and School Size", [["Total Enrolment", r.enrolment]]],
+          ["Classroom Inventory", [["Instructional Rooms", r.rooms]]]
+        ];
+        var html=groups.map(function(g){
+          var rows=g[1].filter(function(p){ return !isBlankCsvValue(p[1]); });
+          if(!rows.length) return "";
+          var rowsHtml=rows.map(function(p){ return '<div class="map-card-row"><div class="map-card-label">'+safeText(p[0])+'</div><div class="map-card-value">'+safeText(p[1])+'</div></div>'; }).join("");
+          return '<section class="modal-section"><div class="modal-section-title">'+safeText(g[0])+'</div><div class="modal-section-body">'+rowsHtml+'</div></section>';
+        }).join("");
+        return '<div class="modal-section-grid">'+html+'</div>';
+      }
+
+      function openDetailModal(r){
+        currentRecord=r;
+        var loc=[r.region, r.division, r.municipality, r.legislativeDistrict, r.district].filter(function(x){ return !isBlankCsvValue(x); }).join(" | ");
+        document.getElementById("schoolDetailModalKicker").textContent=r.schoolId?("School ID "+r.schoolId):"School Detail";
+        document.getElementById("schoolDetailModalTitle").textContent=r.name;
+        var locEl=document.getElementById("schoolDetailModalLocation");
+        locEl.textContent=loc; locEl.style.display=loc?"block":"none";
+        document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(r);
+        var modal=document.getElementById("schoolDetailModal");
+        modal.classList.add("open"); modal.setAttribute("aria-hidden","false");
+        document.body.style.overflow="hidden";
+        var closeBtn=document.getElementById("schoolDetailModalClose"); if(closeBtn) closeBtn.focus({ preventScroll:true });
+      }
+
+      function closeDetailModal(){
+        var modal=document.getElementById("schoolDetailModal"); if(!modal) return;
+        modal.classList.remove("open"); modal.setAttribute("aria-hidden","true");
+        document.body.style.overflow="";
+      }
+
+      function getDashboardStyleText(){
+        return Array.prototype.map.call(document.querySelectorAll("style"), function(s){ return s.textContent||""; }).join("\n");
+      }
+
+      function printCurrentSchoolProfilePdf(){
+        var modal=document.getElementById("schoolDetailModal");
+        var bodyElement=document.getElementById("schoolDetailModalBody");
+        if(!modal || !modal.classList.contains("open") || !bodyElement){ console.warn("Open a school profile before printing to PDF."); return; }
+        var profileTitle=((document.getElementById("schoolDetailModalTitle").textContent||"School Profile").trim())||"School Profile";
+        var profileLocation=(document.getElementById("schoolDetailModalLocation").textContent||"").trim();
+        var doc=document.implementation.createHTMLDocument(profileTitle);
+        doc.documentElement.lang="en";
+        doc.head.innerHTML='<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'+safeText(profileTitle)+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">';
+        var style=doc.createElement("style");
+        style.textContent=getDashboardStyleText()+"\n"+
+          "body{padding:24px;}\n"+
+          ".downloaded-profile{max-width:980px;margin:0 auto;border:3px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%);border-radius:26px;overflow:hidden;background:#fff;box-shadow:0 24px 64px rgba(15,23,42,.22);}\n"+
+          ".downloaded-profile .detail-modal-top{position:relative;}\n"+
+          ".downloaded-profile .detail-modal-actions{display:none;}\n"+
+          ".downloaded-profile .detail-modal-body{max-height:none;overflow:visible;}\n"+
+          "@page{size:A4;margin:12mm;}\n"+
+          "@media print{html,body{padding:0;margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.downloaded-profile{max-width:none;width:100%;margin:0;border:0;border-radius:0;box-shadow:none;overflow:visible;}.modal-section-grid{padding:0;gap:14px;}.modal-section{break-inside:avoid;page-break-inside:avoid;box-shadow:none;}.modal-section-title{break-after:avoid;page-break-after:avoid;}.map-card-row{break-inside:avoid;page-break-inside:avoid;}}";
+        doc.head.appendChild(style);
+        var article=doc.createElement("article"); article.className="downloaded-profile";
+        var header=doc.createElement("header"); header.className="detail-modal-top";
+        var kicker=doc.createElement("div"); kicker.className="detail-modal-kicker"; kicker.textContent="School Profile";
+        var title=doc.createElement("h1"); title.className="detail-modal-title"; title.textContent=profileTitle;
+        var location=doc.createElement("div"); location.className="detail-modal-location"; location.textContent=profileLocation;
+        var main=doc.createElement("main"); main.className="detail-modal-body"; main.innerHTML=bodyElement.innerHTML;
+        header.appendChild(kicker); header.appendChild(title); header.appendChild(location);
+        article.appendChild(header); article.appendChild(main);
+        doc.body.appendChild(article);
+        var html="<!DOCTYPE html>\n"+doc.documentElement.outerHTML;
+        var existing=document.getElementById("schoolProfilePrintFrame"); if(existing) existing.remove();
+        var frame=document.createElement("iframe"); frame.id="schoolProfilePrintFrame"; frame.setAttribute("aria-hidden","true");
+        frame.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+        frame.srcdoc=html;
+        frame.onload=function(){
+          var w=frame.contentWindow; if(!w) return;
+          var run=function(){ try{ w.focus(); w.print(); }catch(e){ console.warn("Print failed",e); } };
+          w.onafterprint=function(){ setTimeout(function(){ frame.remove(); },200); };
+          if(w.document.fonts && w.document.fonts.ready){ w.document.fonts.ready.then(function(){ setTimeout(run,200); }).catch(function(){ setTimeout(run,300); }); }
+          else { setTimeout(run,400); }
+          setTimeout(function(){ if(document.body.contains(frame)) frame.remove(); },60000);
+        };
+        document.body.appendChild(frame);
+      }
+
+      function markerIcon(){ return L.divIcon({ className:"", html:'<div class="school-marker">🏫</div>', iconSize:[30,30], iconAnchor:[15,15] }); }
+
+      function getGlobalFilter(){ var el=document.getElementById("resultFilterInput"); return el?(el.value||"").trim().toLowerCase():""; }
+
+      function isNumericColumn(list, key){
+        var sawValue=false;
+        for(var i=0;i<list.length;i++){ var v=list[i][key]; if(isBlankCsvValue(v)) continue; sawValue=true; if(toNumber(v)===null) return false; }
+        return sawValue;
+      }
+
+      function getDisplayedResults(){
+        var g=getGlobalFilter();
+        var list=currentResults.filter(function(r){
+          if(g){ var hay=(r.name+" "+r.schoolId+" "+r.region+" "+r.division+" "+r.municipality+" "+r.district).toLowerCase(); if(hay.indexOf(g)<0) return false; }
+          for(var i=0;i<TABLE_COLUMNS.length;i++){ var c=TABLE_COLUMNS[i]; var f=(columnFilters[c.key]||"").trim().toLowerCase(); if(f && String(r[c.key]||"").toLowerCase().indexOf(f)<0) return false; }
+          return true;
+        });
+        if(tableSortKey){
+          var numeric=isNumericColumn(list, tableSortKey);
+          list=list.slice().sort(function(a,b){
+            var av=a[tableSortKey], bv=b[tableSortKey], res;
+            if(numeric){ var an=toNumber(av), bn=toNumber(bv); an=an===null?-Infinity:an; bn=bn===null?-Infinity:bn; res=an-bn; }
+            else { res=String(av||"").localeCompare(String(bv||""), undefined, { numeric:true, sensitivity:"base" }); }
+            return tableSortDir==="asc"?res:-res;
+          });
+        }
+        return list;
+      }
+
+      function attachRowHandlers(wrap){
+        Array.prototype.forEach.call(wrap.querySelectorAll("tbody tr[data-key]"), function(tr){ tr.addEventListener("click", function(){ focusRecord(tr.getAttribute("data-key")); }); });
+      }
+
+      function buildBodyHtml(displayed, numericByKey){
+        if(!displayed.length){ return '<tbody><tr><td colspan="'+TABLE_COLUMNS.length+'" style="text-align:center;color:var(--muted);padding:24px 12px;font-weight:700;">No rows match the current filters.</td></tr></tbody>'; }
+        return '<tbody>'+displayed.map(function(r){
+          return '<tr class="'+(r.valid?"":"no-coord")+'" data-key="'+safeText(r.key)+'">'+TABLE_COLUMNS.map(function(c){
+            var val=r[c.key]; var cls=numericByKey[c.key]?"num-col":""; var inner;
+            if(c.key==="schoolId"){ inner=isBlankCsvValue(val)?'<span style="color:#94A3B8;">—</span>':'<span class="cell-id">'+safeText(val)+'</span>'; }
+            else if(c.key==="name"){ cls+=" name-cell"; inner=safeText(val)+(r.valid?"":' <span class="cell-id" style="background:#FEE2E2;color:#B91C1C;">No coords</span>'); }
+            else { inner=isBlankCsvValue(val)?'<span style="color:#94A3B8;">—</span>':safeText(val); }
+            return '<td class="'+cls.trim()+'">'+inner+'</td>';
+          }).join("")+'</tr>';
+        }).join("")+'</tbody>';
+      }
+
+      function updateBody(){
+        var listEl=document.getElementById("resultsList");
+        var table=listEl.querySelector("table.results-table");
+        if(!table){ renderTable(); return; }
+        var numericByKey={}; TABLE_COLUMNS.forEach(function(c){ numericByKey[c.key]=isNumericColumn(currentResults, c.key); });
+        var displayed=getDisplayedResults();
+        document.getElementById("resultCount").textContent=displayed.length;
+        var oldBody=table.querySelector("tbody"); if(oldBody) oldBody.remove();
+        table.insertAdjacentHTML("beforeend", buildBodyHtml(displayed, numericByKey));
+        attachRowHandlers(listEl.querySelector(".results-table-wrap"));
+        renderMarkers(displayed);
+      }
+
+      function renderTable(){
+        var listEl=document.getElementById("resultsList");
+        if(!currentResults.length){ document.getElementById("resultCount").textContent="0"; listEl.innerHTML='<div class="results-empty">Search a school name or ID to plot it on the map.</div>'; if(cluster) cluster.clearLayers(); return; }
+        var numericByKey={}; TABLE_COLUMNS.forEach(function(c){ numericByKey[c.key]=isNumericColumn(currentResults, c.key); });
+        var head='<thead><tr>'+TABLE_COLUMNS.map(function(c){
+          var arrow=tableSortKey===c.key?(tableSortDir==="asc"?"↑":"↓"):"";
+          return '<th class="'+(numericByKey[c.key]?"num-col":"")+'"><button type="button" class="col-sort-btn" data-key="'+safeText(c.key)+'">'+safeText(c.label)+'<span class="col-sort-arrow">'+arrow+'</span></button><input class="col-filter-input" data-key="'+safeText(c.key)+'" type="text" placeholder="Filter" value="'+safeText(columnFilters[c.key]||"")+'" /></th>';
+        }).join("")+'</tr></thead>';
+        listEl.innerHTML='<div class="results-table-wrap"><table class="results-table">'+head+'</table></div>';
+        var wrap=listEl.querySelector(".results-table-wrap");
+        Array.prototype.forEach.call(wrap.querySelectorAll(".col-sort-btn"), function(btn){ btn.addEventListener("click", function(e){ e.stopPropagation(); var k=btn.getAttribute("data-key"); if(tableSortKey===k){ tableSortDir=tableSortDir==="asc"?"desc":"asc"; } else { tableSortKey=k; tableSortDir="asc"; } renderTable(); }); });
+        Array.prototype.forEach.call(wrap.querySelectorAll(".col-filter-input"), function(inp){ inp.addEventListener("input", function(){ var k=inp.getAttribute("data-key"); columnFilters[k]=inp.value; clearTimeout(columnFilterTimers[k]); columnFilterTimers[k]=setTimeout(updateBody, 200); }); });
+        updateBody();
+      }
+
+      function renderMarkers(list){
+        if(!cluster) return;
+        cluster.clearLayers(); activeMarkers={};
+        var bounds=[];
+        list.forEach(function(r){
+          if(!r.valid) return;
+          var m=L.marker([r.lat, r.lng], { icon:markerIcon() });
+          m.bindTooltip(hoverCardHtml(r), { className:"school-hover-card", direction:"top", offset:[0,-16], opacity:1, sticky:true });
+          m.on("click", function(){ m.closeTooltip(); openDetailModal(r); });
+          activeMarkers[r.key]=m;
+          cluster.addLayer(m);
+          bounds.push([r.lat, r.lng]);
+        });
+        if(bounds.length===1){ map.setView(bounds[0], 15); }
+        else if(bounds.length>1){ map.fitBounds(bounds, { padding:[40,40], maxZoom:14 }); }
+        setTimeout(function(){ map.invalidateSize(); }, 60);
+      }
+
+      function pulse(marker){ var el=marker.getElement?marker.getElement():null; var icon=el?el.querySelector(".school-marker"):null; if(!icon) return; icon.classList.remove("fly-focus"); void icon.offsetWidth; icon.classList.add("fly-focus"); setTimeout(function(){ icon.classList.remove("fly-focus"); }, 1200); }
+
+      function flyTo(marker){ var seq=++flySeq; var ll=marker.getLatLng(); map.flyTo(ll, 16, { animate:true, duration:.9 }); map.once("moveend", function(){ if(seq!==flySeq) return; if(marker.openTooltip) marker.openTooltip(); pulse(marker); }); }
+
+      function focusRecord(key){
+        var r=null; for(var i=0;i<currentResults.length;i++){ if(currentResults[i].key===key){ r=currentResults[i]; break; } }
+        Array.prototype.forEach.call(document.querySelectorAll(".result-item"), function(el){ el.classList.toggle("active", el.getAttribute("data-key")===key); });
+        if(!r || !r.valid) return;
+        var marker=activeMarkers[key]; if(!marker) return;
+        if(cluster.zoomToShowLayer){ cluster.zoomToShowLayer(marker, function(){ flyTo(marker); }); } else { flyTo(marker); }
+      }
+
+      function runSearch(){
+        var term=(document.getElementById("schoolSearchInput").value||"").trim().toLowerCase();
+        document.getElementById("resultFilterInput").value="";
+        columnFilters={}; tableSortKey=""; tableSortDir="asc";
+        if(!term){ currentResults=[]; document.getElementById("resultCount").textContent="0"; document.getElementById("resultsList").innerHTML='<div class="results-empty">Search a school name or ID to plot it on the map.</div>'; if(cluster) cluster.clearLayers(); map.setView(PH_CENTER, PH_ZOOM); return; }
+        var matches=allRecords.filter(function(r){ return r.name.toLowerCase().indexOf(term)>=0 || r.schoolId.toLowerCase().indexOf(term)>=0; });
+        if(matches.length>MAX_RESULTS) matches=matches.slice(0,MAX_RESULTS);
+        currentResults=matches; renderTable();
+      }
+
+      function applyQuickFilter(){ updateBody(); }
+
+      function initMap(){
+        map=L.map("quickMap", { zoomControl:true }).setView(PH_CENTER, PH_ZOOM);
+        var sat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"+"{z}"+"/"+"{y}"+"/"+"{x}", { maxZoom:19, attribution:"Tiles &copy; Esri" });
+        var road=L.tileLayer("https://"+"{s}"+".tile.openstreetmap.org/"+"{z}"+"/"+"{x}"+"/"+"{y}"+".png", { maxZoom:19, attribution:"&copy; OpenStreetMap contributors" });
+        var light=L.tileLayer("https://"+"{s}"+".basemaps.cartocdn.com/light_all/"+"{z}"+"/"+"{x}"+"/"+"{y}"+".png", { maxZoom:19, attribution:"&copy; OpenStreetMap contributors &copy; CARTO" });
+        sat.addTo(map);
+        L.control.layers({ "Satellite":sat, "Road":road, "Light":light }, null, { position:"topright" }).addTo(map);
+        cluster=L.markerClusterGroup({ showCoverageOnHover:false, spiderfyOnMaxZoom:true, disableClusteringAtZoom:13, maxClusterRadius:44, chunkedLoading:true, iconCreateFunction:function(c){ return L.divIcon({ className:"", html:'<div class="school-cluster">'+c.getChildCount()+'</div>', iconSize:[38,38], iconAnchor:[19,19] }); } });
+        map.addLayer(cluster);
+        var status=L.control({ position:"bottomleft" });
+        status.onAdd=function(){ var d=L.DomUtil.create("div","map-status"); d.id="mapStatus"; d.textContent="Loading school data..."; return d; };
+        status.addTo(map);
+      }
+
+      function setStatus(text){ var el=document.getElementById("mapStatus"); if(el) el.textContent=text; }
+
+      async function loadData(){
+        try{
+          var res=await fetch(CSV_FILE+"?v="+CSV_CACHE_BUST, { cache:"no-store" });
+          if(!res.ok) throw new Error("Could not load stride_school_unique.csv ("+res.status+")");
+          var text=await res.text();
+          allRecords=buildRecords(parseCsv(text));
+          setStatus(allRecords.length.toLocaleString()+" schools ready — search to plot");
+        }catch(err){
+          console.warn(err);
+          var listEl=document.getElementById("resultsList");
+          if(window.location.protocol==="file:"){ setStatus("Open via Live Server to load data"); listEl.innerHTML='<div class="results-empty">This page was opened directly from disk (file://), so the browser blocked loading <strong>stride_school_unique.csv</strong>.<br><br>Run the folder through a local web server (VS Code Live Server) and reload.</div>'; }
+          else{ setStatus("Could not load CSV"); listEl.innerHTML='<div class="results-empty">Could not load <strong>stride_school_unique.csv</strong>. Make sure it sits in the same folder as this file.</div>'; }
+        }
+      }
+
+      function wire(){
+        document.getElementById("schoolSearchBtn").addEventListener("click", runSearch);
+        document.getElementById("schoolSearchInput").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); runSearch(); } });
+        var t; document.getElementById("schoolSearchInput").addEventListener("input", function(){ clearTimeout(t); if(this.value.trim().length>=3){ t=setTimeout(runSearch, 300); } });
+        var t2; document.getElementById("resultFilterInput").addEventListener("input", function(){ clearTimeout(t2); t2=setTimeout(applyQuickFilter, 200); });
+        document.getElementById("schoolDetailModalClose").addEventListener("click", closeDetailModal);
+        document.getElementById("schoolDetailModalDownload").addEventListener("click", printCurrentSchoolProfilePdf);
+        var qsModal=document.getElementById("schoolDetailModal");
+        qsModal.addEventListener("click", function(e){ if(e.target===qsModal) closeDetailModal(); });
+        document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeDetailModal(); });
+      }
+
+      window.addEventListener("load", function(){ initMap(); wire(); loadData(); });
+    })();
+  </script>
+</body>
+</html>
