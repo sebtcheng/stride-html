@@ -88,6 +88,28 @@
   </style>
 </head>
 <body>
+  <script>
+  (function(){
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    var CSVS_TO_PRELOAD = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+      if (reg.active) warmCache(reg.active);
+      navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+      if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+      if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    }).catch(function(){});
+  })();
+  </script>
   <main class="main-content" style="width: 100vw;">
     <header class="header">
       <div class="header-left">
@@ -243,40 +265,250 @@
 
   <script>
     (function(){
-      // Sample data
-      var rawRows = [
-        { "School ID": "100000", "School Name": "Balayong Elementary School", "Region": "Region I", "Division": "San Carlos City", "District": "San Carlos City District" },
-        { "School ID": "100001", "School Name": "Apaleng-Libtong ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100002", "School Name": "Bacarra CES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100003", "School Name": "Buyon ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100004", "School Name": "Ganagan Elementary School", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100005", "School Name": "Macupit ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100006", "School Name": "Nambaran ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100007", "School Name": "Pasiocan ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100008", "School Name": "Pulangi ES", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" },
-        { "School ID": "100009", "School Name": "Sabas-Sagisi Memorial Elem. School", "Region": "Region I", "Division": "Ilocos Norte", "District": "Bacarra I" }
+      var CSV_FILES = [
+        "./stride_school_unique.csv",
+        "./efd_classroom_july2026.csv",
+        "./stride_shs_industries.csv",
+        "./sdo_classification_202606151013.csv",
+        "./ph_schools_20260616410.csv",
+        "./insighted_school_info.csv",
+        "./insighted_classes_organized.csv",
+        "./insighted_shifting.csv"
       ];
 
-      function getCheckedColumns() {
+      var COLUMN_ALIASES = {
+        "School ID": ["school id", "schoolid", "school code", "beis school id"],
+        "School Name": ["school name", "school", "name", "school_name"],
+        "Region": ["region", "beis region"],
+        "Division": ["division", "beis division"],
+        "District": ["district", "school district"],
+        "GMIS Region": ["gmis region"],
+        "GMIS Division": ["gmis division"],
+        "Street Address": ["street address", "street", "address"],
+        "Province": ["province"],
+        "Municipality": ["municipality", "city municipality", "city"],
+        "Legislative District": ["legislative district", "leg district"],
+        "Barangay": ["barangay"],
+        "Implementing Unit": ["implementing unit", "iu"],
+        "Modified COC": ["modified coc", "coc"],
+        "School Size Typology": ["school size typology", "size typology", "school typology"],
+        "Latitude": ["latitude", "lat"],
+        "Longitude": ["longitude", "lng", "long"],
+        "Total Teachers": ["total teachers", "teachers"],
+        "RO Filling Up": ["ro filling up"],
+        "SDO Filling Up": ["sdo filling up"],
+        "ES Excess": ["es excess", "elementary excess"],
+        "ES Shortage": ["es shortage", "elementary shortage"],
+        "JHS Excess": ["jhs excess", "junior high school excess"],
+        "JHS Shortage": ["jhs shortage", "junior high school shortage"],
+        "SHS Excess": ["shs excess", "senior high school excess"],
+        "SHS Shortage": ["shs shortage", "senior high school shortage"],
+        "Total Excess": ["total excess"],
+        "Total Shortage": ["total shortage"],
+        "PDO I Deployment": ["pdo i deployment", "pdo deployment", "pdo1 deployment"],
+        "AO II Deployment": ["ao ii deployment", "ao deployment", "ao2 deployment"],
+        "Total Enrolment": ["total enrolment", "total enrollment", "enrolment", "enrollment"],
+        "Specialization English": ["specialization english", "english"],
+        "Specialization Mathematics": ["specialization mathematics", "mathematics", "math"],
+        "Specialization Science": ["specialization science", "science"],
+        "Specialization Biological Sciences": ["specialization biological sciences", "biological sciences", "biology"],
+        "Specialization Physical Sciences": ["specialization physical sciences", "physical sciences"],
+        "Specialization General Education": ["specialization general education", "general education"],
+        "Specialization Araling Panlipunan": ["specialization araling panlipunan", "araling panlipunan", "ap"],
+        "Specialization TLE": ["specialization tle", "tle"],
+        "No Specialization": ["no specialization", "no specialisation"],
+        "Specialization MAPEH": ["specialization mapeh", "mapeh"],
+        "Specialization Filipino": ["specialization filipino", "filipino"],
+        "Specialization ESP": ["specialization esp", "esp"],
+        "Specialization Agriculture": ["specialization agriculture", "agriculture"],
+        "Specialization ECE": ["specialization ece", "ece"],
+        "Specialization SPED": ["specialization sped", "sped"]
+      };
+
+      var rawRows = [];
+      var columnFilters = {};
+      var currentPage = 1;
+      var pageSize = 20;
+      var dataReady = false;
+
+      function normalizeHeader(value){
+        return String(value || "").replace(/^﻿/, "").trim().toLowerCase().replace(/[\s_\-\/]+/g, " ");
+      }
+      function isBlank(value){
+        var n = String(value == null ? "" : value).trim().toUpperCase();
+        return ["", "NA", "N/A", "#N/A", "NONE", "NULL", "NIL", "-"].indexOf(n) >= 0;
+      }
+      function safeText(value){
+        return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      }
+      function parseCsv(text){
+        var rows = [], row = [], cell = "", quote = false;
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i], next = text[i + 1];
+          if (ch === '"' && quote && next === '"') { cell += '"'; i++; }
+          else if (ch === '"') { quote = !quote; }
+          else if (ch === "," && !quote) { row.push(cell); cell = ""; }
+          else if ((ch === "\n" || ch === "\r") && !quote) {
+            if (ch === "\r" && next === "\n") i++;
+            row.push(cell);
+            if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
+            row = []; cell = "";
+          } else { cell += ch; }
+        }
+        if (cell || row.length) {
+          row.push(cell);
+          if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
+        }
+        if (!rows.length) return [];
+        var headers = rows.shift().map(normalizeHeader);
+        return rows.map(function(values){
+          var rec = {};
+          headers.forEach(function(h, idx){ rec[h] = String(values[idx] || "").trim(); });
+          return rec;
+        });
+      }
+      function getAllColumns(){
+        var cols = [];
+        var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) cols.push(checkboxes[i].value);
+        return cols;
+      }
+      function aliasesFor(label){
+        var base = [normalizeHeader(label)];
+        var extra = COLUMN_ALIASES[label] || [];
+        return base.concat(extra.map(normalizeHeader));
+      }
+      function getValue(record, label){
+        var aliases = aliasesFor(label);
+        for (var i = 0; i < aliases.length; i++) {
+          var v = record[aliases[i]];
+          if (v !== undefined && !isBlank(v)) return String(v).trim();
+        }
+        return "";
+      }
+      function getSchoolId(record){ return getValue(record, "School ID"); }
+      function mergeRecord(target, source){
+        for (var k in source) {
+          if (!Object.prototype.hasOwnProperty.call(source, k)) continue;
+          if ((target[k] === undefined || isBlank(target[k])) && !isBlank(source[k])) target[k] = source[k];
+        }
+      }
+      async function loadCsvFile(url){
+        var res = await fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "v=" + Date.now(), { cache: "force-cache" });
+        if (!res.ok) throw new Error("Could not load " + url + " (" + res.status + ")");
+        return parseCsv(await res.text());
+      }
+      async function loadCsvData(){
+        setLoadingMessage("Loading connected CSV data...");
+        var byId = {};
+        var order = [];
+        var loadedCount = 0;
+
+        for (var i = 0; i < CSV_FILES.length; i++) {
+          try {
+            var records = await loadCsvFile(CSV_FILES[i]);
+            loadedCount++;
+            records.forEach(function(rec, idx){
+              var id = getSchoolId(rec);
+              var key = id || (CSV_FILES[i] + "#" + idx);
+              if (!byId[key]) {
+                byId[key] = {};
+                order.push(key);
+              }
+              mergeRecord(byId[key], rec);
+            });
+          } catch (err) {
+            console.warn("Skipped CSV:", CSV_FILES[i], err);
+          }
+        }
+
+        rawRows = order.map(function(key){ return byId[key]; }).filter(function(row){ return !isBlank(getValue(row, "School Name")) || !isBlank(getValue(row, "School ID")); });
+        dataReady = true;
+        populateRegionDivisionControls();
+        currentPage = 1;
+        renderTable();
+
+        var batch = document.querySelector(".batch-pill");
+        if (batch) batch.innerHTML = '<span class="dot"></span> READY • ' + loadedCount + ' CSV SOURCES';
+      }
+      function setLoadingMessage(message){
+        document.getElementById("dataHead").innerHTML = "";
+        document.getElementById("dataBody").innerHTML = '<tr><td style="padding:28px 24px;color:var(--muted);font-weight:800;">' + safeText(message) + '</td></tr>';
+      }
+      function getCheckedColumns(){
         var cols = [];
         var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
         for (var i = 0; i < checkboxes.length; i++) {
-          if (checkboxes[i].checked) {
-            cols.push(checkboxes[i].value);
-          }
+          if (checkboxes[i].checked) cols.push(checkboxes[i].value);
         }
         return cols;
       }
+      function getRegionSelect(){ return document.querySelectorAll('.filters-row select.select-pill')[0] || null; }
+      function getDivisionSelect(){ return document.querySelectorAll('.filters-row select.select-pill')[1] || null; }
+      function uniqueValues(label, sourceRows){
+        var seen = {}, vals = [];
+        (sourceRows || rawRows).forEach(function(row){
+          var v = getValue(row, label);
+          if (!isBlank(v) && !seen[v]) { seen[v] = true; vals.push(v); }
+        });
+        return vals.sort(function(a,b){ return a.localeCompare(b, undefined, { numeric:true, sensitivity:"base" }); });
+      }
+      function fillSelect(select, allLabel, values){
+        if (!select) return;
+        var current = select.value;
+        select.innerHTML = '<option>' + safeText(allLabel) + '</option>' + values.map(function(v){ return '<option>' + safeText(v) + '</option>'; }).join("");
+        if (values.indexOf(current) >= 0) select.value = current;
+      }
+      function populateRegionDivisionControls(){
+        fillSelect(getRegionSelect(), "All Regions", uniqueValues("Region"));
+        refreshDivisionOptions();
+      }
+      function refreshDivisionOptions(){
+        var regionSelect = getRegionSelect();
+        var selectedRegion = regionSelect ? regionSelect.value : "All Regions";
+        var rows = rawRows.filter(function(row){ return !selectedRegion || selectedRegion === "All Regions" || getValue(row, "Region") === selectedRegion; });
+        fillSelect(getDivisionSelect(), "All Divisions", uniqueValues("Division", rows));
+      }
+      function getFilteredRows(){
+        var regionSelect = getRegionSelect();
+        var divisionSelect = getDivisionSelect();
+        var region = regionSelect ? regionSelect.value : "All Regions";
+        var division = divisionSelect ? divisionSelect.value : "All Divisions";
+        var allCols = getAllColumns();
 
-      function renderTable() {
+        return rawRows.filter(function(row){
+          if (region && region !== "All Regions" && getValue(row, "Region") !== region) return false;
+          if (division && division !== "All Divisions" && getValue(row, "Division") !== division) return false;
+          for (var i = 0; i < allCols.length; i++) {
+            var col = allCols[i];
+            var filter = (columnFilters[col] || "").trim().toLowerCase();
+            if (filter && getValue(row, col).toLowerCase().indexOf(filter) < 0) return false;
+          }
+          return true;
+        });
+      }
+      function renderTable(){
         var cols = getCheckedColumns();
         var thead = document.getElementById('dataHead');
         var tbody = document.getElementById('dataBody');
-        
+        if (!dataReady) { setLoadingMessage("Loading connected CSV data..."); return; }
+        if (!cols.length) {
+          thead.innerHTML = "";
+          tbody.innerHTML = '<tr><td style="padding:28px 24px;color:var(--muted);font-weight:800;">Choose at least one column to display.</td></tr>';
+          updateFooter(0, 0, 0);
+          return;
+        }
+
+        var filtered = getFilteredRows();
+        var total = filtered.length;
+        var totalPages = Math.max(1, Math.ceil(total / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+        var start = total ? (currentPage - 1) * pageSize : 0;
+        var pageRows = filtered.slice(start, start + pageSize);
+
         var frozenWidths = { "School ID": "100px", "School Name": "240px" };
         var frozenLeft = 0;
 
-        // Render Head
         var headHtml = "<tr>";
         for (var i = 0; i < cols.length; i++) {
           var col = cols[i];
@@ -288,53 +520,128 @@
             frozenLeft += parseInt(w, 10);
             if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06);";
           }
-          headHtml += "<th class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'><span class='th-label'>" + col + "</span><input type='text' class='th-search' placeholder='Search...'></th>";
+          headHtml += "<th class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'><span class='th-label'>" + safeText(col) + "</span><input type='text' class='th-search' data-col='" + safeText(col) + "' placeholder='Search...' value='" + safeText(columnFilters[col] || "") + "'></th>";
         }
         headHtml += "</tr>";
         thead.innerHTML = headHtml;
 
-        // Render Body
         var bodyHtml = "";
-        for (var r = 0; r < rawRows.length; r++) {
-          var row = rawRows[r];
-          bodyHtml += "<tr>";
-          frozenLeft = 0;
-          for (var c = 0; c < cols.length; c++) {
-            var col = cols[c];
-            var isFrozen = (col === "School ID" || col === "School Name");
-            var val = row[col] || "";
-            var style = "";
-            if (isFrozen) {
-              var w = frozenWidths[col];
-              style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + "; overflow: hidden; text-overflow: ellipsis;";
-              frozenLeft += parseInt(w, 10);
-              if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06); font-weight: 700; color: var(--navy);";
+        if (!pageRows.length) {
+          bodyHtml = '<tr><td colspan="' + cols.length + '" style="padding:28px 24px;color:var(--muted);font-weight:800;text-align:center;">No rows match the current filters.</td></tr>';
+        } else {
+          for (var r = 0; r < pageRows.length; r++) {
+            var row = pageRows[r];
+            bodyHtml += "<tr>";
+            frozenLeft = 0;
+            for (var c = 0; c < cols.length; c++) {
+              var col = cols[c];
+              var isFrozen = (col === "School ID" || col === "School Name");
+              var val = getValue(row, col);
+              var style = "";
+              if (isFrozen) {
+                var w = frozenWidths[col];
+                style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + "; overflow: hidden; text-overflow: ellipsis;";
+                frozenLeft += parseInt(w, 10);
+                if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06); font-weight: 700; color: var(--navy);";
+              }
+              bodyHtml += "<td class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'>" + (isBlank(val) ? '<span style="color:#94A3B8;">—</span>' : safeText(val)) + "</td>";
             }
-            bodyHtml += "<td class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'>" + val + "</td>";
+            bodyHtml += "</tr>";
           }
-          bodyHtml += "</tr>";
         }
         tbody.innerHTML = bodyHtml;
+        wireHeaderFilters();
+        updateFooter(start, pageRows.length, total);
       }
-
-      // Wire checkboxes
-      var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].addEventListener('change', renderTable);
+      function wireHeaderFilters(){
+        var inputs = document.querySelectorAll(".th-search");
+        for (var i = 0; i < inputs.length; i++) {
+          inputs[i].addEventListener("input", function(){
+            columnFilters[this.getAttribute("data-col")] = this.value;
+            currentPage = 1;
+            renderTable();
+          });
+        }
       }
+      function updateFooter(start, count, total){
+        var schoolCount = document.querySelector(".school-count");
+        if (schoolCount) schoolCount.textContent = total.toLocaleString() + " Schools Visible";
 
-      // Initial render
-      renderTable();
+        var infos = document.querySelectorAll(".pagination .page-info");
+        if (infos[1]) {
+          var from = total ? start + 1 : 0;
+          var to = total ? start + count : 0;
+          infos[1].textContent = from.toLocaleString() + "-" + to.toLocaleString() + " of " + total.toLocaleString();
+        }
 
-      // Wire reset button
-      document.getElementById('resetControlsBtn').addEventListener('click', function() {
-        var selects = document.querySelectorAll('.filters-row select.select-pill');
-        for (var i = 0; i < selects.length; i++) selects[i].selectedIndex = 0;
-        
+        var buttons = document.querySelectorAll(".page-nav button");
+        var totalPages = Math.max(1, Math.ceil(total / pageSize));
+        if (buttons[0]) buttons[0].disabled = currentPage <= 1;
+        if (buttons[1]) buttons[1].disabled = currentPage <= 1;
+        if (buttons[2]) buttons[2].disabled = currentPage >= totalPages;
+        if (buttons[3]) buttons[3].disabled = currentPage >= totalPages;
+      }
+      function exportVisibleCsv(){
+        var cols = getCheckedColumns();
+        var rows = getFilteredRows();
+        var lines = [cols.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",")];
+        rows.forEach(function(row){
+          lines.push(cols.map(function(c){ return '"' + getValue(row, c).replace(/"/g, '""') + '"'; }).join(","));
+        });
+        var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "stride_data_explorer.csv";
+        a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+      }
+      function wire(){
         var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
-        for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = checkboxes[i].defaultChecked;
-        
-        renderTable();
+        for (var i = 0; i < checkboxes.length; i++) {
+          checkboxes[i].addEventListener('change', function(){ currentPage = 1; renderTable(); });
+        }
+
+        var regionSelect = getRegionSelect();
+        var divisionSelect = getDivisionSelect();
+        if (regionSelect) regionSelect.addEventListener("change", function(){ currentPage = 1; refreshDivisionOptions(); renderTable(); });
+        if (divisionSelect) divisionSelect.addEventListener("change", function(){ currentPage = 1; renderTable(); });
+
+        var pageSelect = document.querySelector(".page-info select");
+        if (pageSelect) {
+          pageSelect.addEventListener("change", function(){ pageSize = parseInt(this.value, 10) || 20; currentPage = 1; renderTable(); });
+        }
+
+        var buttons = document.querySelectorAll(".page-nav button");
+        if (buttons[0]) buttons[0].addEventListener("click", function(){ currentPage = 1; renderTable(); });
+        if (buttons[1]) buttons[1].addEventListener("click", function(){ currentPage = Math.max(1, currentPage - 1); renderTable(); });
+        if (buttons[2]) buttons[2].addEventListener("click", function(){ currentPage += 1; renderTable(); });
+        if (buttons[3]) buttons[3].addEventListener("click", function(){ currentPage = Math.max(1, Math.ceil(getFilteredRows().length / pageSize)); renderTable(); });
+
+        var csvBtn = document.querySelector(".btn-navy");
+        if (csvBtn) csvBtn.addEventListener("click", exportVisibleCsv);
+
+        document.getElementById('resetControlsBtn').addEventListener('click', function() {
+          var selects = document.querySelectorAll('.filters-row select.select-pill');
+          for (var i = 0; i < selects.length; i++) selects[i].selectedIndex = 0;
+          var checks = document.querySelectorAll('.column-toggles input[type="checkbox"]');
+          for (var j = 0; j < checks.length; j++) checks[j].checked = checks[j].defaultChecked;
+          columnFilters = {};
+          pageSize = 20;
+          var pageSelect = document.querySelector(".page-info select");
+          if (pageSelect) pageSelect.value = "20";
+          currentPage = 1;
+          refreshDivisionOptions();
+          renderTable();
+        });
+      }
+
+      wire();
+      loadCsvData().catch(function(err){
+        console.warn(err);
+        dataReady = true;
+        rawRows = [];
+        document.querySelector(".school-count").textContent = "0 Schools Visible";
+        setLoadingMessage(location.protocol === "file:" ? "Open this page through Live Server so the browser can load the CSV files." : "Could not load the CSV files. Check that the CSV files are in the same folder as this page.");
       });
     })();
   </script>

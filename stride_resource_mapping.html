@@ -2013,6 +2013,28 @@
 </head>
 
 <body>
+  <script>
+  (function(){
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    var CSVS_TO_PRELOAD = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+      if (reg.active) warmCache(reg.active);
+      navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+      if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+      if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    }).catch(function(){});
+  })();
+  </script>
   <div class="dashboard">
     <aside class="sidebar">
       <div class="sidebar-title" aria-label="Resource Mapping dashboard header">
@@ -2338,6 +2360,39 @@
 
     const csvCache = {};
     const processedTabs = {};
+    const RAW_CACHE_NAME = "stride-csv-preload-v1";
+    const PARSED_CACHE_NAME = "stride-parsed-v1";
+    function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
+    async function readSharedParsed(fileName){
+      if(!sharedCacheEnabled()) return null;
+      try{ const c=await caches.open(PARSED_CACHE_NAME); const m=await c.match("./__parsed__/"+fileName); if(!m) return null; const d=await m.json(); return (d && d.length)?d:null; }catch(e){ return null; }
+    }
+    async function writeSharedParsed(fileName, records){
+      if(!sharedCacheEnabled()) return;
+      try{ const c=await caches.open(PARSED_CACHE_NAME); await c.put("./__parsed__/"+fileName, new Response(JSON.stringify(records), { headers:{ "Content-Type":"application/json" } })); }catch(e){}
+    }
+    async function readSharedRaw(fileName){
+      if(!sharedCacheEnabled()) return null;
+      try{ const c=await caches.open(RAW_CACHE_NAME); const m=await c.match("./"+fileName); if(!m) return null; return await m.text(); }catch(e){ return null; }
+    }
+    async function writeSharedRaw(fileName, text){
+      if(!sharedCacheEnabled()) return;
+      try{ const c=await caches.open(RAW_CACHE_NAME); await c.put("./"+fileName, new Response(text, { headers:{ "Content-Type":"text/csv" } })); }catch(e){}
+    }
+    async function getSharedRecords(fileName){
+      const parsed=await readSharedParsed(fileName);
+      if(parsed) return parsed;
+      let text=await readSharedRaw(fileName);
+      if(text==null){
+        const res=await fetch("./"+fileName, { cache:"force-cache" });
+        if(!res.ok) throw new Error("Could not load "+fileName);
+        text=await res.text();
+        writeSharedRaw(fileName, text);
+      }
+      const records=parseCsv(text);
+      writeSharedParsed(fileName, records);
+      return records;
+    }
     const GEO_FILTER_FILE = "stride_school_unique.csv";
     const GEO_FILTER_ORDER = ["region", "division", "municipality", "legislativeDistrict", "district"];
     const GEO_FILTER_LABELS = {
@@ -2549,11 +2604,8 @@
       if (processedTabs[tabKey]) return true;
 
       if (!csvCache[fileName]) {
-        const response = await fetch(fileName + "?v=" + CSV_CACHE_BUST, { cache: "no-store" });
-        if (!response.ok) throw new Error("Could not load " + fileName);
-        const csvText = await response.text();
+        csvCache[fileName] = await getSharedRecords(fileName);
         await yieldToBrowser();
-        csvCache[fileName] = parseCsv(csvText);
       }
 
       await yieldToBrowser();
@@ -2573,11 +2625,8 @@
 
     async function loadGeoFilterRecords() {
       if (!csvCache[GEO_FILTER_FILE]) {
-        const response = await fetch(GEO_FILTER_FILE + "?v=" + CSV_CACHE_BUST, { cache: "no-store" });
-        if (!response.ok) throw new Error("Could not load " + GEO_FILTER_FILE);
-        const csvText = await response.text();
+        csvCache[GEO_FILTER_FILE] = await getSharedRecords(GEO_FILTER_FILE);
         await yieldToBrowser();
-        csvCache[GEO_FILTER_FILE] = parseCsv(csvText);
       }
 
       geoRecords = csvCache[GEO_FILTER_FILE].filter(function(record) {

@@ -9,17 +9,105 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --navy: #08315F; --blue: #075985; --blue-100: #E0F2FE; --blue-50: #F0F9FF;
-      --gold: #FBBF24; --text: #0F172A; --muted: #64748B; --line: #E2E8F0; --red: #DC2626;
-      --font-heading: "Plus Jakarta Sans", sans-serif;
-      --font-body: "DM Sans", sans-serif;
+      --navy: #08315F; --blue: #075985; --blue-600: #0284C7; --blue-400: #7DD3FC; --blue-100: #E0F2FE; --blue-50: #F0F9FF;
+      --gold: #FBBF24; --amber: #D97706; --red: #B91C1C; --green: #16A34A; --purple: #7C3AED;
+      --card: #FFFFFF; --text: #0F172A; --muted: #64748B; --line: #E2E8F0;
+      --font-heading: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-body: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --radius: 22px;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; font-family: var(--font-body); color: var(--text); background: var(--blue-50); }
-    .topbar { background: linear-gradient(135deg, var(--navy), var(--blue)); border-bottom: 4px solid var(--gold); border-radius: 20px; padding: 28px 44px; color: #fff; box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
-    .eyebrow { color: var(--gold); font: 800 10px var(--font-heading); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; }
-    h1 { margin: 0; font: 900 32px var(--font-heading); letter-spacing: -0.02em; color: #E0F2FE; text-shadow: 0 2px 0 rgba(15,23,42,.28); }
-    p.subtitle { margin: 8px 0 0; color: #BAE6FD; font: 700 14px var(--font-body); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      font-family: var(--font-body);
+      color: var(--text);
+      background-color: var(--blue-50);
+      background-attachment: fixed;
+      background-image:
+        radial-gradient(43.5% 49.5% at 10% 12%, rgba(7, 89, 133, .30) 0 34%, transparent 78%),
+        radial-gradient(46.5% 54% at 92% 10%, rgba(251, 191, 36, .42) 0 36%, transparent 80%),
+        radial-gradient(40.5% 48% at 84% 92%, rgba(125, 211, 252, .30) 0 34%, transparent 78%),
+        radial-gradient(45% 52.5% at 8% 92%, rgba(217, 119, 6, .26) 0 28%, rgba(251, 191, 36, .18) 42%, transparent 80%);
+    }
+    .topbar {
+      position: relative;
+      isolation: isolate;
+      min-height: 118px;
+      margin: 0 0 24px;
+      padding: 28px 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      overflow: hidden;
+      color: #fff;
+      border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: none;
+      background:
+        radial-gradient(circle at 92% 50%, rgba(251,191,36,.18) 0 7%, rgba(251,191,36,.08) 7.2% 13%, transparent 13.2%),
+        radial-gradient(circle at 98% 46%, rgba(251,191,36,.28) 0 10%, transparent 10.5%),
+        linear-gradient(112deg, var(--navy) 0 70%, rgba(255,255,255,.96) 70.2% 100%);
+    }
+    .topbar::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 70%;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);
+      z-index: -2;
+      pointer-events: none;
+    }
+    .topbar::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 61%;
+      width: 13%;
+      background: color-mix(in srgb, var(--navy) 88%, #000 12%);
+      clip-path: polygon(0 0, 58% 0, 100% 100%, 42% 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      max-width: 100%;
+      margin: 0 0 2px;
+      color: var(--gold) !important;
+      font: 800 10px var(--font-heading) !important;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .topbar h1 {
+      position: relative;
+      z-index: 1;
+      max-width: min(70%, 860px);
+      margin: 0;
+      color: #E0F2FE;
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 2.2vw, 34px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 rgba(15,23,42,.28);
+    }
+    .topbar p.subtitle {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0;
+      color: #DFF6FF;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
     
     .command-bar { margin: 24px 0; display: flex; gap: 16px; padding: 20px; border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius: 20px; background: rgba(255,255,255,0.95); flex-wrap: wrap; }
     .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
@@ -27,10 +115,23 @@
     .select-pill { height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: 700 13px var(--font-body); color: var(--text); outline: none; }
     .select-pill:focus { border-color: var(--blue); }
 
-    .kpis { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
-    .kpi-card { flex: 1 1 220px; background: #fff; border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius: 16px; padding: 20px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      position: relative;
+      overflow: visible;
+      background: var(--card);
+      border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);
+      border-radius: var(--radius);
+      box-shadow: none;
+      padding: 20px;
+    }
     .kpi-label { font: 800 10px var(--font-heading); color: var(--navy); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-    .kpi-number { font: 800 clamp(36px, 2.5vw, 43px) var(--font-heading); color: var(--blue); margin: 0; line-height: 1; }
+    .kpi-card .kpi-number { font: 800 clamp(36px, 2.5vw, 43px) var(--font-heading); color: var(--blue); margin: 0; line-height: 1; }
 
     .chart-container { background: #fff; border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
     .chart-title { font: 800 18px var(--font-heading); color: var(--navy); margin: 0 0 4px; }
@@ -75,9 +176,32 @@
     .command-subtitle { margin: 4px 0 0; color: var(--muted); font: 600 12px var(--font-body); }
     .command-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .control-row { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .location-picker-wrap { display:flex; align-items:center; gap:8px; }
+    .location-picker-wrap .select-pill { flex:1; min-width:0; }
+    .location-toggle-button {
+      width:38px;
+      height:38px;
+      flex:0 0 38px;
+      display:grid;
+      place-items:center;
+      border:1.5px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      color:var(--navy);
+      cursor:pointer;
+      font:900 15px var(--font-heading);
+      line-height:1;
+    }
+    .location-toggle-button:hover { border-color:var(--blue); background:var(--blue-50); }
+    .location-toggle-button.active { background:var(--blue); color:#fff; border-color:var(--blue); box-shadow:0 6px 14px rgba(8,49,95,.14); }
     .advanced-card { width: 100%; margin-top: 4px; padding: 16px; border: 1.5px solid var(--gold); border-radius: 16px; background: #FFFDF5; display: none; }
     .advanced-card.open { display: block; }
     .advanced-title { margin: 0 0 12px; font: 900 14px var(--font-heading); color: var(--navy); }
+    .advanced-control-row { grid-template-columns: minmax(190px, 1.15fr) minmax(150px, .85fr) minmax(0, 4fr); align-items:end; }
+    .advanced-dimension-filters { display:flex; flex-wrap:wrap; gap:10px; align-items:end; min-width:0; }
+    .advanced-dimension-filters .filter-group { flex:0 0 160px; min-width:0; }
+    .advanced-dimension-filters .select-pill { min-width:0; padding:0 9px; font-size:12px; }
+    @media(max-width: 1200px){ .advanced-control-row { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); } .advanced-dimension-filters { grid-column:1/-1; } }
     .button { height: 38px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer; font: 900 12px var(--font-heading); }
     .button.primary { background: var(--blue); color: #fff; }
     .button.primary:hover { background: var(--navy); }
@@ -173,16 +297,100 @@
     .record-status.ok { background:#DCFCE7; color:#166534; }
     .record-status.warn { background:#FEF3C7; color:#92400E; }
     .record-status.risk { background:#FEE2E2; color:#991B1B; }
-    .loading-card { width:min(420px,100%); padding:26px; text-align:center; }
-    .loading-spinner { width:42px; height:42px; margin:0 auto 14px; border:4px solid var(--blue-100); border-top-color:var(--blue); border-radius:999px; animation:spin 1s linear infinite; }
-    .loading-title { margin:0; color:var(--navy); font:900 18px var(--font-heading); }
-    .loading-sub { margin:8px 0 0; color:var(--muted); font:700 12px var(--font-body); line-height:1.4; }
+    .loading-card {
+      width:min(460px,100%);
+      padding:24px;
+      text-align:left;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(251,191,36,.24), transparent 34%),
+        radial-gradient(circle at 92% 18%, rgba(125,211,252,.32), transparent 38%),
+        linear-gradient(135deg, rgba(255,255,255,.98), rgba(240,249,255,.96));
+    }
+    .loading-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .loading-spinner {
+      width:46px;
+      height:46px;
+      flex:0 0 46px;
+      display:grid;
+      place-items:center;
+      border:0;
+      border-radius:16px;
+      background:linear-gradient(135deg, var(--navy), var(--blue));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 12px 24px rgba(8,49,95,.20);
+      animation:preloadFloat 1.8s ease-in-out infinite;
+    }
+    .loading-spinner::before { content:"🚀"; font-size:23px; line-height:1; }
+    .loading-title { margin:0; color:var(--navy); font:900 18px var(--font-heading); letter-spacing:-.02em; }
+    .loading-sub { margin:4px 0 0; color:var(--muted); font:800 12px var(--font-body); line-height:1.4; }
+    .loading-progress-track {
+      height:14px;
+      overflow:hidden;
+      border-radius:999px;
+      background:rgba(186,230,253,.70);
+      box-shadow:inset 0 0 0 1px rgba(7,89,133,.12);
+    }
+    .loading-progress-fill {
+      width:0%;
+      height:100%;
+      border-radius:inherit;
+      background:linear-gradient(90deg, var(--blue), #0284C7, var(--gold), var(--blue));
+      background-size:220% 100%;
+      box-shadow:0 0 18px rgba(2,132,199,.34);
+      transition:width .28s ease;
+      animation:preloadShimmer 1.35s linear infinite;
+    }
+    .loading-meta {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:9px;
+      color:var(--blue);
+      font:900 10px var(--font-heading);
+      text-transform:uppercase;
+      letter-spacing:.07em;
+    }
+    .loading-mini {
+      margin-top:8px;
+      min-height:15px;
+      color:var(--muted);
+      font:700 11px var(--font-body);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
     .status-error { color:var(--red); font-weight:900; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes preloadShimmer { to { background-position:220% 0; } }
+    @keyframes preloadFloat {
+      0%, 100% { transform:translateY(0) rotate(-2deg); }
+      50% { transform:translateY(-3px) rotate(2deg); }
+    }
     @media(max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } .records-head { display:block; } .table-search { margin-top:10px; } .record-detail-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
+  <script>
+  (function(){
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    var CSVS_TO_PRELOAD = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+      if (reg.active) warmCache(reg.active);
+      navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+      if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+      if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    }).catch(function(){});
+  })();
+  </script>
   <div id="chartTooltip" class="bar-hover-tooltip"></div>
   <header class="topbar">
     <div class="eyebrow">DEPARTMENT OF EDUCATION | HUMAN RESOURCE AND ORGANIZATIONAL DEVELOPMENT AND INFRASTRUCTURE</div>
@@ -194,7 +402,7 @@
     <div class="command-head">
       <div>
         <h2 class="command-title">Data Controls</h2>
-        <p class="command-subtitle">Filter the joined CSV output and configure advanced chart behavior.</p>
+        <p class="command-subtitle">Filter the selected data module and configure advanced chart behavior.</p>
       </div>
       <div class="command-actions">
         <button id="resetControlsBtn" class="button primary" type="button">Reset</button>
@@ -204,9 +412,9 @@
 
     <div class="control-row">
       <div class="filter-group">
-        <label>CSV Dataset</label>
+        <label>Data Module</label>
         <select id="csvSelector" class="select-pill">
-          <option value="classes_organized">insighted_classes_organized.csv</option>
+          <option value="classes_organized">Classes Organized</option>
         </select>
       </div>
       <div class="filter-group">
@@ -223,13 +431,16 @@
       </div>
       <div class="filter-group">
         <label id="jurisdictionFilterLabel">Municipality</label>
-        <select id="jurisdictionFilter" class="select-pill"><option value="All">All Municipalities</option></select>
+        <div class="location-picker-wrap">
+          <select id="jurisdictionFilter" class="select-pill"><option value="All">All Municipalities</option></select>
+          <button id="jurisdictionToggleBtn" class="location-toggle-button" type="button" title="Switch to legislative district" aria-label="Switch municipality and legislative district">⇄</button>
+        </div>
       </div>
     </div>
 
     <div id="advancedControls" class="advanced-card">
       <h3 class="advanced-title">Advanced Controls</h3>
-      <div class="control-row">
+      <div class="control-row advanced-control-row">
         <div class="filter-group">
           <label>Distribution by</label>
           <div class="split-picker-wrap">
@@ -247,13 +458,7 @@
             <option value="learners">Estimated Learners</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>Jurisdiction</label>
-          <select id="jurisdictionMode" class="select-pill">
-            <option value="municipality">Municipality</option>
-            <option value="leg_district">Legislative District</option>
-          </select>
-        </div>
+        <div id="advancedDimensionFilters" class="advanced-dimension-filters"></div>
       </div>
     </div>
   </section>
@@ -289,7 +494,7 @@
     <article class="chart-container" style="margin-bottom:0;">
       <div class="card-header">
         <div class="card-heading">
-          <h2 class="mini-chart-title">Composition Share</h2>
+          <h2 class="mini-chart-title" id="compositionTitle">Composition Share</h2>
           <p class="mini-chart-sub">Chart view using the card Split by selector.</p>
         </div>
         <div class="card-controls">
@@ -312,7 +517,7 @@
     <article class="chart-container" style="margin-bottom:0;">
       <div class="card-header">
         <div class="card-heading">
-          <h2 class="mini-chart-title">Composition Breakdown</h2>
+          <h2 class="mini-chart-title" id="issueTitle">Composition Breakdown</h2>
           <p class="mini-chart-sub">Same distribution as the donut chart, shown as a histogram.</p>
         </div>
         <div class="card-controls">
@@ -367,9 +572,21 @@
 
   <div id="loadingModal" class="modal-backdrop open">
     <section class="modal-card loading-card">
-      <div class="loading-spinner" id="loadingSpinner"></div>
-      <h2 class="loading-title" id="loadingTitle">Loading InsightED data</h2>
-      <p class="loading-sub" id="loadingMessage">Fetching and validating CSV files...</p>
+      <div class="loading-head">
+        <div class="loading-spinner" id="loadingSpinner" aria-hidden="true"></div>
+        <div>
+          <h2 class="loading-title" id="loadingTitle">Preparing InsightED data</h2>
+          <p class="loading-sub" id="loadingMessage">Using the STRIDE preload cache to open datasets faster.</p>
+        </div>
+      </div>
+      <div class="loading-progress-track" aria-hidden="true">
+        <div class="loading-progress-fill" id="loadingProgressFill"></div>
+      </div>
+      <div class="loading-meta">
+        <span id="loadingProgressPct">0%</span>
+        <span id="loadingEta">Estimating…</span>
+      </div>
+      <div class="loading-mini" id="loadingMini">Preparing resources…</div>
     </section>
   </div>
 
@@ -424,6 +641,8 @@
     let advancedMode = false;
     let categorySelections = {};
     let categorySortMode = "value";
+    let advancedDimensionFilters = {};
+    let jurisdictionModeValue = "municipality";
     let tableSortKey = "school_id";
     let tableSortDir = "asc";
     let tablePage = 1;
@@ -468,6 +687,13 @@
       return value;
     }
 
+    const SUSPICIOUS_CELL_RE = /[À-ÿ�]|\s{2,}/;
+    function fastCleanCell(text) {
+      if (!text) return "";
+      // Plain ASCII cells (the common case) skip the regex-heavy canonicalization.
+      return SUSPICIOUS_CELL_RE.test(text) ? canonicalCell(text) : text;
+    }
+
     function toTitleCaseLocation(value) {
       return String(value || "")
         .toLowerCase()
@@ -485,14 +711,21 @@
         .replace(/\bXiii\b/g, "XIII");
     }
 
+    const LOCATION_CACHE = new Map();
     function normalizeLocation(value) {
-      let cleaned = canonicalCell(value)
+      const rawLoc = value == null ? "" : String(value);
+      const cachedLoc = LOCATION_CACHE.get(rawLoc);
+      if (cachedLoc !== undefined) return cachedLoc;
+      let cleaned = canonicalCell(rawLoc)
         .replace(/\s*[-–—]\s*/g, " - ")
         .replace(/\s*,\s*/g, ", ")
         .replace(/\s+/g, " ")
         .trim();
-      if (!cleaned) return "Unknown";
-      return toTitleCaseLocation(cleaned);
+      // Preserve the exact case as written in the school info CSV; only clean up
+      // encoding/whitespace. Do not title-case location values.
+      const result = cleaned ? cleaned : "Unknown";
+      LOCATION_CACHE.set(rawLoc, result);
+      return result;
     }
 
     // CSV parser with explicit cell cleanup
@@ -512,11 +745,11 @@
         } else if (ch === '"') {
           quote = !quote;
         } else if (ch === "," && !quote) {
-          row.push(canonicalCell(cell));
+          row.push(fastCleanCell(cell));
           cell = "";
         } else if ((ch === "\n" || ch === "\r") && !quote) {
           if (ch === "\r" && next === "\n") i++;
-          row.push(canonicalCell(cell));
+          row.push(fastCleanCell(cell));
           if (row.some(x => String(x).trim() !== "")) rows.push(row);
           row = [];
           cell = "";
@@ -526,7 +759,7 @@
       }
 
       if (cell || row.length) {
-        row.push(canonicalCell(cell));
+        row.push(fastCleanCell(cell));
         if (row.some(x => String(x).trim() !== "")) rows.push(row);
       }
 
@@ -549,10 +782,37 @@
       const modal = document.getElementById("loadingModal");
       if (!modal) return;
       modal.classList.toggle("open", show);
+      if (show && !loadingStartedAt) loadingStartedAt = performance.now();
+      if (!show) loadingStartedAt = 0;
       if (title) document.getElementById("loadingTitle").textContent = title;
       if (message) document.getElementById("loadingMessage").innerHTML = isError ? "<span class='status-error'>" + message + "</span>" : message;
       const spinner = document.getElementById("loadingSpinner");
-      if (spinner) spinner.style.display = isError ? "none" : "block";
+      if (spinner) spinner.style.display = isError ? "none" : "grid";
+      if (isError) {
+        const eta = document.getElementById("loadingEta");
+        const mini = document.getElementById("loadingMini");
+        if (eta) eta.textContent = "Needs attention";
+        if (mini) mini.textContent = "Check data source setup.";
+      }
+    }
+
+    function updateLoadingProgress(done, total, fileName, phase) {
+      loadingCompletedSteps = Math.max(0, done || 0);
+      loadingTotalSteps = Math.max(total || 1, 1);
+      const pct = Math.min(100, Math.round((loadingCompletedSteps / loadingTotalSteps) * 100));
+      const elapsed = Math.max((performance.now() - loadingStartedAt) / 1000, .1);
+      const perItem = loadingCompletedSteps > 0 ? elapsed / loadingCompletedSteps : 0;
+      const remaining = Math.max(0, Math.ceil((loadingTotalSteps - loadingCompletedSteps) * perItem));
+
+      const fill = document.getElementById("loadingProgressFill");
+      const pctEl = document.getElementById("loadingProgressPct");
+      const etaEl = document.getElementById("loadingEta");
+      const mini = document.getElementById("loadingMini");
+
+      if (fill) fill.style.width = pct + "%";
+      if (pctEl) pctEl.textContent = pct + "%";
+      if (etaEl) etaEl.textContent = loadingCompletedSteps >= loadingTotalSteps ? "Ready" : "~" + remaining + "s left";
+      if (mini) mini.textContent = phase || "Preparing resources…";
     }
 
     let schoolInfoFileName = "";
@@ -561,11 +821,81 @@
     let insightedCsvDatasets = {};
     let insightedCsvFiles = [];
     let datasetColumnKeys = [];
+    let loadingStartedAt = 0;
+    let loadingTotalSteps = 1;
+    let loadingCompletedSteps = 0;
+    let joinedDataCache = {};
 
-    async function fetchCsvText(path) {
-      const res = await fetch(path + (path.includes("?") ? "&" : "?") + "v=" + Date.now(), { cache: "no-store" });
+    async function fetchCsvText(path, options = {}) {
+      const cacheKey = path.startsWith("./") ? path : "./" + String(path || "").replace(/^\.?\//, "");
+
+      if ("caches" in window) {
+        try {
+          const preloadCache = await caches.open("stride-csv-preload-v1");
+          const cached = await preloadCache.match(cacheKey) || await caches.match(cacheKey);
+          if (cached) {
+            if (options.onSource) options.onSource("cache");
+            return decodeCsvText(await cached.clone().arrayBuffer());
+          }
+        } catch (e) {
+          console.warn("Could not read STRIDE preload cache", e);
+        }
+      }
+
+      const res = await fetch(path + (path.includes("?") ? "&" : "?") + "v=" + Date.now(), { cache: "default" });
       if (!res.ok) throw new Error("Could not load " + path);
+
+      if ("caches" in window) {
+        try {
+          const preloadCache = await caches.open("stride-csv-preload-v1");
+          await preloadCache.put(cacheKey, res.clone());
+        } catch (e) {
+          console.warn("Could not update STRIDE preload cache", e);
+        }
+      }
+
+      if (options.onSource) options.onSource("network");
       return decodeCsvText(await res.arrayBuffer());
+    }
+
+    const PARSED_CACHE_NAME = "stride-parsed-v1";
+
+    async function readParsedCsv(file) {
+      if (!("caches" in window)) return null;
+      try {
+        const cache = await caches.open(PARSED_CACHE_NAME);
+        const hit = await cache.match("./__parsed__/" + file);
+        if (!hit) return null;
+        const rows = await hit.json();
+        return Array.isArray(rows) ? rows : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function writeParsedCsv(file, rows) {
+      if (!("caches" in window)) return;
+      try {
+        const cache = await caches.open(PARSED_CACHE_NAME);
+        await cache.put(
+          new Request("./__parsed__/" + file),
+          new Response(JSON.stringify(rows), { headers: { "Content-Type": "application/json" } })
+        );
+      } catch (e) {
+        console.warn("Could not store parsed CSV cache", e);
+      }
+    }
+
+    async function getRowsForFile(file, options = {}) {
+      const parsed = await readParsedCsv(file);
+      if (parsed && parsed.length) {
+        if (options.onSource) options.onSource("parsed-cache");
+        return parsed;
+      }
+      const text = await fetchCsvText("./" + file, options);
+      const rows = parseCsv(text, [], file);
+      writeParsedCsv(file, rows);
+      return rows;
     }
 
     async function discoverInsightedCsvFiles() {
@@ -589,13 +919,19 @@
 
     async function loadData() {
       try {
-        setLoading(true, "Loading InsightED data", "Scanning the folder for insighted_ CSV files...");
+        loadingStartedAt = performance.now();
+        setLoading(true, "Preparing dashboard", "Initializing data and visual summaries...");
+        updateLoadingProgress(0, 1, "", "Preparing resources");
+
         let candidateFiles = await discoverInsightedCsvFiles();
         if (!candidateFiles.length) {
           candidateFiles = ["insighted_school_info.csv", "insighted_classes_organized.csv", "insighted_shifting.csv"];
         }
 
-        setLoading(true, "Processing CSV data", "Reading and classifying " + candidateFiles.length + " insighted_ file(s)...");
+        loadingCompletedSteps = 0;
+        loadingTotalSteps = candidateFiles.length;
+        setLoading(true, "Preparing dashboard resources", "Loading optimized resources when available.");
+        updateLoadingProgress(0, candidateFiles.length, "", "Preparing resource queue");
 
         let schoolInfoParsed = null;
         let classesParsed = null;
@@ -604,13 +940,27 @@
 
         for (const file of candidateFiles) {
           let rows;
+          let source = "network";
           try {
-            const text = await fetchCsvText("./" + file);
-            rows = parseCsv(text, [], file);
+            updateLoadingProgress(loadingCompletedSteps, candidateFiles.length, file, "Checking cache");
+            rows = await getRowsForFile(file, {
+              onSource: src => { source = src; }
+            });
           } catch (e) {
             console.warn(e);
+            loadingCompletedSteps++;
+            updateLoadingProgress(loadingCompletedSteps, candidateFiles.length, file, "Skipped");
             continue;
           }
+
+          loadingCompletedSteps++;
+          updateLoadingProgress(
+            loadingCompletedSteps,
+            candidateFiles.length,
+            file,
+            source === "parsed-cache" ? "Loaded from parsed cache" : source === "cache" ? "Parsed from preload cache" : "Loaded and cached"
+          );
+
           if (!rows.length) continue;
           insightedCsvDatasets[file] = rows;
           insightedCsvFiles.push(file);
@@ -633,30 +983,79 @@
           }
         }
 
-        if (!classesParsed) throw new Error("Could not find a readable insighted_ dataset CSV.");
-        if (!schoolInfoParsed) throw new Error("Could not find an insighted_ CSV containing the school information fields (school id, school name, region, province, division, municipality, leg district, district, curricular offering).");
+        if (!classesParsed) throw new Error("Could not find a readable data module.");
+        if (!schoolInfoParsed) throw new Error("Could not find the required school information source.");
+
+        setLoading(true, "Building dashboard", "Joining school information and preparing visual summaries...");
+        updateLoadingProgress(candidateFiles.length, candidateFiles.length, "Dashboard ready", "Finalizing");
 
         schoolInfoData = schoolInfoParsed;
         classesData = classesParsed;
         defaultDatasetFileName = classesFileName;
 
         const csvSelect = document.getElementById("csvSelector");
-        const datasetFiles = insightedCsvFiles.filter(file => file !== schoolInfoFileName);
+        const EXCLUDED_MODULES = new Set(["insighted_electrical_readiness.csv"]);
+        const datasetFiles = insightedCsvFiles.filter(file => file !== schoolInfoFileName && !EXCLUDED_MODULES.has(file));
         if (csvSelect && datasetFiles.length) {
-          csvSelect.innerHTML = datasetFiles
-            .map(file => `<option value="${file}">${file}</option>`)
+          const MODULE_CATEGORIES = [
+            { label: "Human Resource", files: ["insighted_classes_organized.csv", "insighted_shifting.csv"] },
+            { label: "Infrastructure", files: ["insighted_classroom_conditions.csv", "insighted_classroom_repairs.csv", "insighted_furniture.csv", "insighted_infra_summary.csv", "insighted_utilities.csv", "insighted_wash.csv"] },
+            { label: "Others", files: ["insighted_gadgets.csv", "insighted_safety_equipment.csv"] }
+          ];
+          const categorized = new Set();
+          const groups = MODULE_CATEGORIES.map(cat => {
+            const files = cat.files.filter(file => datasetFiles.includes(file));
+            files.forEach(file => categorized.add(file));
+            return { label: cat.label, files };
+          });
+          const leftovers = datasetFiles.filter(file => !categorized.has(file));
+          if (leftovers.length) {
+            const others = groups.find(group => group.label === "Others");
+            if (others) others.files.push(...leftovers);
+            else groups.push({ label: "Others", files: leftovers });
+          }
+          csvSelect.innerHTML = groups
+            .filter(group => group.files.length)
+            .map(group => {
+              const options = group.files
+                .map(file => `<option value="${file}">${datasetDisplayName(file)}</option>`)
+                .join("");
+              return `<optgroup label="${group.label}">${options}</optgroup>`;
+            })
             .join("");
           csvSelect.value = classesFileName;
         }
 
         init();
-        setLoading(false);
+        setTimeout(() => setLoading(false), 350);
       } catch (err) {
         console.warn(err);
         const message = (err && err.message) ? err.message : "Could not load CSV files.";
-        setLoading(true, "Unable to load InsightED data", message + "<br><br>Make sure your CSV files start with <code>insighted_</code> and are in the same folder, and open the dashboard through a local web server such as Live Server.", true);
+        setLoading(true, "Unable to load InsightED data", message + "<br><br>Make sure the required data sources are in the same folder, and open the dashboard through a local web server such as Live Server.", true);
         document.getElementById("chartArea").innerHTML = "<p style='color:var(--red); font-size:14px; margin-top:20px;'><strong>Error:</strong> " + message + "</p>";
       }
+    }
+
+    function datasetDisplayName(fileName) {
+      const overrides = {
+        "insighted_classes_organized.csv": "Classes Organized",
+        "insighted_classroom_conditions.csv": "Classroom Conditions",
+        "insighted_classroom_repairs.csv": "Classroom Repairs",
+        "insighted_electrical_readiness.csv": "Electrical Readiness",
+        "insighted_furniture.csv": "Furniture Inventory",
+        "insighted_gadgets.csv": "ICT Devices",
+        "insighted_infra_summary.csv": "Infrastructure Summary",
+        "insighted_safety_equipment.csv": "Safety Equipment",
+        "insighted_shifting.csv": "Class Shifting",
+        "insighted_utilities.csv": "Utilities",
+        "insighted_wash.csv": "WASH Facilities"
+      };
+      if (overrides[fileName]) return overrides[fileName];
+      return String(fileName || "")
+        .replace(/^insighted_/i, "")
+        .replace(/\.csv$/i, "")
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, char => char.toUpperCase());
     }
 
     function parseNumericValue(value) {
@@ -680,6 +1079,15 @@
     }
 
     function rebuildJoinedData() {
+      const joinedCacheKey = classesFileName || defaultDatasetFileName || "__default__";
+      const cachedJoin = joinedDataCache[joinedCacheKey];
+      if (cachedJoin) {
+        joinedData = cachedJoin.joinedData;
+        sizeIsNumeric = cachedJoin.sizeIsNumeric;
+        datasetColumnKeys = cachedJoin.datasetColumnKeys;
+        return;
+      }
+
       sizeIsNumeric = isNumericField(classesData, "size");
       datasetColumnKeys = classesData.length ? Object.keys(classesData[0]).map(headerKeyToField) : [];
 
@@ -711,6 +1119,8 @@
         });
         return row;
       });
+
+      joinedDataCache[joinedCacheKey] = { joinedData, sizeIsNumeric, datasetColumnKeys };
     }
 
     function init() {
@@ -720,14 +1130,8 @@
       // Populate dependent geographic filters
       populateLocationFilters();
 
-      // Estimated learners requires a numeric class size; disable it otherwise
-      const unitSelect = document.getElementById("unitFilter");
-      const learnersOption = unitSelect ? unitSelect.querySelector('option[value="learners"]') : null;
-      if (learnersOption) {
-        learnersOption.disabled = !sizeIsNumeric;
-        learnersOption.hidden = !sizeIsNumeric;
-      }
-      if (!sizeIsNumeric && unitSelect) unitSelect.value = "classes";
+      // Units are derived dynamically from the dataset's numeric fields.
+      populateUnitSelector();
 
       populateDimensionSelectors();
       initializeCategorySelections();
@@ -739,13 +1143,15 @@
         // Every insighted_ file is cached in memory from the initial load, so switching
         // datasets never refetches from disk. The modal is only brief UX feedback while
         // the joined data and dashboard re-render.
-        setLoading(true, "Switching dataset", "Preparing " + selectedFile + "...");
+        setLoading(true, "Switching dataset", "Preparing selected dataset...");
         setTimeout(() => {
           classesFileName = selectedFile;
           classesData = insightedCsvDatasets[selectedFile];
           rebuildJoinedData();
+          advancedDimensionFilters = {};
           populateLocationFilters();
           populateDimensionSelectors();
+          populateUnitSelector();
           initializeCategorySelections();
           tableFilters = {};
           tableSortKey = "school_id";
@@ -780,17 +1186,20 @@
         document.getElementById("mainSplitFilter").value = dim;
         document.getElementById("compositionSplitFilter").value = dim;
         document.getElementById("issueSplitFilter").value = dim;
-        applyFilters();
+        applyFiltersWithLoader("Updating distribution", "Recalculating visual summaries...");
+      });
+      document.getElementById("advancedDimensionFilters").addEventListener("change", event => {
+        const select = event.target.closest("[data-advanced-filter]");
+        if (!select) return;
+        advancedDimensionFilters[select.dataset.advancedFilter] = select.value;
+        tablePage = 1;
+        applyFiltersWithLoader("Applying filters", "Updating results for the selected filters...");
       });
       document.getElementById("mainSplitFilter").addEventListener("change", renderMainChart);
       document.getElementById("compositionSplitFilter").addEventListener("change", renderCompositionCard);
       document.getElementById("issueSplitFilter").addEventListener("change", renderIssueCard);
-      document.getElementById("unitFilter").addEventListener("change", applyFilters);
-      document.getElementById("jurisdictionMode").addEventListener("change", () => {
-        document.getElementById("jurisdictionFilter").value = "All";
-        populateLocationFilters();
-        applyFilters();
-      });
+      document.getElementById("unitFilter").addEventListener("change", () => applyFiltersWithLoader("Updating units", "Recalculating values..."));
+      document.getElementById("jurisdictionToggleBtn").addEventListener("click", () => setJurisdictionMode(jurisdictionModeValue === "municipality" ? "leg_district" : "municipality"));
       document.querySelectorAll(".chart-type-toggle").forEach(button => {
         button.addEventListener("click", () => {
           const options = button.dataset.options.split(",");
@@ -877,13 +1286,13 @@
         document.getElementById("provinceFilter").value = "All";
         document.getElementById("divisionFilter").value = "All";
         document.getElementById("jurisdictionFilter").value = "All";
-        document.getElementById("jurisdictionMode").value = "municipality";
+        setJurisdictionMode("municipality", false);
         populateLocationFilters();
         document.getElementById("splitFilter").value = "grade";
         document.getElementById("mainSplitFilter").value = "grade";
         document.getElementById("compositionSplitFilter").value = "grade";
         document.getElementById("issueSplitFilter").value = "grade";
-        document.getElementById("unitFilter").value = "classes";
+        populateUnitSelector();
         setChartToggleValue("mainChartType", "stacked");
         setChartToggleValue("compositionChartType", "donut");
         setChartToggleValue("issueChartType", "histogram");
@@ -893,6 +1302,7 @@
         tablePage = 1;
         tablePageSizeValue = 25;
         tableFilters = {};
+        advancedDimensionFilters = {};
         tableSearch = "";
         document.getElementById("tableSearchInput").value = "";
         document.getElementById("tablePageSize").value = "25";
@@ -922,6 +1332,11 @@
       renderTimer = setTimeout(runFilters, 60);
     }
 
+    function applyFiltersWithLoader(title, message) {
+      setLoading(true, title || "Applying filters", message || "Updating results...");
+      setTimeout(() => { runFilters(); setLoading(false); }, 80);
+    }
+
     function runFilters() {
       const region = document.getElementById("regionFilter").value;
       const province = document.getElementById("provinceFilter").value;
@@ -934,6 +1349,9 @@
         if (province !== "All" && d.province !== province) return false;
         if (division !== "All" && d.division !== division) return false;
         if (jurisdiction !== "All" && d[jurisdictionKey] !== jurisdiction) return false;
+        for (const [key, selected] of Object.entries(advancedDimensionFilters)) {
+          if (selected && selected !== "All" && String(d[key] || "Unknown") !== selected) return false;
+        }
         return true;
       });
 
@@ -942,9 +1360,22 @@
     }
 
     function getJurisdictionKey() {
-      return document.getElementById("jurisdictionMode") && document.getElementById("jurisdictionMode").value === "leg_district"
-        ? "leg_district"
-        : "municipality";
+      return jurisdictionModeValue === "leg_district" ? "leg_district" : "municipality";
+    }
+
+    function setJurisdictionMode(mode, shouldApply = true) {
+      jurisdictionModeValue = mode === "leg_district" ? "leg_district" : "municipality";
+      const toggleBtn = document.getElementById("jurisdictionToggleBtn");
+      if (toggleBtn) {
+        const isDistrict = jurisdictionModeValue === "leg_district";
+        toggleBtn.classList.toggle("active", isDistrict);
+        toggleBtn.title = isDistrict ? "Switch to municipality" : "Switch to legislative district";
+        toggleBtn.setAttribute("aria-label", toggleBtn.title);
+      }
+      const filter = document.getElementById("jurisdictionFilter");
+      if (filter) filter.value = "All";
+      populateLocationFilters();
+      if (shouldApply) applyFilters();
     }
 
     function updateSelectOptions(selectId, values, allLabel) {
@@ -995,6 +1426,34 @@
       });
     }
 
+    const BOOLEAN_VALUE_SET = new Set(["true", "false", "yes", "no", "y", "n", "t", "f", "0", "1"]);
+
+    // Boolean/binary columns (only true/false, yes/no, 1/0, etc.) are not meaningful
+    // distribution axes, so they are excluded from the "Distribution by" options.
+    function isBooleanField(key) {
+      const distinct = new Set();
+      for (const d of joinedData) {
+        const v = String(d[key] == null ? "" : d[key]).trim().toLowerCase();
+        if (v === "" || v === "unknown") continue;
+        distinct.add(v);
+        if (distinct.size > 2) return false;
+      }
+      if (!distinct.size) return false;
+      return [...distinct].every(v => BOOLEAN_VALUE_SET.has(v));
+    }
+
+    // Columns where most values are blank/null are likely free-text remarks rather
+    // than real categories, so they are excluded from the "Distribution by" options.
+    function isSparseField(key, threshold = 0.5) {
+      if (!joinedData.length) return false;
+      let nonEmpty = 0;
+      joinedData.forEach(d => {
+        const v = String(d[key] == null ? "" : d[key]).trim();
+        if (v !== "" && v.toLowerCase() !== "unknown") nonEmpty++;
+      });
+      return (nonEmpty / joinedData.length) < threshold;
+    }
+
     function getCategoricalDimensions() {
       if (!joinedData.length) return [{ key: "grade", label: dimensionLabel("grade") }];
       const dims = [];
@@ -1002,6 +1461,8 @@
         if (RESERVED_DIMENSION_KEYS.has(key)) return;
         if (isNumericField(joinedData, key)) return;
         if (!fieldHasData(key)) return;
+        if (isBooleanField(key)) return;
+        if (isSparseField(key)) return;
         dims.push({ key, label: dimensionLabel(key) });
       });
       if (!dims.length) dims.push({ key: "grade", label: dimensionLabel("grade") });
@@ -1038,6 +1499,27 @@
         select.innerHTML = dims.map(d => `<option value="${d.key}">${d.label}</option>`).join("");
         select.value = dims.some(d => d.key === previous) ? previous : defaultKey;
       });
+      renderAdvancedDimensionFilters(dims);
+    }
+
+    function renderAdvancedDimensionFilters(dims) {
+      const container = document.getElementById("advancedDimensionFilters");
+      if (!container) return;
+      const selectedSplit = document.getElementById("splitFilter") ? document.getElementById("splitFilter").value : (dims[0] && dims[0].key);
+      const orderedDims = dims.slice().sort((a, b) => (a.key === selectedSplit ? -1 : b.key === selectedSplit ? 1 : a.label.localeCompare(b.label)));
+      container.innerHTML = orderedDims.map(dim => {
+        const values = [...new Set(joinedData.map(row => String(row[dim.key] || "Unknown")).filter(value => value && value !== "Unknown"))]
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+        const current = advancedDimensionFilters[dim.key] || "All";
+        const options = [`<option value="All">All ${dim.label}</option>`]
+          .concat(values.map(value => `<option value="${escapeHtml(value)}" ${value === current ? "selected" : ""}>${escapeHtml(value)}</option>`))
+          .join("");
+        return `<div class="filter-group"><label>${dim.label}</label><select class="select-pill" data-advanced-filter="${dim.key}">${options}</select></div>`;
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
     }
 
     function distributionLabel(key) {
@@ -1124,9 +1606,44 @@
       applyFilters();
     }
 
+    function getNumericUnitFields() {
+      if (!joinedData.length) return [];
+      const exclude = new Set(["row_id", "school_id", "iern", "size"]);
+      return Object.keys(joinedData[0]).filter(key => {
+        if (exclude.has(key)) return false;
+        // "number" is synthesized with a default of 1 during the join, so only treat it
+        // as a real unit when the selected module's CSV actually contains that column.
+        if (key === "number" && !datasetColumnKeys.includes("number")) return false;
+        return fieldHasData(key) && isNumericField(joinedData, key);
+      });
+    }
+
+    function populateUnitSelector() {
+      const select = document.getElementById("unitFilter");
+      if (!select) return;
+      const previous = select.value;
+      const numericFields = getNumericUnitFields();
+      const options = numericFields.map(key => ({ value: key, label: key === "number" ? dimensionLabel(key) : "Total " + dimensionLabel(key) }));
+      if (sizeIsNumeric && numericFields.includes("number")) options.push({ value: "__learners__", label: "Estimated Learners" });
+      options.push({ value: "__count__", label: "Number of Records" });
+      select.innerHTML = options.map(o => `<option value="${o.value}">${escapeHtml(o.label)}</option>`).join("");
+      const defaultValue = numericFields.includes("number") ? "number" : (numericFields[0] || "__count__");
+      select.value = options.some(o => o.value === previous) ? previous : defaultValue;
+    }
+
+    function currentUnitLabel() {
+      const select = document.getElementById("unitFilter");
+      if (!select || select.selectedIndex < 0) return "Value";
+      const opt = select.options[select.selectedIndex];
+      return opt ? opt.textContent : "Value";
+    }
+
     function getMetricValue(d) {
-      const unitMode = document.getElementById("unitFilter") ? document.getElementById("unitFilter").value : "classes";
-      return unitMode === "learners" && sizeIsNumeric ? (Number(d.size) || 0) * d.number : d.number;
+      const unitMode = document.getElementById("unitFilter") ? document.getElementById("unitFilter").value : "";
+      if (unitMode === "__count__") return 1;
+      if (unitMode === "__learners__") return (Number(d.size) || 0) * (Number(d.number) || 0);
+      if (unitMode && unitMode in d) return Number(d[unitMode]) || 0;
+      return Number(d.number) || 1;
     }
 
     function heatColor(value, max) {
@@ -1235,7 +1752,7 @@
             <circle class="donut-bg" cx="60" cy="60" r="${radius}"></circle>
             ${slices}
             <foreignObject x="25" y="42" width="70" height="38">
-              <div xmlns="http://www.w3.org/1999/xhtml" class="donut-center-label">${formatCenterNumber(total)}<small>${centerLabel}</small></div>
+              <div xmlns="http://www.w3.org/1999/xhtml" class="donut-center-label">${formatCenterNumber(total)}</div>
             </foreignObject>
           </svg>
         </div>
@@ -1319,6 +1836,8 @@
 
     function renderCompositionCard() {
       const compositionSplit = document.getElementById("compositionSplitFilter").value;
+      const compositionTitleEl = document.getElementById("compositionTitle");
+      if (compositionTitleEl) compositionTitleEl.textContent = (dimensionLabel(compositionSplit) || "Composition") + " Share";
       const compositionItems = aggregateBySplit(filteredData, compositionSplit, false);
       const compositionChartType = getChartToggleValue("compositionChartType") || "donut";
       if (compositionChartType === "histogram") renderHistogramChart("compositionArea", compositionItems);
@@ -1328,6 +1847,8 @@
 
     function renderIssueCard() {
       const issueSplit = document.getElementById("issueSplitFilter").value;
+      const issueTitleEl = document.getElementById("issueTitle");
+      if (issueTitleEl) issueTitleEl.textContent = (dimensionLabel(issueSplit) || "Composition") + " Breakdown";
       const issueItems = aggregateBySplit(filteredData, issueSplit, false);
       const issueChartType = getChartToggleValue("issueChartType") || "histogram";
       if (issueChartType === "donut") renderDonutChart("issueArea", issueItems, "current scope");
@@ -1373,29 +1894,16 @@
     function renderDynamicKpis() {
       const grid = document.getElementById("kpiGrid");
       const splitByField = document.getElementById("splitFilter").value;
-      const unitMode = document.getElementById("unitFilter") ? document.getElementById("unitFilter").value : "classes";
-      const unitLabel = unitMode === "learners" ? "Estimated learners" : "Classes organized";
+      const unitLabel = currentUnitLabel();
 
-      const uniqueSchools = new Set(filteredData.map(d => d.school_id)).size;
-      const totalClasses = filteredData.reduce((sum, d) => sum + d.number, 0);
-
-      const totalLearners = filteredData.reduce((sum, d) => sum + ((Number(d.size) || 0) * d.number), 0);
-
-      const cards = [
-        { label: "Total Schools", value: uniqueSchools, sub: "Unique schools in current view" },
-        { label: "Classes Organized", value: totalClasses, sub: "Total classes in current view" }
-      ];
-
-      if (unitMode === "learners" && sizeIsNumeric) {
-        cards.push({ label: "Estimated Learners", value: totalLearners, sub: "Estimated from class size × classes" });
-      }
+      const cards = [];
 
       const categoryTotals = {};
       filteredData.forEach(d => {
         const key = d[splitByField] || "Unknown";
         if (!getActiveCategories(splitByField).has(key)) return;
         if (!categoryTotals[key]) categoryTotals[key] = 0;
-        categoryTotals[key] += unitMode === "learners" && sizeIsNumeric ? (Number(d.size) || 0) * d.number : d.number;
+        categoryTotals[key] += getMetricValue(d);
       });
 
       Object.entries(categoryTotals)
@@ -1410,6 +1918,10 @@
           });
         });
 
+      if (!cards.length) {
+        grid.innerHTML = "<div class='kpi-card dynamic' style='flex:1 1 100%;'><div class='kpi-label'>No selected categories</div><div class='kpi-sub'>Use Advanced Controls to choose visible categories for the current distribution.</div></div>";
+        return;
+      }
       const cardCount = cards.length;
       const rowCount = Math.max(1, Math.ceil(cardCount / 6));
       const columns = Math.max(1, Math.ceil(cardCount / rowCount));
@@ -1587,9 +2099,10 @@
       const splitByField = document.getElementById("mainSplitFilter").value;
 
       const groupLabelMap = { region: "Region", province: "Province", division: "Division", municipality: "Municipality", leg_district: "Legislative District", school_name: "School" };
-      document.getElementById("chartTitle").textContent = "Classes Organized by " + (groupLabelMap[groupByField] || groupByField);
-      const unitMode = document.getElementById("unitFilter") ? document.getElementById("unitFilter").value : "classes";
-      document.getElementById("chartSub").textContent = "Normal stacked bar by " + dimensionLabel(splitByField) + " · " + (unitMode === "learners" ? "Estimated Learners" : "Number of Classes");
+      const unitWord = currentUnitLabel();
+      const groupWord = groupLabelMap[groupByField] || dimensionLabel(groupByField);
+      document.getElementById("chartTitle").textContent = unitWord + " by " + groupWord;
+      document.getElementById("chartSub").textContent = dimensionLabel(splitByField) + " distribution across " + groupWord.toLowerCase() + " · " + unitWord;
 
       const grouped = {};
       const splits = new Set();
@@ -1639,7 +2152,7 @@
           if (val > 0) {
             const pct = (val / row.total) * 100;
             // InsightED rule: Show segment label only if width allows
-            segmentsHtml += `<div class="segment" style="width: ${pct}%; background: ${PALETTE[i % PALETTE.length]};" data-value="${val.toLocaleString()}" data-tooltip="<strong>${s}</strong>${val.toLocaleString()} ${unitMode === "learners" ? "estimated learners" : "classes"}"></div>`;
+            segmentsHtml += `<div class="segment" style="width: ${pct}%; background: ${PALETTE[i % PALETTE.length]};" data-value="${val.toLocaleString()}" data-tooltip="<strong>${s}</strong>${val.toLocaleString()} ${unitWord.toLowerCase()}"></div>`;
           }
         });
         

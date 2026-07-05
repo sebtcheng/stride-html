@@ -136,6 +136,28 @@
   </style>
 </head>
 <body>
+  <script>
+  (function(){
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    var CSVS_TO_PRELOAD = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+      if (reg.active) warmCache(reg.active);
+      navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+      if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+      if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    }).catch(function(){});
+  })();
+  </script>
   <div class="qs-shell">
     <div class="qs-searchbar">
       <span class="qs-icon">🔍</span>
@@ -183,7 +205,41 @@
       var CSV_CACHE_BUST = Date.now();
       var PH_CENTER = [12.8797, 121.7740];
       var PH_ZOOM = 5;
-      var MAX_RESULTS = 10;
+      var MAX_RESULTS = Infinity;
+
+      var RAW_CACHE_NAME = "stride-csv-preload-v1";
+      var PARSED_CACHE_NAME = "stride-parsed-v1";
+      function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
+      async function readSharedParsed(fileName){
+        if(!sharedCacheEnabled()) return null;
+        try{ var c=await caches.open(PARSED_CACHE_NAME); var m=await c.match("./__parsed__/"+fileName); if(!m) return null; var d=await m.json(); return (d && d.length)?d:null; }catch(e){ return null; }
+      }
+      async function writeSharedParsed(fileName, records){
+        if(!sharedCacheEnabled()) return;
+        try{ var c=await caches.open(PARSED_CACHE_NAME); await c.put("./__parsed__/"+fileName, new Response(JSON.stringify(records), { headers:{ "Content-Type":"application/json" } })); }catch(e){}
+      }
+      async function readSharedRaw(fileName){
+        if(!sharedCacheEnabled()) return null;
+        try{ var c=await caches.open(RAW_CACHE_NAME); var m=await c.match("./"+fileName); if(!m) return null; return await m.text(); }catch(e){ return null; }
+      }
+      async function writeSharedRaw(fileName, text){
+        if(!sharedCacheEnabled()) return;
+        try{ var c=await caches.open(RAW_CACHE_NAME); await c.put("./"+fileName, new Response(text, { headers:{ "Content-Type":"text/csv" } })); }catch(e){}
+      }
+      async function getSharedRecords(fileName, fetchUrl){
+        var parsed=await readSharedParsed(fileName);
+        if(parsed) return parsed;
+        var text=await readSharedRaw(fileName);
+        if(text==null){
+          var res=await fetch(fetchUrl || ("./"+fileName), { cache:"force-cache" });
+          if(!res.ok) throw new Error("Could not load "+fileName+" ("+res.status+")");
+          text=await res.text();
+          writeSharedRaw(fileName, text);
+        }
+        var records=parseCsv(text);
+        writeSharedParsed(fileName, records);
+        return records;
+      }
 
       var FIELD = {
         name: ["school_name","school name","school"],
@@ -504,10 +560,8 @@
 
       async function loadData(){
         try{
-          var res=await fetch(CSV_FILE+"?v="+CSV_CACHE_BUST, { cache:"no-store" });
-          if(!res.ok) throw new Error("Could not load stride_school_unique.csv ("+res.status+")");
-          var text=await res.text();
-          allRecords=buildRecords(parseCsv(text));
+          var records=await getSharedRecords("stride_school_unique.csv", CSV_FILE);
+          allRecords=buildRecords(records);
           setStatus(allRecords.length.toLocaleString()+" schools ready — search to plot");
         }catch(err){
           console.warn(err);

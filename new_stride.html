@@ -65,30 +65,36 @@
       backdrop-filter: blur(14px);
     }
     
-    .brand-group { min-width: 230px; }
+    .brand-group { display: flex; align-items: center; gap: 12px; min-width: 230px; }
+    .brand-logo { height: 44px; width: auto; display: block; flex: 0 0 auto; }
+    .brand-text { display: flex; flex-direction: column; }
     .brand {
       display: inline-flex;
       align-items: baseline;
       gap: 1px;
       font-family: var(--font-heading);
       font-weight: 900;
-      font-size: 22px;
+      font-size: 24px;
+      font-style: italic;
       letter-spacing: -0.04em;
       color: var(--navy);
       text-decoration: none;
       white-space: nowrap;
     }
-    .brand span { color: var(--red); }
+    .brand span { color: var(--gold); }
+    .brand .de { color: var(--red); }
     .brand-sub {
       display: block;
-      max-width: 260px;
-      margin-top: -1px;
-      color: var(--blue);
-      font-size: 7px;
-      font-weight: 900;
-      letter-spacing: .10em;
+      max-width: none;
+      margin-top: 3px;
+      color: var(--navy);
+      font-family: var(--font-heading);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .155em;
       line-height: 1.2;
       text-transform: uppercase;
+      white-space: nowrap;
     }
     
     .nav {
@@ -119,26 +125,30 @@
       white-space: nowrap;
     }
     .nav a:hover {
-      transform: translateY(-1px);
       color: var(--blue);
-      background: rgba(224,242,254,.74);
-      border-color: rgba(7,89,133,.15);
+      background: var(--blue-50);
+      border-color: transparent;
     }
     .nav a.active {
-      color: white;
-      background: linear-gradient(135deg, var(--navy), var(--blue));
-      border-color: rgba(255,255,255,.38);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 8px 18px rgba(8,49,95,.18);
+      color: var(--navy);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      font-weight: 800;
+    }
+    .nav a.active:hover {
+      background: transparent;
+      border-color: transparent;
     }
     .nav a.active::after {
       content: "";
       position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: -11px;
-      height: 3px;
+      left: 12px;
+      right: 12px;
+      bottom: -9px;
+      height: 2px;
       border-radius: 999px;
-      background: var(--gold);
+      background: var(--navy);
     }
     
     .nav-icon {
@@ -175,37 +185,60 @@
     .dropdown:hover .chevron { transform: rotate(180deg); }
     .dropdown-content {
       position: absolute;
-      top: 100%;
+      top: calc(100% + 8px);
       left: 0;
-      min-width: 246px;
-      display: block;
+      min-width: 232px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(8px) scale(.98);
-      transform-origin: top left;
+      transform: translateY(-4px) scaleY(.96);
+      transform-origin: top center;
       pointer-events: none;
       z-index: 100;
       padding: 8px;
       background: rgba(255,255,255,.98);
-      border: 1px solid rgba(8,49,95,.12);
-      border-radius: 16px;
+      border: 1px solid rgba(8,49,95,.10);
+      border-radius: 14px;
       box-shadow: 0 18px 42px rgba(8,49,95,.16);
       backdrop-filter: blur(12px);
-      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+      transition: opacity .15s ease-out, transform .15s ease-out, visibility .15s ease-out;
+    }
+    .dropdown-content::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 26px;
+      width: 12px;
+      height: 12px;
+      background: rgba(255,255,255,.98);
+      border-left: 1px solid rgba(8,49,95,.10);
+      border-top: 1px solid rgba(8,49,95,.10);
+      transform: rotate(45deg);
     }
     .dropdown:hover .dropdown-content,
-    .dropdown:focus-within .dropdown-content {
+    .dropdown:focus-within .dropdown-content,
+    .dropdown.dropdown-click-open .dropdown-content {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0) scale(1);
+      transform: translateY(0) scaleY(1);
       pointer-events: auto;
+    }
+    .dropdown.dropdown-locked .dropdown-content,
+    .dropdown.dropdown-locked:hover .dropdown-content,
+    .dropdown.dropdown-locked:focus-within .dropdown-content {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px) scaleY(.96);
+      pointer-events: none;
     }
     .dropdown-content a {
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-height: 40px;
-      padding: 10px 12px;
+      gap: 12px;
+      min-height: 36px;
+      padding: 9px 14px;
       color: var(--text);
       text-decoration: none;
       font-size: 13px;
@@ -230,12 +263,73 @@
       font-weight: 800;
     }
     .dropdown-content a.active::after { display: none; }
+    .dropdown-submenu {
+      position: relative;
+    }
+    .dropdown-submenu .submenu-trigger {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .submenu-chevron {
+      margin-left: auto;
+      transform: none !important;
+    }
+    .dropdown-subcontent {
+      position: absolute;
+      top: 0;
+      left: calc(100% + 8px);
+      min-width: 232px;
+      display: block;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-6px) scale(.98);
+      transform-origin: top left;
+      pointer-events: none;
+      z-index: 120;
+      padding: 8px;
+      background: rgba(255,255,255,.98);
+      border: 1px solid rgba(8,49,95,.12);
+      border-radius: 16px;
+      box-shadow: 0 18px 42px rgba(8,49,95,.16);
+      backdrop-filter: blur(12px);
+      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    }
+    .dropdown-submenu:hover .dropdown-subcontent,
+    .dropdown-submenu:focus-within .dropdown-subcontent {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+    .dropdown.dropdown-locked .dropdown-subcontent,
+    .dropdown.dropdown-locked .dropdown-submenu:hover .dropdown-subcontent,
+    .dropdown.dropdown-locked .dropdown-submenu:focus-within .dropdown-subcontent {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-6px) scale(.98);
+      pointer-events: none;
+    }
+    .dropdown-submenu:hover .submenu-trigger,
+    .dropdown-submenu:focus-within .submenu-trigger {
+      background: var(--blue-50);
+      color: var(--navy);
+      border-color: var(--line) !important;
+    }
+    .dropdown-subcontent a {
+      color: var(--text);
+    }
 
-    .logout { color: var(--red) !important; }
+    .logout {
+      color: var(--muted) !important;
+      background: transparent !important;
+      border-color: rgba(8,49,95,.16) !important;
+      font-weight: 700;
+    }
+    .logout::after { display: none !important; }
     .logout:hover {
-      color: var(--red) !important;
-      background: rgba(252,165,165,.14) !important;
-      border-color: rgba(185,28,28,.18) !important;
+      color: var(--navy) !important;
+      background: var(--blue-50) !important;
+      border-color: rgba(8,49,95,.22) !important;
     }
     
     @media (max-width: 1000px) {
@@ -251,7 +345,10 @@
       }
       .brand { display: none; }
       .nav { display: grid; grid-template-columns: repeat(var(--nav-count, 6), 1fr); gap: 4px; width: min(760px, 100%); margin: 0 auto; }
-      .nav a { display: grid; place-items: center; gap: 2px; min-height: 48px; padding: 6px 2px; border-radius: 16px; font-size: 8px; line-height: 1; text-align: center; }
+      .nav a { display: grid; place-items: center; gap: 2px; min-height: 48px; padding: 6px 2px; border-radius: 16px; font-size: 8px; line-height: 1; text-align: center; color: #EAF6FF; }
+      .nav a.active { color: #fff; }
+      .nav a.active::after { left: 8px; right: 8px; bottom: 4px; background: var(--gold); }
+      .logout { color: #EAF6FF !important; border-color: rgba(255,255,255,.5) !important; }
     }
 
     .topbar {
@@ -390,14 +487,411 @@
       text-shadow: 0 1px 2px rgba(0,0,0,.35); white-space: nowrap; padding: 0 3px;
     }
     .bar-total { width: 40px; text-align: right; font-family: var(--font-body); font-size: 12px; color: var(--text); }
+
+    .preload-shell {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 5000;
+      width: min(420px, calc(100vw - 32px));
+      padding: 16px;
+      border: 2px solid rgba(7, 89, 133, .36);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(251, 191, 36, .24), transparent 34%),
+        radial-gradient(circle at 92% 18%, rgba(125, 211, 252, .32), transparent 38%),
+        linear-gradient(135deg, rgba(255,255,255,.98), rgba(240,249,255,.96));
+      box-shadow: 0 22px 60px rgba(8,49,95,.24);
+      backdrop-filter: blur(14px);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .24s ease, transform .24s ease;
+    }
+    .preload-shell.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .preload-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .preload-orb {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: white;
+      font-size: 22px;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 12px 24px rgba(8,49,95,.20);
+      animation: preloadFloat 1.8s ease-in-out infinite;
+    }
+    .preload-title {
+      margin: 0;
+      color: var(--navy);
+      font: 900 14px var(--font-heading);
+      letter-spacing: -.02em;
+    }
+    .preload-copy {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font: 800 11px var(--font-body);
+      line-height: 1.35;
+    }
+    .preload-track {
+      position: relative;
+      height: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(186,230,253,.70);
+      box-shadow: inset 0 0 0 1px rgba(7,89,133,.12);
+    }
+    .preload-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background:
+        linear-gradient(90deg, var(--blue), var(--blue-600), var(--gold), var(--blue));
+      background-size: 220% 100%;
+      box-shadow: 0 0 18px rgba(2,132,199,.34);
+      transition: width .28s ease;
+      animation: preloadShimmer 1.35s linear infinite;
+    }
+    .preload-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 9px;
+      color: var(--blue);
+      font: 900 10px var(--font-heading);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+    .preload-mini {
+      margin-top: 8px;
+      min-height: 15px;
+      color: var(--muted);
+      font: 700 11px var(--font-body);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .preload-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(8,49,95,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.74);
+      color: var(--navy);
+      cursor: pointer;
+      font: 900 16px var(--font-heading);
+    }
+    @keyframes preloadShimmer { to { background-position: 220% 0; } }
+    @keyframes preloadFloat {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-3px) rotate(2deg); }
+    }
   </style>
 </head>
 <body>
+  <div id="stride-preload" class="preload-shell" role="status" aria-live="polite">
+    <button class="preload-close" type="button" aria-label="Hide preload status" onclick="document.getElementById('stride-preload').classList.remove('open')">×</button>
+    <div class="preload-head">
+      <div class="preload-orb" aria-hidden="true">🚀</div>
+      <div>
+        <h2 class="preload-title" id="preloadTitle">Preparing dashboard</h2>
+        <p class="preload-copy" id="preloadCopy">Optimizing resources so dashboards open faster.</p>
+      </div>
+    </div>
+    <div class="preload-track" aria-hidden="true"><div id="preloadFill" class="preload-fill"></div></div>
+    <div class="preload-meta">
+      <span id="preloadPct">0%</span>
+      <span id="preloadEta">Estimating…</span>
+    </div>
+    <div id="preloadMini" class="preload-mini">Initializing resources…</div>
+  </div>
+
+  <script>
+  (function(){
+    if (location.protocol === "file:") return;
+
+    var FALLBACK_CSVS = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+
+    var preloadStartedAt = 0;
+    var cachedCount = 0;
+    var preloadTotal = 0;
+
+    function preloadEl(id){ return document.getElementById(id); }
+
+    function showPreload(){
+      var shell = preloadEl("stride-preload");
+      if (shell) shell.classList.add("open");
+    }
+
+    function hidePreloadSoon(){
+      setTimeout(function(){
+        var shell = preloadEl("stride-preload");
+        if (shell) shell.classList.remove("open");
+      }, 1600);
+    }
+
+    function updatePreload(done, total, file, phase){
+      total = Math.max(total || 1, 1);
+      var pct = Math.min(100, Math.round((done / total) * 100));
+      var elapsed = Math.max((performance.now() - preloadStartedAt) / 1000, .1);
+      var perItem = done > 0 ? elapsed / done : 0;
+      var remaining = Math.max(0, Math.ceil((total - done) * perItem));
+      var fill = preloadEl("preloadFill");
+      var pctEl = preloadEl("preloadPct");
+      var etaEl = preloadEl("preloadEta");
+      var mini = preloadEl("preloadMini");
+      var copy = preloadEl("preloadCopy");
+
+      if (fill) fill.style.width = pct + "%";
+      if (pctEl) pctEl.textContent = pct + "%";
+      if (etaEl) etaEl.textContent = done >= total ? "Ready" : "~" + remaining + "s left";
+      if (mini) mini.textContent = phase || "Preparing resources…";
+      if (copy) copy.textContent = "Prepared " + done + " of " + total + " startup resources.";
+    }
+
+    async function discoverRootCsvFiles(){
+      try {
+        var res = await fetch("./?v=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) return FALLBACK_CSVS;
+        var html = await res.text();
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var files = new Set();
+
+        doc.querySelectorAll("a[href]").forEach(function(a){
+          var href = a.getAttribute("href") || "";
+          try { href = decodeURIComponent(href); } catch (e) {}
+          var clean = href.split("?")[0].split("#")[0];
+          var name = clean.split("/").filter(Boolean).pop() || clean;
+          if (/\.csv$/i.test(name)) files.add("./" + name);
+        });
+
+        return files.size ? Array.from(files).sort() : FALLBACK_CSVS;
+      } catch (e) {
+        return FALLBACK_CSVS;
+      }
+    }
+
+    var PARSED_CACHE_NAME = "stride-parsed-v1";
+
+    function repairMojibake(text) {
+      return String(text || "")
+        .replace(/Ã‘/g, "Ñ").replace(/Ã±/g, "ñ")
+        .replace(/ã‘/g, "Ñ").replace(/ã±/g, "ñ")
+        .replace(/Ã/g, "Á").replace(/Ã¡/g, "á")
+        .replace(/Ã‰/g, "É").replace(/Ã©/g, "é")
+        .replace(/Ã/g, "Í").replace(/Ã­/g, "í")
+        .replace(/Ã“/g, "Ó").replace(/Ã³/g, "ó")
+        .replace(/Ãš/g, "Ú").replace(/Ãº/g, "ú")
+        .replace(/Ãœ/g, "Ü").replace(/Ã¼/g, "ü")
+        .replace(/â€“/g, "–").replace(/â€”/g, "—")
+        .replace(/â€˜/g, "‘").replace(/â€™/g, "’")
+        .replace(/â€œ/g, "“").replace(/â€/g, "”")
+        .replace(/Â /g, " ").replace(/Â/g, "");
+    }
+
+    function decodeCsvText(buffer) {
+      var bytes = new Uint8Array(buffer);
+      var utf8 = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+      var win1252 = new TextDecoder("windows-1252").decode(bytes);
+      function badness(text) {
+        return (text.match(/�/g) || []).length * 20 + (text.match(/Ã.|Â.|â[€-]/g) || []).length * 8;
+      }
+      var decoded = badness(utf8) > badness(win1252) ? win1252 : utf8;
+      return repairMojibake(decoded).replace(/^﻿/, "");
+    }
+
+    function canonicalCell(text) {
+      var value = repairMojibake(text).replace(/\s+/g, " ").trim();
+      return value
+        .replace(/\bLas\s+Pi(?:ñ|Ã±|ã±|ï¿½|�|n)as\b/gi, "Las Piñas")
+        .replace(/\bPara(?:ñ|Ã±|ã±|ï¿½|�|n)aque\b/gi, "Parañaque");
+    }
+
+    var SUSPICIOUS_CELL_RE = /[À-ÿ�]|\s{2,}/;
+    function fastCleanCell(text) {
+      if (!text) return "";
+      return SUSPICIOUS_CELL_RE.test(text) ? canonicalCell(text) : text;
+    }
+
+    // Mirror of the InsightED CSV parser so parsed rows in the shared cache match
+    // exactly what the InsightED page expects (same header + value shape).
+    function parseCsv(text) {
+      var rows = [];
+      var row = [];
+      var cell = "";
+      var quote = false;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        var next = text[i + 1];
+        if (ch === '"' && quote && next === '"') { cell += '"'; i++; }
+        else if (ch === '"') { quote = !quote; }
+        else if (ch === "," && !quote) { row.push(fastCleanCell(cell)); cell = ""; }
+        else if ((ch === "\n" || ch === "\r") && !quote) {
+          if (ch === "\r" && next === "\n") i++;
+          row.push(fastCleanCell(cell));
+          if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
+          row = [];
+          cell = "";
+        } else { cell += ch; }
+      }
+      if (cell || row.length) {
+        row.push(fastCleanCell(cell));
+        if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
+      }
+      if (!rows.length) return [];
+      var headers = rows.shift().map(function(h){ return String(h || "").trim().toLowerCase().replace(/[\s_\-]+/g, " "); });
+      return rows.map(function(values){
+        var record = {};
+        headers.forEach(function(h, idx){ record[h] = String(values[idx] || "").trim(); });
+        return record;
+      });
+    }
+
+    async function storeParsedCsv(fileName, rows) {
+      if (!("caches" in window)) return;
+      try {
+        var cache = await caches.open(PARSED_CACHE_NAME);
+        await cache.put(
+          new Request("./__parsed__/" + fileName),
+          new Response(JSON.stringify(rows), { headers: { "Content-Type": "application/json" } })
+        );
+      } catch (e) { console.warn("Could not store parsed CSV", e); }
+    }
+
+    async function hasParsedCsv(fileName) {
+      if (!("caches" in window)) return false;
+      try {
+        var cache = await caches.open(PARSED_CACHE_NAME);
+        return !!(await cache.match("./__parsed__/" + fileName));
+      } catch (e) { return false; }
+    }
+
+    async function cacheCsv(url, options){
+      options = options || {};
+      var fileName = url.replace(/^\.\//, "");
+
+      if (options.parse && await hasParsedCsv(fileName)) return;
+
+      var response = await fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "preload=" + Date.now(), { cache: "reload" });
+      if (!response.ok) throw new Error("Could not preload " + url);
+
+      var buffer = await response.arrayBuffer();
+
+      if ("caches" in window) {
+        var cache = await caches.open("stride-csv-preload-v1");
+        await cache.put(url, new Response(buffer, { headers: { "Content-Type": "text/csv; charset=utf-8" } }));
+      }
+
+      if (options.parse) {
+        try {
+          await storeParsedCsv(fileName, parseCsv(decodeCsvText(buffer)));
+        } catch (e) { console.warn("Could not parse " + url, e); }
+      }
+    }
+
+    function warmServiceWorker(urls){
+      if (!("serviceWorker" in navigator)) return;
+      function send(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: urls }); }
+
+      navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+        send(reg.active || navigator.serviceWorker.controller);
+        navigator.serviceWorker.addEventListener("controllerchange", function(){ send(navigator.serviceWorker.controller); });
+        if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") send(e.target); });
+        if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") send(e.target); });
+      }).catch(function(){});
+    }
+
+    function isInsightedCsv(url){ return /(^|\/)insighted_.+\.csv$/i.test(url); }
+
+    async function preloadBatch(urls, phase){
+      for (var i = 0; i < urls.length; i++) {
+        var fileName = urls[i].replace("./", "");
+        var parse = isInsightedCsv(urls[i]);
+        updatePreload(cachedCount, preloadTotal, fileName, parse ? "Parsing" : phase);
+        try { await cacheCsv(urls[i], { parse: parse }); } catch (e) { console.warn(e); }
+        cachedCount++;
+        updatePreload(cachedCount, preloadTotal, fileName, parse ? "Parsed & cached" : phase);
+      }
+    }
+
+    function requestIdle(fn){
+      if ("requestIdleCallback" in window) window.requestIdleCallback(fn, { timeout: 5000 });
+      else setTimeout(fn, 900);
+    }
+
+    async function startCsvPreload(){
+      showPreload();
+      preloadStartedAt = performance.now();
+
+      var allCsvs = await discoverRootCsvFiles();
+
+      // Prioritize InsightED datasets: fetch, decode, and PARSE them on startup so
+      // the InsightED page can reuse the parsed rows and open in a few seconds.
+      var insightedCsvs = allCsvs.filter(isInsightedCsv);
+      var otherCsvs = allCsvs.filter(function(url){ return !isInsightedCsv(url); });
+
+      var otherStartupCount = Math.ceil(otherCsvs.length / 2);
+      var otherStartup = otherCsvs.slice(0, otherStartupCount);
+      var backgroundCsvs = otherCsvs.slice(otherStartupCount);
+      var startupCsvs = insightedCsvs.concat(otherStartup);
+      if (!startupCsvs.length) startupCsvs = allCsvs.slice(0, Math.max(1, Math.ceil(allCsvs.length / 2)));
+
+      cachedCount = 0;
+      preloadTotal = startupCsvs.length;
+      updatePreload(0, preloadTotal, "", "Preparing dashboard resources");
+
+      warmServiceWorker(allCsvs);
+      await preloadBatch(startupCsvs, "Preloading");
+
+      updatePreload(preloadTotal, preloadTotal, "", "Dashboard resources ready");
+      hidePreloadSoon();
+
+      if (backgroundCsvs.length) {
+        requestIdle(function(){
+          backgroundCsvs.forEach(function(url){
+            cacheCsv(url, { parse: isInsightedCsv(url) }).catch(function(e){ console.warn(e); });
+          });
+        });
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", startCsvPreload);
+    } else {
+      startCsvPreload();
+    }
+  })();
+  </script>
   <div class="app">
     <div class="top-nav-container">
       <div class="brand-group">
-        <a href="#" class="brand">STR<span>IDE</span></a>
-        <span class="brand-sub">STRATEGIC RESOURCE INVENTORY FOR DEPLOYMENT EFFICIENCY</span>
+        <img class="brand-logo" src="./hrod_logo.png" alt="HROD logo">
+        <div class="brand-text">
+          <a href="#" class="brand">STR<span>I</span><span class="de">DE</span></a>
+          <span class="brand-sub">Strategic Resource Inventory for Deployment Efficiency</span>
+        </div>
       </div>
       <nav class="nav" aria-label="Primary navigation">
         <a href="#" class="nav-link active" onclick="showExternal(event, this, 'stride_landing_page.html')">
@@ -406,7 +900,7 @@
         </a>
         
         <div class="dropdown">
-          <a href="#" class="nav-link" id="dashboard-tab" onclick="showDefaultDashboard(event, this)" aria-haspopup="true" aria-expanded="false">
+          <a href="#" class="nav-link" id="dashboard-tab" onclick="toggleDashboardDropdown(event, this)" aria-haspopup="true" aria-expanded="false">
             <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
             Dashboard
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -424,10 +918,23 @@
               <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19 10 13l4 4 6-9"/><path d="M15 8h5v5"/></svg></span>
               Advanced Analytics
             </a>
-            <a href="#" class="dropdown-item" onclick="showExternal(event, this, 'deped_hr_updates.html')">
-              <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span>
-              Plantilla Positions
-            </a>
+            <div class="dropdown-submenu">
+              <a href="#" class="dropdown-item submenu-trigger" aria-haspopup="true" aria-expanded="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span>
+                GMIS/BEIS
+                <svg class="chevron submenu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+              </a>
+              <div class="dropdown-subcontent" aria-label="GMIS and BEIS sections">
+                <a href="#" class="dropdown-item" onclick="showExternal(event, this, 'deped_hr_updates.html?dataset=personnel')">
+                  <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span>
+                  GMIS
+                </a>
+                <a href="#" class="dropdown-item" onclick="showExternal(event, this, 'deped_hr_updates.html?dataset=enrolment')">
+                  <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-7"/></svg></span>
+                  BEIS (Enrolment)
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -630,27 +1137,48 @@
       document.querySelectorAll('.dropdown-item, .nav-link').forEach(a => a.classList.remove('active'));
     }
 
-    function showDefaultDashboard(e, el) {
-      e.preventDefault();
-      clearActive();
-      el.classList.add('active');
-      document.getElementById('dashboard-tab').classList.add('active');
-      document.getElementById('dashboard-content').style.display = 'block';
-
-      const frame = document.getElementById('external-frame');
-      frame.style.display = 'none';
-      frame.removeAttribute('src');
-      const msg = document.getElementById('frame-message');
-      if (msg) msg.style.display = 'none';
+    function closeHeaderDropdowns() {
+      document.querySelectorAll('.dropdown').forEach(dropdown => {
+        dropdown.classList.add('dropdown-locked');
+        dropdown.querySelectorAll('[aria-expanded="true"]').forEach(item => item.setAttribute('aria-expanded', 'false'));
+        dropdown.addEventListener('mouseleave', function unlockDropdown() {
+          dropdown.classList.remove('dropdown-locked');
+          dropdown.removeEventListener('mouseleave', unlockDropdown);
+        });
+      });
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     }
+
+    function toggleDashboardDropdown(e, el) {
+      e.preventDefault();
+      const dropdown = el.closest('.dropdown');
+      if (!dropdown) return;
+      dropdown.classList.remove('dropdown-locked');
+      const isOpen = !dropdown.classList.contains('dropdown-click-open');
+      document.querySelectorAll('.dropdown').forEach(item => item.classList.remove('dropdown-click-open'));
+      dropdown.classList.toggle('dropdown-click-open', isOpen);
+      el.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    document.addEventListener('click', function(event) {
+      if (event.target.closest('.dropdown')) return;
+      document.querySelectorAll('.dropdown').forEach(dropdown => dropdown.classList.remove('dropdown-click-open'));
+      document.querySelectorAll('[aria-expanded="true"]').forEach(item => item.setAttribute('aria-expanded', 'false'));
+    });
 
     function showExternal(e, el, url) {
       e.preventDefault();
+      closeHeaderDropdowns();
       clearActive();
       el.classList.add('active');
-      // Keep the Dashboard parent tab highlighted when a dropdown item is shown
+      // Keep the Dashboard parent tab highlighted when a dropdown item or nested subtab is shown
       if (el.classList.contains('dropdown-item')) {
         document.getElementById('dashboard-tab').classList.add('active');
+        const submenu = el.closest('.dropdown-submenu');
+        if (submenu) {
+          const trigger = submenu.querySelector('.submenu-trigger');
+          if (trigger) trigger.classList.add('active');
+        }
       }
       document.getElementById('dashboard-content').style.display = 'none';
 

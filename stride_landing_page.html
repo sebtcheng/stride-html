@@ -28,13 +28,36 @@
 
 
   /* ---------- HERO ---------- */
-  .hero { text-align:center; padding:60px 6vw 90px; max-width:1100px; margin:0 auto; }
-  .logos { display:flex; gap:22px; justify-content:center; align-items:center; margin-bottom:32px; }
-  .logo-slot { width:78px; height:78px; border-radius:50%; display:grid; place-items:center; text-align:center; background:rgba(255,255,255,.55); border:2px dashed var(--blue400); color:var(--blue); font-size:11px; font-weight:700; letter-spacing:.5px; backdrop-filter:blur(2px); transition:transform .2s ease; }
+  .stage { display:flex; align-items:stretch; min-height:100vh; width:100%; gap:20px; }
+  .hero { text-align:left; padding:40px 4vw 40px 6vw; flex:1 1 54%; min-width:0; margin:0; position:relative; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
+  .hero-content { display:flex; flex-direction:column; align-items:flex-start; animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both; }
+  .hero .lede { max-width:540px; margin:22px 0 34px; color:var(--muted); font-size:clamp(16px,1.5vw,20px); line-height:1.5; font-weight:500; }
+  .browser { flex:1 1 46%; min-width:0; align-self:center; margin:auto 40px; border-radius:16px; overflow:hidden; background:#fff; border:1px solid rgba(8,49,95,.10); box-shadow:0 44px 90px -24px rgba(8,49,95,.38), 0 14px 34px -14px rgba(8,49,95,.22); animation:frameIn 1s cubic-bezier(.2,.7,.2,1) .2s both; }
+  .browser-bar { display:flex; align-items:center; gap:8px; padding:11px 16px; background:linear-gradient(180deg,#F8FAFC,#EDF2F7); border-bottom:1px solid rgba(8,49,95,.08); }
+  .browser-bar .dot { width:12px; height:12px; border-radius:50%; display:block; }
+  .browser-bar .dot.red { background:#FF5F57; }
+  .browser-bar .dot.amber { background:#FEBC2E; }
+  .browser-bar .dot.green { background:#28C840; }
+  .browser-url { margin-left:14px; flex:1; height:24px; border-radius:7px; background:#fff; border:1px solid rgba(8,49,95,.10); display:flex; align-items:center; padding:0 14px; font-size:11.5px; color:var(--muted); font-weight:600; }
+  .slideshow { position:relative; width:100%; overflow:hidden; background:#fff; font-size:0; }
+  .slideshow .slide { display:block; width:100%; opacity:0; transition:opacity 1s ease; }
+  .slideshow .slide.base { position:relative; }
+  .slideshow .slide.stack { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .slideshow .slide.active { opacity:1; }
+  .slideshow .empty { display:grid; place-items:center; min-height:220px; padding:20px; color:var(--muted); font-weight:600; text-align:center; font-size:14px; }
+  @media (max-width:900px){
+    .stage { flex-direction:column; min-height:auto; gap:0; }
+    .hero { flex:none; padding:44px 6vw 24px; }
+    .browser { flex:none; width:auto; margin:0 6vw 28px; }
+  }
+  .logos { display:flex; gap:24px; justify-content:flex-start; align-items:center; margin-bottom:30px; }
+  .logo-slot { width:84px; height:66px; display:grid; place-items:center; transition:transform .25s ease; }
+  .logo-slot img { width:100%; height:100%; object-fit:contain; display:block; }
+  .logo-slot.logo-vertical img { width:175%; height:175%; object-fit:contain; }
   .logo-slot:hover { transform:translateY(-3px); }
   .hero h1 { color:var(--navy); font-weight:800; font-size:clamp(40px,6.4vw,78px); line-height:1.04; letter-spacing:-1px; cursor:default; filter:drop-shadow(0 10px 16px rgba(8,49,95,.30)); transition:transform .25s ease, text-shadow .25s ease; }
   .hero h1:hover { transform:translateY(-3px); text-shadow:0 12px 26px rgba(8,49,95,.18); }
-  .hero h1 .mark { position:relative; overflow:hidden; background:var(--gold); color:var(--navy); padding:2px 22px 14px; border-radius:14px; display:inline-block; margin-top:16px; box-shadow:0 14px 40px rgba(251,191,36,.4); }
+  .hero h1 .mark { position:relative; overflow:hidden; background:var(--gold); color:var(--navy); padding:4px 32px 14px; border-radius:14px; display:inline-block; white-space:nowrap; margin-top:10px; margin-left:-32px; box-shadow:0 14px 40px rgba(251,191,36,.4); }
   .hero h1 .mark::after {
     content:""; position:absolute; top:0; left:-75%; width:50%; height:100%; pointer-events:none;
     background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.18) 35%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.18) 65%, transparent 100%);
@@ -45,7 +68,8 @@
     14%  { left:150%; }
     100% { left:150%; }
   }
-  .hero p.sub { color:var(--muted); font-weight:500; max-width:560px; margin:26px auto 40px; font-size:18px; line-height:1.6; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes frameIn { from { opacity:0; transform:translateY(28px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
 
   /* ---------- ENTER BUTTON ---------- */
   .enter-btn {
@@ -66,22 +90,112 @@
   .enter-btn:hover .arw { transform:translateX(5px); }
 
   @media (max-width:720px){
-    .hero { padding-top:44px; }
+    .hero { padding-top:44px; align-items:flex-start; }
   }
 </style>
 </head>
 <body>
 
 
+  <script>
+  (function(){
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    var CSVS_TO_PRELOAD = [
+      "./stride_school_unique.csv",
+      "./efd_classroom_july2026.csv",
+      "./stride_shs_industries.csv",
+      "./sdo_classification_202606151013.csv",
+      "./ph_schools_20260616410.csv",
+      "./insighted_school_info.csv",
+      "./insighted_classes_organized.csv",
+      "./insighted_shifting.csv"
+    ];
+    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+      if (reg.active) warmCache(reg.active);
+      navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+      if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+      if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    }).catch(function(){});
+  })();
+  </script>
+  <div class="stage">
   <section class="hero">
-    <div class="logos">
-      <div class="logo-slot">Logo 1</div>
-      <div class="logo-slot">Logo 2</div>
-      <div class="logo-slot">Logo 3</div>
+    <div class="hero-content">
+      <div class="logos">
+        <div class="logo-slot"><img src="./bagong_pilipinas.png" alt="Bagong Pilipinas logo"></div>
+        <div class="logo-slot"><img src="./deped_logo.png" alt="Department of Education logo"></div>
+        <div class="logo-slot"><img src="./hrod_logo.png" alt="HROD logo"></div>
+        <div class="logo-slot logo-vertical"><img src="./insighted_logo_vertical.png" alt="InsightED logo"></div>
+      </div>
+      <h1>Strategic Resource<br>Inventory for<br><span class="mark">Deployment Efficiency</span></h1>
+      <p class="lede">Empowering the Department with data analytics for more effective and informed resource allocation strategy and decision-making</p>
     </div>
-    <h1>Strategic Resource<br>Inventory for<br><span class="mark">Deployment Efficiency</span></h1>
-    <p class="sub">Consolidating disparate education data sources into one trusted database for faster, evidence-informed decisions.</p>
-    <a class="enter-btn">Enter STRIDE <span class="arw">→</span></a>
   </section>
+    <aside class="browser">
+      <div class="browser-bar">
+        <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+        <div class="browser-url">stride.deped.gov.ph/dashboard</div>
+      </div>
+      <div class="slideshow" id="slideshow">
+        <div class="empty" id="slideshowEmpty">Loading screenshots…</div>
+      </div>
+    </aside>
+  </div>
+  <script>
+  (function(){
+    var IMAGE_RE = /^Screenshot.*\.(png|jpe?g|gif|webp|bmp|avif)$/i;
+    var container = document.getElementById("slideshow");
+    var emptyEl = document.getElementById("slideshowEmpty");
+
+    async function discoverScreenshots(){
+      try {
+        var res = await fetch("./?v=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) return [];
+        var html = await res.text();
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var names = new Set();
+        doc.querySelectorAll("a[href]").forEach(function(a){
+          var href = a.getAttribute("href") || "";
+          try { href = decodeURIComponent(href); } catch(e){}
+          var file = href.split("?")[0].split("#")[0].split("/").filter(Boolean).pop() || "";
+          if (IMAGE_RE.test(file)) names.add(file);
+        });
+        return [...names].sort(function(a,b){ return a.localeCompare(b, undefined, { numeric:true, sensitivity:"base" }); });
+      } catch(e){ return []; }
+    }
+
+    function startSlideshow(files){
+      if (!files.length){
+        if (emptyEl) emptyEl.textContent = "No screenshots found in this folder.";
+        return;
+      }
+      if (emptyEl) emptyEl.remove();
+
+      var slides = files.map(function(file, i){
+        var slide = document.createElement("img");
+        slide.className = "slide " + (i === 0 ? "base active" : "stack");
+        slide.alt = "STRIDE dashboard screenshot";
+        slide.loading = "eager";
+        slide.src = "./" + file.replace(/'/g, "%27");
+        container.appendChild(slide);
+        return slide;
+      });
+
+      var current = 0, timer = null;
+      function show(index){
+        slides[current].classList.remove("active");
+        current = (index + slides.length) % slides.length;
+        slides[current].classList.add("active");
+      }
+      function next(){ show(current + 1); }
+      function resetTimer(){ if (timer) clearInterval(timer); timer = setInterval(next, 5000); }
+
+      if (slides.length > 1) resetTimer();
+    }
+
+    discoverScreenshots().then(startSlideshow);
+  })();
+  </script>
 </body>
 </html>

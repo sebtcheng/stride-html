@@ -39,7 +39,7 @@ body{margin:0;min-height:100vh;color:var(--text);font-family:var(--font-body);ba
 .card{min-width:0;background:var(--card);border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);border-radius:var(--radius)}
 .card-inner{padding:16px}.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px}.card h2{margin:0;color:var(--navy);font-family:var(--font-heading);font-size:20px;font-weight:800;letter-spacing:-.02em}.card-subtitle{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:600;line-height:1.35}
 .subcard{padding:16px;border:1.5px solid var(--line);border-radius:16px;background:var(--blue-50);margin-bottom:10px}.subcard.adv{border-color:var(--gold);background:#FFFBEB}.subcard-head{margin:0 0 12px;color:var(--navy);font-size:14px;font-weight:800;font-family:var(--font-heading)}
-.button{height:42px;border:0;border-radius:14px;background:var(--blue);color:white;padding:10px 12px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer}.button:hover{background:var(--navy)}.button.secondary{background:var(--blue-100);color:var(--navy)}.button.secondary.active{background:var(--gold);color:var(--navy);box-shadow:inset 0 -3px 0 rgba(8,49,95,.16)}.button:disabled{opacity:.45;cursor:not-allowed}.chart-toggle{position:relative;width:auto!important;height:32px!important;padding:7px 14px!important;border:1.5px solid #DBEAFE!important;border-radius:999px!important;background:#F8FAFC!important;color:var(--blue)!important;font-size:11px!important;font-weight:800}
+.button{height:42px;border:0;border-radius:14px;background:var(--blue);color:white;padding:10px 12px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer}.button:hover{background:var(--navy)}.button.secondary{background:var(--blue-100);color:var(--navy)}.button.secondary.active{background:var(--gold);color:var(--navy);box-shadow:inset 0 -3px 0 rgba(8,49,95,.16)}.button.outline{background:white;color:var(--navy);border:1.5px solid var(--line);box-shadow:none}.button.outline:hover{background:var(--blue-50);border-color:var(--blue-400)}.button:disabled{opacity:.45;cursor:not-allowed}.chart-toggle{position:relative;width:auto!important;height:32px!important;padding:7px 14px!important;border:1.5px solid #DBEAFE!important;border-radius:999px!important;background:#F8FAFC!important;color:var(--blue)!important;font-size:11px!important;font-weight:800}
 .controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end}
 label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.select,.search{width:100%;height:42px;border:2px solid var(--line);border-radius:14px;background:white;color:var(--navy);padding:10px 12px;font-family:var(--font);font-size:12px;font-weight:700;outline:none}
 .kpi-grid{display:flex;flex-wrap:wrap;gap:8px}
@@ -53,7 +53,7 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 .donut-layout{display:grid;grid-template-columns:1fr;gap:18px;align-items:center;justify-items:center}.donut-layout .table-wrap{min-width:0;max-height:212px;border-radius:12px;overflow:auto}.donut-layout table{font-size:11px;table-layout:auto}.donut-layout th{padding:5px 7px;font-size:9px;white-space:nowrap}.donut-layout td{padding:4px 7px;white-space:nowrap}.donut-layout td:first-child{max-width:210px;overflow:hidden;text-overflow:ellipsis}.donut-layout .dot{width:8px;height:8px;flex:0 0 auto}.donut{position:relative;width:180px;height:180px;border-radius:50%;margin:auto;animation:popIn .45s ease both}.donut svg{width:100%;height:100%;transform:rotate(-90deg);border-radius:50%;overflow:visible}.donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--navy);font-weight:800;font-size:13px;pointer-events:none}
 .histogram{height:292px;display:grid;grid-template-columns:repeat(var(--cols,6),minmax(54px,1fr));gap:10px;align-items:end;padding:22px 8px 52px;border-left:2px solid #DBEAFE;border-bottom:2px solid #DBEAFE;background:linear-gradient(to top,#F8FAFC 1px,transparent 1px) 0 0/100% 20%;overflow-x:auto}.hist-col{height:100%;min-width:54px;display:grid;grid-template-rows:1fr auto;gap:8px}.hist-area{height:100%;display:flex;align-items:flex-end;justify-content:center}.hist-wrap{width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;animation:growY .72s cubic-bezier(.2,.8,.2,1) both;transform-origin:bottom}.hist-value{text-align:center;color:var(--navy);font-size:10px;font-weight:800}.hist-bar{min-height:16px;border-radius:14px 14px 4px 4px}.hist-label{color:var(--muted);font-size:10px;font-weight:700;line-height:1.1;text-align:center}
 .table-controls{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.table-controls .select,.table-controls .button{width:auto;min-width:88px;height:36px;padding:8px 12px}.table-page-label{color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.table-wrap{width:100%;max-height:430px;overflow:auto;border:1px solid #DBEAFE;border-radius:18px}table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}th,td{padding:10px 8px;border-bottom:1px solid #E2E8F0;text-align:left;vertical-align:middle;overflow-wrap:anywhere;word-break:break-word}th{position:sticky;top:0;z-index:2;color:var(--muted);background:#F8FAFC;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em}thead tr:nth-child(2) th{top:38px;z-index:3;background:#EFF6FF}td{color:#1E293B;font-weight:600}.record-row{cursor:pointer}.record-row:hover td{background:var(--blue-50)}.sort-button{width:100%;border:0;background:transparent;color:var(--muted);font:inherit;text-align:inherit;display:flex;align-items:center;gap:6px;justify-content:inherit;text-transform:uppercase;letter-spacing:.12em;cursor:pointer}.sort-button:hover,.sort-button.active{color:var(--blue)}.sort-icon{color:var(--blue);font-size:9px;float:none}.column-filter{width:100%;min-width:78px;height:30px;border:1.5px solid var(--line);border-radius:10px;background:white;color:var(--navy);padding:6px 7px;font-family:var(--font);font-size:10px;font-weight:700;outline:none;text-transform:none;letter-spacing:0}.badge{display:inline-flex;padding:5px 7px;border-radius:999px;font-size:10px;font-weight:800}
-.loading-modal{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(8,49,95,.58);backdrop-filter:blur(5px)}.loading-modal.hidden{display:none}.loading-card{width:min(460px,100%);border:2.5px solid var(--blue);border-radius:24px;background:white;padding:24px;text-align:center;box-shadow:0 28px 70px rgba(8,49,95,.28)}.loading-spinner{width:46px;height:46px;margin:0 auto 14px;border-radius:999px;border:5px solid var(--blue-100);border-top-color:var(--blue);animation:spin 1s linear infinite}.loading-card h2{margin:0;color:var(--navy);font-size:20px;font-weight:800}.loading-card p{margin:7px 0 0;color:var(--muted);font-size:12px;font-weight:700;line-height:1.4}@keyframes spin{to{transform:rotate(360deg)}}.modal-backdrop{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(8,49,95,.52);backdrop-filter:blur(4px)}.modal-backdrop.open{display:flex}.modal{width:min(760px,100%);border:2.5px solid var(--blue);border-radius:24px;background:white;box-shadow:0 28px 70px rgba(8,49,95,.28);overflow:hidden}.modal-head{padding:18px 20px;display:flex;justify-content:space-between;gap:16px;background:linear-gradient(135deg,var(--navy),var(--blue));color:white}.modal-head h2{margin:0;color:white;font-size:20px;font-weight:800}.modal-head p{margin:5px 0 0;color:var(--blue-100);font-size:12px;font-weight:600}.modal-close{width:34px;height:34px;border:1px solid rgba(255,255,255,.38);border-radius:12px;background:rgba(255,255,255,.14);color:white;font-weight:800;cursor:pointer}.modal-body{padding:18px 20px 20px}.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.detail{padding:11px 12px;border:1.5px solid var(--line);border-radius:16px;background:var(--blue-50)}.detail small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.detail b{display:block;margin-top:3px;color:var(--navy);font-size:15px;font-weight:800}
+.loading-modal{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(8,49,95,.58);backdrop-filter:blur(5px)}.loading-modal.hidden{display:none}.loading-card{width:min(460px,100%);border:2.5px solid var(--blue);border-radius:24px;padding:24px;text-align:left;overflow:hidden;box-shadow:0 28px 70px rgba(8,49,95,.28);background:radial-gradient(circle at 12% 10%,rgba(251,191,36,.24),transparent 34%),radial-gradient(circle at 92% 18%,rgba(125,211,252,.32),transparent 38%),linear-gradient(135deg,rgba(255,255,255,.98),rgba(240,249,255,.96))}.loading-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.loading-spinner{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border:0;border-radius:16px;background:linear-gradient(135deg,var(--navy),var(--blue));box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 12px 24px rgba(8,49,95,.20);animation:preloadFloat 1.8s ease-in-out infinite}.loading-spinner::before{content:"🚀";font-size:23px;line-height:1}.loading-title{margin:0;color:var(--navy);font-size:18px;font-weight:800;letter-spacing:-.02em}.loading-sub{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:700;line-height:1.4}.loading-progress-track{height:14px;overflow:hidden;border-radius:999px;background:rgba(186,230,253,.70);box-shadow:inset 0 0 0 1px rgba(7,89,133,.12)}.loading-progress-fill{width:0%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),#0284C7,var(--gold),var(--blue));background-size:220% 100%;box-shadow:0 0 18px rgba(2,132,199,.34);transition:width .28s ease;animation:preloadShimmer 1.35s linear infinite}.loading-meta{display:flex;justify-content:space-between;gap:12px;margin-top:9px;color:var(--blue);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}.loading-mini{margin-top:8px;min-height:15px;color:var(--muted);font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.status-error{color:var(--red);font-weight:800}@keyframes preloadShimmer{to{background-position:220% 0}}@keyframes preloadFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}@keyframes spin{to{transform:rotate(360deg)}}.modal-backdrop{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(8,49,95,.52);backdrop-filter:blur(4px)}.modal-backdrop.open{display:flex}.modal{width:min(760px,100%);border:2.5px solid var(--blue);border-radius:24px;background:white;box-shadow:0 28px 70px rgba(8,49,95,.28);overflow:hidden}.modal-head{padding:18px 20px;display:flex;justify-content:space-between;gap:16px;background:linear-gradient(135deg,var(--navy),var(--blue));color:white}.modal-head h2{margin:0;color:white;font-size:20px;font-weight:800}.modal-head p{margin:5px 0 0;color:var(--blue-100);font-size:12px;font-weight:600}.modal-close{width:34px;height:34px;border:1px solid rgba(255,255,255,.38);border-radius:12px;background:rgba(255,255,255,.14);color:white;font-weight:800;cursor:pointer}.modal-body{padding:18px 20px 20px}.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.detail{padding:11px 12px;border:1.5px solid var(--line);border-radius:16px;background:var(--blue-50)}.detail small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.detail b{display:block;margin-top:3px;color:var(--navy);font-size:15px;font-weight:800}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes growX{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes growY{from{transform:scaleY(0)}to{transform:scaleY(1)}}@keyframes popIn{from{opacity:.2;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @media(max-width:1180px){.kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.grid{grid-template-columns:1fr}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){body{padding-bottom:82px}.app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:80;width:auto;padding:8px 10px;display:block;border:0;border-top:1px solid rgba(255,255,255,.46);background:linear-gradient(90deg,color-mix(in srgb,var(--blue) 80%,var(--navy) 20%),var(--blue-600))}.sidebar:hover{width:auto;padding:8px 10px}.brand{display:none}.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:min(760px,100%);margin:0 auto}.nav a,.sidebar:hover .nav a{display:grid;place-items:center;gap:2px;min-height:48px;padding:6px 2px;border-radius:16px;font-size:8px;line-height:1;text-align:center}.nav-icon{width:auto;min-width:0;font-size:14px}.topbar{min-height:104px;margin:15px 16px 0;padding:15px 23px}.content{width:calc(100% - 32px)}.bar-row{grid-template-columns:110px minmax(0,1fr) 58px;gap:7px}}
@@ -61,6 +61,22 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 </style>
 </head>
 <body data-current-page="personnel">
+<script>
+(function(){
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  var CSVS_TO_PRELOAD = [
+    "./all_deped_summary_april2026.csv",
+    "./enrolment_sy2025-2026.csv"
+  ];
+  function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+  navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
+    if (reg.active) warmCache(reg.active);
+    navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
+    if (reg.installing) reg.installing.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+    if (reg.waiting) reg.waiting.addEventListener("statechange", function(e){ if (e.target.state === "activated") warmCache(e.target); });
+  }).catch(function(){});
+})();
+</script>
 <div class="app">
   <aside class="sidebar">
     <a class="brand" href="?dataset=personnel" aria-label="InsightED dashboard home">
@@ -186,9 +202,21 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 
 <div id="loadingModal" class="loading-modal" role="status" aria-live="polite">
   <section class="loading-card">
-    <div class="loading-spinner" aria-hidden="true"></div>
-    <h2 id="loadingTitle">Loading CSV data</h2>
-    <p id="loadingDetail">Reading personnel and enrolment files from the same folder as this HTML.</p>
+    <div class="loading-head">
+      <div class="loading-spinner" id="loadingSpinner" aria-hidden="true"></div>
+      <div>
+        <h2 class="loading-title" id="loadingTitle">Preparing dashboard</h2>
+        <p class="loading-sub" id="loadingDetail">Initializing data and visual summaries.</p>
+      </div>
+    </div>
+    <div class="loading-progress-track" aria-hidden="true">
+      <div class="loading-progress-fill" id="loadingProgressFill"></div>
+    </div>
+    <div class="loading-meta">
+      <span id="loadingProgressPct">0%</span>
+      <span id="loadingEta">Estimating…</span>
+    </div>
+    <div class="loading-mini" id="loadingMini">Preparing data…</div>
   </section>
 </div>
 
@@ -234,8 +262,8 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 
 <script>
 const CSV_SOURCES = {
-  personnel:["all_deped_summary_april2026.csv","./all_deped_summary_april2026.csv","data/all_deped_summary_april2026.csv","./data/all_deped_summary_april2026.csv"],
-  enrolment:["enrolment_sy2025-2026.csv","./enrolment_sy2025-2026.csv","data/enrolment_sy2025-2026.csv","./data/enrolment_sy2025-2026.csv"]
+  personnel:["./all_deped_summary_april2026.csv","./all_deped_summary_april2026.csv","data/all_deped_summary_april2026.csv","./data/all_deped_summary_april2026.csv"],
+  enrolment:["./enrolment_sy2025-2026.csv","./enrolment_sy2025-2026.csv","data/enrolment_sy2025-2026.csv","./data/enrolment_sy2025-2026.csv"]
 };
 
 const DATASETS = {
@@ -246,6 +274,41 @@ const DATASETS = {
 let state={dataset:inferDatasetPage(),drill:[],drillChartMode:"stacked",shareMode:"donut",issueMode:"histogram",page:1,pageSize:10,sortKey:null,sortDir:"asc",distKey:null,barDistKey:null,shareDistKey:null,issueDistKey:null,unitKey:null,advOpen:false,tableFilters:{},activeTableFilter:null,segFilters:{},filters:{},heatSortKey:null,heatSortDir:"desc"};
 let tableViewRows=[];
 const currentPage = state.dataset;
+
+const RAW_CACHE_NAME = "stride-csv-preload-v1";
+const PARSED_CACHE_NAME = "stride-parsed-v1";
+function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
+function datasetFileName(key){ return String(CSV_SOURCES[key][0]).replace(/^\.?\/?/,"").replace(/^data\//,""); }
+async function readSharedParsed(fileName){
+  if(!sharedCacheEnabled()) return null;
+  try{ const c=await caches.open(PARSED_CACHE_NAME); const m=await c.match("./__parsed__/"+fileName); if(!m) return null; return await m.json(); }catch(e){ return null; }
+}
+async function writeSharedParsed(fileName, parsed){
+  if(!sharedCacheEnabled()) return;
+  try{ const c=await caches.open(PARSED_CACHE_NAME); await c.put("./__parsed__/"+fileName, new Response(JSON.stringify(parsed), { headers:{ "Content-Type":"application/json" } })); }catch(e){}
+}
+async function readSharedRaw(fileName){
+  if(!sharedCacheEnabled()) return null;
+  try{ const c=await caches.open(RAW_CACHE_NAME); const m=await c.match("./"+fileName); if(!m) return null; return await m.text(); }catch(e){ return null; }
+}
+async function writeSharedRaw(fileName, text){
+  if(!sharedCacheEnabled()) return;
+  try{ const c=await caches.open(RAW_CACHE_NAME); await c.put("./"+fileName, new Response(text, { headers:{ "Content-Type":"text/csv" } })); }catch(e){}
+}
+async function getSharedParsedCsv(key){
+  const fileName=datasetFileName(key);
+  const cachedParsed=await readSharedParsed(fileName);
+  if(cachedParsed && cachedParsed.rows && cachedParsed.rows.length) return cachedParsed;
+  let text=await readSharedRaw(fileName);
+  if(text==null){
+    const loaded=await fetchFirstAvailableCsv(key);
+    text=loaded.text;
+    writeSharedRaw(fileName,text);
+  }
+  const parsed=parseCsv(text);
+  writeSharedParsed(fileName,parsed);
+  return parsed;
+}
 
 function cfg(){return DATASETS[state.dataset]}
 function rows(){return cfg().rows}
@@ -347,25 +410,52 @@ async function fetchFirstAvailableCsv(datasetKey){
   }
   throw new Error(errors.join(" | "));
 }
-function setLoading(title,detail){loadingTitle.textContent=title;loadingDetail.textContent=detail}
+let loadingStartedAt=0,loadingTotalSteps=1,loadingCompletedSteps=0;
+function setLoading(title,detail,isError){
+  if(title)loadingTitle.textContent=title;
+  if(detail)document.getElementById("loadingDetail").innerHTML=isError?`<span class="status-error">${detail}</span>`:detail;
+  const spinner=document.getElementById("loadingSpinner");
+  if(spinner)spinner.style.display=isError?"none":"grid";
+  if(isError){const eta=document.getElementById("loadingEta"),mini=document.getElementById("loadingMini");if(eta)eta.textContent="Needs attention";if(mini)mini.textContent="Check data source setup."}
+}
+function updateLoadingProgress(done,total,fileName,phase){
+  loadingCompletedSteps=Math.max(0,done||0);
+  loadingTotalSteps=Math.max(total||1,1);
+  const pct=Math.min(100,Math.round((loadingCompletedSteps/loadingTotalSteps)*100));
+  const elapsed=Math.max((performance.now()-loadingStartedAt)/1000,.1);
+  const perItem=loadingCompletedSteps>0?elapsed/loadingCompletedSteps:0;
+  const remaining=Math.max(0,Math.ceil((loadingTotalSteps-loadingCompletedSteps)*perItem));
+  const fill=document.getElementById("loadingProgressFill"),pctEl=document.getElementById("loadingProgressPct"),etaEl=document.getElementById("loadingEta"),mini=document.getElementById("loadingMini");
+  if(fill)fill.style.width=pct+"%";
+  if(pctEl)pctEl.textContent=pct+"%";
+  if(etaEl)etaEl.textContent=loadingCompletedSteps>=loadingTotalSteps?"Ready":"~"+remaining+"s left";
+  if(mini)mini.textContent=phase||"Preparing data…";
+}
 function hideLoading(){loadingModal.classList.add("hidden")}
 async function loadCsvData(){
   try{
-    setLoading("Loading CSV data","Reading personnel and enrolment files from the same folder as this HTML.");
-    for(const key of Object.keys(DATASETS)){
-      setLoading("Loading CSV data",`Reading ${DATASETS[key].label} file...`);
-      const loaded=await fetchFirstAvailableCsv(key);
-      const parsed=parseCsv(loaded.text);
+    loadingStartedAt=performance.now();
+    const keys=Object.keys(DATASETS);
+    setLoading("Preparing dashboard","Initializing data and visual summaries.");
+    updateLoadingProgress(0,keys.length,"","Preparing resources");
+    let done=0;
+    for(const key of keys){
+      setLoading("Preparing dashboard","Loading required resources...");
+      updateLoadingProgress(done,keys.length,"","Processing data");
+      const parsed=await getSharedParsedCsv(key);
       validateCsvHeaders(key,parsed.headers);
       DATASETS[key].rows=coerceRows(key,parsed.rows);
-      if(!DATASETS[key].rows.length)throw new Error(`${loaded.url} did not contain any readable rows.`);
+      if(!DATASETS[key].rows.length)throw new Error(`${DATASETS[key].label} did not contain any readable rows.`);
+      done++;
+      updateLoadingProgress(done,keys.length,"","Resources ready");
     }
-    hideLoading();
+    setLoading("Building dashboard","Preparing visual summaries...");
+    updateLoadingProgress(keys.length,keys.length,"","Finalizing dashboard");
     renderAll();
+    setTimeout(()=>hideLoading(),350);
   }catch(error){
     console.error("Unable to load CSV data.",error);
-    loadingModal.querySelector(".loading-spinner").style.display="none";
-    setLoading("Could not load CSV data",`${error.message||error}. Keep the CSV files beside this HTML file, then open through a local server such as: python -m http.server 8000`);
+    setLoading("Could not load CSV data",`${error.message||error}. Keep the CSV files beside this HTML file, then open through a local server such as: python -m http.server 8000`,true);
   }
 }
 
@@ -749,7 +839,8 @@ function renderAdvControls(){
   unitSelect.value=state.unitKey||c.valueKey;
   advControls.style.display=state.advOpen?"block":"none";
   advToggle.textContent=state.advOpen?"Toggle Basic Mode":"Toggle Advanced Mode";
-  advToggle.classList.toggle("active",!state.advOpen);
+  advToggle.className=state.advOpen?"button":"button secondary active";
+  resetBtn.className=state.advOpen?"button outline":"button";
 }
 function renderAll(){validateDataset();renderFilters();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage()}
 
