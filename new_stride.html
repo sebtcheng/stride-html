@@ -217,6 +217,16 @@
       border-top: 1px solid rgba(8,49,95,.10);
       transform: rotate(45deg);
     }
+    /* Invisible hover bridge so the cursor can cross the gap between the tab
+       and the menu without the dropdown closing. */
+    .dropdown-content::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -12px;
+      height: 12px;
+    }
     .dropdown:hover .dropdown-content,
     .dropdown:focus-within .dropdown-content,
     .dropdown.dropdown-click-open .dropdown-content {
@@ -265,6 +275,15 @@
     .dropdown-content a.active::after { display: none; }
     .dropdown-submenu {
       position: relative;
+    }
+    /* Invisible hover bridge across the horizontal gap to the submenu panel. */
+    .dropdown-subcontent::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -12px;
+      width: 12px;
     }
     .dropdown-submenu .submenu-trigger {
       width: 100%;
@@ -1139,6 +1158,7 @@
 
     function closeHeaderDropdowns() {
       document.querySelectorAll('.dropdown').forEach(dropdown => {
+        dropdown.classList.remove('dropdown-click-open');
         dropdown.classList.add('dropdown-locked');
         dropdown.querySelectorAll('[aria-expanded="true"]').forEach(item => item.setAttribute('aria-expanded', 'false'));
         dropdown.addEventListener('mouseleave', function unlockDropdown() {
