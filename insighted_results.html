@@ -672,6 +672,18 @@
     let tableSearch = "";
     const TABLE_COLLATOR = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
+    // Debounced table re-render so fast typing/backspacing in a column filter or the
+    // global search box does not trigger a full re-render on every keystroke.
+    let tableRenderTimer = null;
+    function scheduleTableRender(delay = 200) {
+      if (tableRenderTimer) clearTimeout(tableRenderTimer);
+      tableRenderTimer = setTimeout(() => {
+        tableRenderTimer = null;
+        tablePage = 1;
+        renderTable();
+      }, delay);
+    }
+
     function repairMojibake(text) {
       return String(text || "")
         .replace(/Ã‘/g, "Ñ").replace(/Ã±/g, "ñ")
@@ -1297,14 +1309,13 @@
         const input = event.target.closest("[data-filter-key]");
         if (!input || !dataTable.contains(input)) return;
         tableFilters[input.dataset.filterKey] = input.value.trim().toLowerCase();
-        tablePage = 1;
-        renderTable();
+        // Update filter state immediately, but debounce the heavy re-render.
+        scheduleTableRender();
       });
 
       document.getElementById("tableSearchInput").addEventListener("input", e => {
         tableSearch = e.target.value.trim().toLowerCase();
-        tablePage = 1;
-        renderTable();
+        scheduleTableRender();
       });
 
       document.getElementById("tablePageSize").addEventListener("change", e => {
@@ -1465,9 +1476,18 @@
     }
 
     const RESERVED_DIMENSION_KEYS = new Set(["row_id", "school_id", "school_name", "region", "province", "division", "municipality", "barangay", "leg_district", "district", "curricular_offering", "iern", "number"]);
-    const DIMENSION_LABEL_OVERRIDES = { grade: "Grade Level", size: "Class Size", curricular_offering: "Curricular Offering", school_id: "School ID", school_name: "School Name", leg_district: "Legislative District", number: "Number of Classes", iern: "IERN", shifting: "Shifting", mode: "Mode" };
+    const DIMENSION_LABEL_OVERRIDES = { grade: "Grade Level", size: "Class Size", curricular_offering: "Curricular Offering", school_id: "School ID", school_name: "School Name", leg_district: "Legislative District", iern: "IERN", shifting: "Shifting", mode: "Mode" };
+
+    // "number" is synthesized per class row (defaulting to 1) during the join, so it
+    // only means "Number of Classes" for the Classes Organized module. Other modules
+    // may legitimately have their own "Number" column meaning something else, so those
+    // keep the generic "Number" label instead of defaulting to "Number of Classes".
+    function isClassesOrganizedModule() {
+      return /classes_organized/i.test(classesFileName || "");
+    }
 
     function dimensionLabel(key) {
+      if (key === "number") return isClassesOrganizedModule() ? "Number of Classes" : "Number";
       if (DIMENSION_LABEL_OVERRIDES[key]) return DIMENSION_LABEL_OVERRIDES[key];
       return String(key || "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     }
