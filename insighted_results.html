@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="./stride-assets.js"></script>
   <style>
     :root {
       --navy: #08315F; --blue: #075985; --blue-600: #0284C7; --blue-400: #7DD3FC; --blue-100: #E0F2FE; --blue-50: #F0F9FF;
@@ -379,16 +380,28 @@
   <script>
   (function(){
     if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-    var CSVS_TO_PRELOAD = [
-      "./stride_school_unique.csv",
-      "./efd_classroom_july2026.csv",
-      "./stride_shs_industries.csv",
-      "./sdo_classification_202606151013.csv",
-      "./ph_schools_20260616410.csv",
-      "./insighted_school_info.csv",
-      "./insighted_classes_organized.csv",
-      "./insighted_shifting.csv"
-    ];
+    var CSVS_TO_PRELOAD = (window.STRIDE_ASSETS && window.STRIDE_ASSETS.csvUrls)
+      ? window.STRIDE_ASSETS.csvUrls
+      : [
+        "./all_deped_summary_april2026.csv",
+        "./efd_classroom_july2026.csv",
+        "./enrolment_sy2025-2026.csv",
+        "./insighted_classes_organized.csv",
+        "./insighted_classroom_conditions.csv",
+        "./insighted_classroom_repairs.csv",
+        "./insighted_electrical_safety.csv",
+        "./insighted_furniture.csv",
+        "./insighted_gadgets.csv",
+        "./insighted_infra_summary.csv",
+        "./insighted_safety_equipment.csv",
+        "./insighted_school_info.csv",
+        "./insighted_shifting.csv",
+        "./insighted_utilities.csv",
+        "./insighted_wash.csv",
+        "./ph_schools_20260616410.csv",
+        "./sdo_classification_202606151013.csv",
+        "./stride_school_unique.csv"
+      ];
     function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
     navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
       if (reg.active) warmCache(reg.active);
@@ -931,10 +944,22 @@
         setLoading(true, "Preparing dashboard", "Initializing data and visual summaries...");
         updateLoadingProgress(0, 1, "", "Preparing resources");
 
-        let candidateFiles = await discoverInsightedCsvFiles();
-        if (!candidateFiles.length) {
-          candidateFiles = ["insighted_school_info.csv", "insighted_classes_organized.csv", "insighted_shifting.csv"];
-        }
+        let candidateFiles = (window.STRIDE_ASSETS && window.STRIDE_ASSETS.insightedCsvFiles)
+          ? window.STRIDE_ASSETS.insightedCsvFiles.slice()
+          : [
+            "insighted_classes_organized.csv",
+            "insighted_classroom_conditions.csv",
+            "insighted_classroom_repairs.csv",
+            "insighted_electrical_safety.csv",
+            "insighted_furniture.csv",
+            "insighted_gadgets.csv",
+            "insighted_infra_summary.csv",
+            "insighted_safety_equipment.csv",
+            "insighted_school_info.csv",
+            "insighted_shifting.csv",
+            "insighted_utilities.csv",
+            "insighted_wash.csv"
+          ];
 
         loadingCompletedSteps = 0;
         loadingTotalSteps = candidateFiles.length;
@@ -1002,7 +1027,7 @@
         defaultDatasetFileName = classesFileName;
 
         const csvSelect = document.getElementById("csvSelector");
-        const EXCLUDED_MODULES = new Set(["insighted_electrical_readiness.csv"]);
+        const EXCLUDED_MODULES = new Set();
         const datasetFiles = insightedCsvFiles.filter(file => file !== schoolInfoFileName && !EXCLUDED_MODULES.has(file));
         if (csvSelect && datasetFiles.length) {
           const MODULE_CATEGORIES = [
@@ -1050,6 +1075,7 @@
         "insighted_classroom_conditions.csv": "Classroom Conditions",
         "insighted_classroom_repairs.csv": "Classroom Repairs",
         "insighted_electrical_readiness.csv": "Electrical Readiness",
+        "insighted_electrical_safety.csv": "Electrical Safety",
         "insighted_furniture.csv": "Furniture Inventory",
         "insighted_gadgets.csv": "ICT Devices",
         "insighted_infra_summary.csv": "Infrastructure Summary",
