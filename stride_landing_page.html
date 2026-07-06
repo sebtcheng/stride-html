@@ -168,16 +168,25 @@
     var emptyEl = document.getElementById("slideshowEmpty");
 
     function discoverScreenshots(){
-      var files = (window.STRIDE_ASSETS && window.STRIDE_ASSETS.screenshotFiles)
-        ? window.STRIDE_ASSETS.screenshotFiles.slice()
-        : [
-          "Screenshot_34.png",
-          "Screenshot_35.png",
-          "Screenshot_36.png"
-        ];
+      var files = [
+        "Screenshot_34.png",
+        "Screenshot_35.png",
+        "Screenshot_36.png"
+      ];
+
+      if (window.STRIDE_ASSETS) {
+        if (Array.isArray(window.STRIDE_ASSETS.screenshotFiles)) {
+          files = window.STRIDE_ASSETS.screenshotFiles.slice();
+        } else if (Array.isArray(window.STRIDE_ASSETS.screenshots)) {
+          files = window.STRIDE_ASSETS.screenshots.slice();
+        } else if (Array.isArray(window.STRIDE_ASSETS.screenshotUrls)) {
+          files = window.STRIDE_ASSETS.screenshotUrls.slice();
+        }
+      }
 
       return Promise.resolve(
         files
+          .map(function(file){ return String(file || "").replace(/^\.\//, ""); })
           .filter(function(file){ return IMAGE_RE.test(file); })
           .sort(function(a,b){ return a.localeCompare(b, undefined, { numeric:true, sensitivity:"base" }); })
       );
@@ -190,12 +199,20 @@
       }
       if (emptyEl) emptyEl.remove();
 
+      var failed = 0;
       var slides = files.map(function(file, i){
         var slide = document.createElement("img");
         slide.className = "slide " + (i === 0 ? "base active" : "stack");
         slide.alt = "STRIDE dashboard screenshot";
         slide.loading = "eager";
-        slide.src = "./" + file.replace(/'/g, "%27");
+        slide.onerror = function(){
+          failed += 1;
+          slide.remove();
+          if (failed === files.length && container) {
+            container.innerHTML = '<div class="empty">Screenshots were found in the manifest, but the PNG files did not load. Check filename case and GitHub Pages deployment cache.</div>';
+          }
+        };
+        slide.src = "./" + encodeURIComponent(file).replace(/%2F/g, "/");
         container.appendChild(slide);
         return slide;
       });
