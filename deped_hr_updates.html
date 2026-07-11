@@ -7,6 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- STRIDE shared data layer (load order matters: assets -> parse core -> data). -->
+<!-- Provides window.STRIDE_ASSETS (incl. DATA_VERSION), window.StrideParseCore, window.StrideData. -->
+<script src="./stride-assets.js"></script>
+<script src="./stride-parse-core.js"></script>
+<script src="./stride-data.js"></script>
 <style>
 :root{
   --navy:#08315F;--blue:#075985;--blue-600:#0284C7;--blue-400:#7DD3FC;--blue-100:#E0F2FE;--blue-50:#F0F9FF;
@@ -64,10 +69,15 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 <script>
 (function(){
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-  var CSVS_TO_PRELOAD = [
-    "./all_deped_summary_april2026.csv",
-    "./enrolment_sy2025-2026.csv"
-  ];
+  // This dashboard only needs its two datasets warm for first paint. Resolve them
+  // from the shared manifest (stride-assets.js) when present so paths/versioning
+  // live in one place, and fall back to local literals otherwise.
+  var WANTED = ["all_deped_summary_april2026.csv", "enrolment_sy2025-2026.csv"];
+  var manifest = (window.STRIDE_ASSETS && Array.isArray(window.STRIDE_ASSETS.csvUrls)) ? window.STRIDE_ASSETS.csvUrls : null;
+  var CSVS_TO_PRELOAD = WANTED.map(function(name){
+    var hit = manifest && manifest.filter(function(u){ return u.indexOf(name) !== -1; })[0];
+    return hit || ("./" + name);
+  });
   function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
   navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
     if (reg.active) warmCache(reg.active);
@@ -432,27 +442,45 @@ function updateLoadingProgress(done,total,fileName,phase){
   if(mini)mini.textContent=phase||"Preparing data…";
 }
 function hideLoading(){loadingModal.classList.add("hidden")}
+// --- Lazy startup (guide: paint after the FIRST dataset, warm the rest on idle) ---
+async function loadDatasetIntoState(key){
+  const parsed=await getSharedParsedCsv(key);
+  validateCsvHeaders(key,parsed.headers);
+  DATASETS[key].rows=coerceRows(key,parsed.rows);
+  if(!DATASETS[key].rows.length)throw new Error(`${DATASETS[key].label} did not contain any readable rows.`);
+}
+function scheduleIdle(fn){
+  if("requestIdleCallback" in window) requestIdleCallback(fn,{timeout:2000});
+  else setTimeout(fn,200);
+}
+function warmRemainingDatasets(keys){
+  const queue=keys.slice();
+  function next(){
+    if(!queue.length) return;
+    const key=queue.shift();
+    loadDatasetIntoState(key)
+      .catch(err=>console.warn("Background dataset warm failed:",key,err))
+      .then(()=>scheduleIdle(next));
+  }
+  scheduleIdle(next);
+}
 async function loadCsvData(){
   try{
     loadingStartedAt=performance.now();
-    const keys=Object.keys(DATASETS);
+    const activeKey=state.dataset;
+    const otherKeys=Object.keys(DATASETS).filter(k=>k!==activeKey);
+    // Phase 1: load ONLY the active dataset, then paint immediately.
     setLoading("Preparing dashboard","Initializing data and visual summaries.");
-    updateLoadingProgress(0,keys.length,"","Preparing resources");
-    let done=0;
-    for(const key of keys){
-      setLoading("Preparing dashboard","Loading required resources...");
-      updateLoadingProgress(done,keys.length,"","Processing data");
-      const parsed=await getSharedParsedCsv(key);
-      validateCsvHeaders(key,parsed.headers);
-      DATASETS[key].rows=coerceRows(key,parsed.rows);
-      if(!DATASETS[key].rows.length)throw new Error(`${DATASETS[key].label} did not contain any readable rows.`);
-      done++;
-      updateLoadingProgress(done,keys.length,"","Resources ready");
-    }
+    updateLoadingProgress(0,1,"","Loading "+(DATASETS[activeKey].label||activeKey));
+    await loadDatasetIntoState(activeKey);
+    updateLoadingProgress(1,1,"","Resources ready");
     setLoading("Building dashboard","Preparing visual summaries...");
-    updateLoadingProgress(keys.length,keys.length,"","Finalizing dashboard");
     renderAll();
     setTimeout(()=>hideLoading(),350);
+    // Phase 2: warm the other dataset(s) during idle so a page switch is instant.
+    // getSharedParsedCsv() persists to the shared parsed cache, so the next page
+    // load reads from cache instead of re-fetching and re-parsing.
+    warmRemainingDatasets(otherKeys);
   }catch(error){
     console.error("Unable to load CSV data.",error);
     setLoading("Could not load CSV data",`${error.message||error}. Keep the CSV files beside this HTML file, then open through a local server such as: python -m http.server 8000`,true);

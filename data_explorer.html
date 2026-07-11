@@ -7,6 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- STRIDE shared data layer: manifest (STRIDE_ASSETS), parser (StrideParseCore), cache/data helpers (StrideData) -->
+  <script src="./stride-assets.js"></script>
+  <script src="./stride-parse-core.js"></script>
+  <script src="./stride-data.js"></script>
+
   <style>
     :root {
       --navy: #08315F;
@@ -91,16 +97,22 @@
   <script>
   (function(){
     if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-    var CSVS_TO_PRELOAD = [
-      "./stride_school_unique.csv",
-      "./efd_classroom_july2026.csv",
-      "./stride_shs_industries.csv",
-      "./sdo_classification_202606151013.csv",
-      "./ph_schools_20260616410.csv",
-      "./insighted_school_info.csv",
-      "./insighted_classes_organized.csv",
-      "./insighted_shifting.csv"
+    // Resolve the SW warm list from the shared manifest when present so paths/versioning stay in one place.
+    var WANTED = [
+      "stride_school_unique.csv",
+      "efd_classroom_july2026.csv",
+      "stride_shs_industries.csv",
+      "sdo_classification_202606151013.csv",
+      "ph_schools_20260616410.csv",
+      "insighted_school_info.csv",
+      "insighted_classes_organized.csv",
+      "insighted_shifting.csv"
     ];
+    var manifest = (window.STRIDE_ASSETS && Array.isArray(window.STRIDE_ASSETS.csvUrls)) ? window.STRIDE_ASSETS.csvUrls : null;
+    var CSVS_TO_PRELOAD = WANTED.map(function(name){
+      var hit = manifest ? manifest.filter(function(u){ return u.indexOf(name) >= 0; })[0] : null;
+      return hit || ("./" + name);
+    });
     function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
     navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
       if (reg.active) warmCache(reg.active);
@@ -393,10 +405,44 @@
           if ((target[k] === undefined || isBlank(target[k])) && !isBlank(source[k])) target[k] = source[k];
         }
       }
+      var RAW_CACHE_NAME = "stride-csv-preload-v1";
+      function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
+      async function readSharedRaw(fileName){
+        if (!sharedCacheEnabled()) return null;
+        try { var c = await caches.open(RAW_CACHE_NAME); var m = await c.match("./" + fileName); if (!m) return null; return await m.text(); } catch (e) { return null; }
+      }
+      async function writeSharedRaw(fileName, text){
+        if (!sharedCacheEnabled()) return;
+        try { var c = await caches.open(RAW_CACHE_NAME); await c.put("./" + fileName, new Response(text, { headers:{ "Content-Type":"text/csv" } })); } catch (e) {}
+      }
+      // Reuse the service-worker-warmed raw CSV cache instead of a cache-busting refetch.
+      // NOTE: this page normalizes headers with a slightly different scheme (also collapses "/"),
+      // so it intentionally shares only the RAW text cache, not the parsed-record cache.
       async function loadCsvFile(url){
-        var res = await fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "v=" + Date.now(), { cache: "force-cache" });
-        if (!res.ok) throw new Error("Could not load " + url + " (" + res.status + ")");
-        return parseCsv(await res.text());
+        var fileName = String(url).replace(/^\.\//, "");
+        var text = await readSharedRaw(fileName);
+        if (text == null) {
+          var res = await fetch(url, { cache: "force-cache" });
+          if (!res.ok) throw new Error("Could not load " + url + " (" + res.status + ")");
+          text = await res.text();
+          writeSharedRaw(fileName, text);
+        }
+        return parseCsv(text);
+      }
+      function rebuildRawRows(byId, order){
+        rawRows = order.map(function(key){ return byId[key]; }).filter(function(row){ return !isBlank(getValue(row, "School Name")) || !isBlank(getValue(row, "School ID")); });
+      }
+      function mergeRecordsInto(byId, order, records, sourceLabel){
+        records.forEach(function(rec, idx){
+          var id = getSchoolId(rec);
+          var key = id || (sourceLabel + "#" + idx);
+          if (!byId[key]) { byId[key] = {}; order.push(key); }
+          mergeRecord(byId[key], rec);
+        });
+      }
+      function scheduleIdle(fn){
+        if ("requestIdleCallback" in window) { requestIdleCallback(fn, { timeout: 2000 }); }
+        else { setTimeout(fn, 200); }
       }
       async function loadCsvData(){
         setLoadingMessage("Loading connected CSV data...");
@@ -404,32 +450,42 @@
         var order = [];
         var loadedCount = 0;
 
-        for (var i = 0; i < CSV_FILES.length; i++) {
-          try {
-            var records = await loadCsvFile(CSV_FILES[i]);
-            loadedCount++;
-            records.forEach(function(rec, idx){
-              var id = getSchoolId(rec);
-              var key = id || (CSV_FILES[i] + "#" + idx);
-              if (!byId[key]) {
-                byId[key] = {};
-                order.push(key);
-              }
-              mergeRecord(byId[key], rec);
-            });
-          } catch (err) {
-            console.warn("Skipped CSV:", CSV_FILES[i], err);
-          }
-        }
-
-        rawRows = order.map(function(key){ return byId[key]; }).filter(function(row){ return !isBlank(getValue(row, "School Name")) || !isBlank(getValue(row, "School ID")); });
+        // Paint as soon as the primary school file is parsed; merge the other sources on idle so first paint isn't blocked by all 8 CSVs.
+        var primary = CSV_FILES[0];
+        var primaryRecords = await loadCsvFile(primary);
+        loadedCount++;
+        mergeRecordsInto(byId, order, primaryRecords, primary);
+        rebuildRawRows(byId, order);
         dataReady = true;
         populateRegionDivisionControls();
         currentPage = 1;
         renderTable();
 
         var batch = document.querySelector(".batch-pill");
-        if (batch) batch.innerHTML = '<span class="dot"></span> READY • ' + loadedCount + ' CSV SOURCES';
+        if (batch) batch.innerHTML = '<span class="dot"></span> LOADING • 1/' + CSV_FILES.length + ' CSV SOURCES';
+
+        var rest = CSV_FILES.slice(1);
+        (function mergeNext(){
+          if (!rest.length) {
+            rebuildRawRows(byId, order);
+            populateRegionDivisionControls();
+            renderTable();
+            if (batch) batch.innerHTML = '<span class="dot"></span> READY • ' + loadedCount + ' CSV SOURCES';
+            return;
+          }
+          var file = rest.shift();
+          scheduleIdle(async function(){
+            try {
+              var records = await loadCsvFile(file);
+              loadedCount++;
+              mergeRecordsInto(byId, order, records, file);
+              if (batch) batch.innerHTML = '<span class="dot"></span> LOADING • ' + loadedCount + '/' + CSV_FILES.length + ' CSV SOURCES';
+            } catch (err) {
+              console.warn("Skipped CSV:", file, err);
+            }
+            mergeNext();
+          });
+        })();
       }
       function setLoadingMessage(message){
         document.getElementById("dataHead").innerHTML = "";

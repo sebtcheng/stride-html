@@ -20,7 +20,6 @@
     "sdo_classification_202606151013.csv",
     "stride_school_unique.csv"
   ];
-
   const pngFiles = [
     "bagong_pilipinas.png",
     "deped_logo.png",
@@ -37,12 +36,15 @@
   const logoFiles = pngFiles.filter(file => /logo|bagong_pilipinas/i.test(file));
 
   window.STRIDE_ASSETS = {
+    // >>> ADD THIS LINE <<<
+    // Bump whenever ANY csv above is regenerated (invalidates IndexedDB + parsed cache).
+    DATA_VERSION: "2026-07-11-v1",
+
     csvFiles,
     pngFiles,
     insightedCsvFiles,
     screenshotFiles,
     logoFiles,
-
     csvUrls: csvFiles.map(file => "./" + file),
     pngUrls: pngFiles.map(file => "./" + file),
     insightedCsvUrls: insightedCsvFiles.map(file => "./" + file),

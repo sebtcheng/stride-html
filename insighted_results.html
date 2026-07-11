@@ -858,6 +858,13 @@
     let loadingTotalSteps = 1;
     let loadingCompletedSteps = 0;
     let joinedDataCache = {};
+    // Per-dataset memo of the pure, structural metadata that used to be recomputed
+    // several times on every dataset switch (full scans over all rows x columns).
+    let dimensionMetaCache = {};
+    let activeDatasetKey = "__default__";
+    function getDatasetMetaCache() {
+      return dimensionMetaCache[activeDatasetKey] || (dimensionMetaCache[activeDatasetKey] = {});
+    }
 
     async function fetchCsvText(path, options = {}) {
       const cacheKey = path.startsWith("./") ? path : "./" + String(path || "").replace(/^\.?\//, "");
@@ -950,6 +957,33 @@
       }
     }
 
+    function scheduleIdle(fn) {
+      if ("requestIdleCallback" in window) requestIdleCallback(fn, { timeout: 2000 });
+      else setTimeout(fn, 200);
+    }
+
+    // Phase 2 helper: warm the remaining modules into memory (and the parsed/raw
+    // caches, via getRowsForFile) one at a time during idle time. This never blocks
+    // the first paint and makes later module switches instant.
+    function preloadRemainingDatasets(files) {
+      const queue = (files || []).slice();
+      function next() {
+        if (!queue.length) return;
+        const file = queue.shift();
+        if (insightedCsvDatasets[file]) { scheduleIdle(next); return; }
+        getRowsForFile(file)
+          .then(rows => {
+            if (rows && rows.length) {
+              insightedCsvDatasets[file] = rows;
+              if (!insightedCsvFiles.includes(file)) insightedCsvFiles.push(file);
+            }
+          })
+          .catch(() => {})
+          .then(() => scheduleIdle(next));
+      }
+      scheduleIdle(next);
+    }
+
     async function loadData() {
       try {
         loadingStartedAt = performance.now();
@@ -973,45 +1007,55 @@
             "insighted_wash.csv"
           ];
 
-        loadingCompletedSteps = 0;
-        loadingTotalSteps = candidateFiles.length;
-        setLoading(true, "Preparing dashboard resources", "Loading optimized resources when available.");
-        updateLoadingProgress(0, candidateFiles.length, "", "Preparing resource queue");
-
-        let schoolInfoParsed = null;
-        let classesParsed = null;
+        // Phase 1 (fast paint): await ONLY the two files needed for first render —
+        // the school-info join table and the default data module — instead of every
+        // insighted_*.csv. The rest are warmed in the background (see Phase 2 below).
         insightedCsvDatasets = {};
         insightedCsvFiles = [];
 
-        for (const file of candidateFiles) {
+        const schoolInfoCandidate = candidateFiles.find(file => /school_info/i.test(file));
+        const defaultCandidate = candidateFiles.find(file => /classes_organized/i.test(file))
+          || candidateFiles.find(file => file !== schoolInfoCandidate);
+        const firstPassFiles = [schoolInfoCandidate, defaultCandidate]
+          .filter((file, index, arr) => file && arr.indexOf(file) === index);
+
+        loadingCompletedSteps = 0;
+        loadingTotalSteps = firstPassFiles.length;
+        setLoading(true, "Preparing dashboard resources", "Loading the first module and school information.");
+        updateLoadingProgress(0, firstPassFiles.length, "", "Preparing resource queue");
+
+        let schoolInfoParsed = null;
+        let classesParsed = null;
+
+        for (const file of firstPassFiles) {
           let rows;
           let source = "network";
           try {
-            updateLoadingProgress(loadingCompletedSteps, candidateFiles.length, file, "Checking cache");
+            updateLoadingProgress(loadingCompletedSteps, firstPassFiles.length, file, "Checking cache");
             rows = await getRowsForFile(file, {
               onSource: src => { source = src; }
             });
           } catch (e) {
             console.warn(e);
             loadingCompletedSteps++;
-            updateLoadingProgress(loadingCompletedSteps, candidateFiles.length, file, "Skipped");
+            updateLoadingProgress(loadingCompletedSteps, firstPassFiles.length, file, "Skipped");
             continue;
           }
 
           loadingCompletedSteps++;
           updateLoadingProgress(
             loadingCompletedSteps,
-            candidateFiles.length,
+            firstPassFiles.length,
             file,
             source === "parsed-cache" ? "Loaded from parsed cache" : source === "cache" ? "Parsed from preload cache" : "Loaded and cached"
           );
 
           if (!rows.length) continue;
           insightedCsvDatasets[file] = rows;
-          insightedCsvFiles.push(file);
+          if (!insightedCsvFiles.includes(file)) insightedCsvFiles.push(file);
           const headers = Object.keys(rows[0]);
           const hasAll = fields => fields.every(f => headers.includes(f));
-          if (!classesParsed && hasAll(REQUIRED_CLASSES_FIELDS)) {
+          if (!classesParsed && file !== schoolInfoCandidate && hasAll(REQUIRED_CLASSES_FIELDS)) {
             classesParsed = rows;
             classesFileName = file;
           } else if (!schoolInfoParsed && hasAll(REQUIRED_SCHOOL_INFO_FIELDS)) {
@@ -1040,7 +1084,9 @@
 
         const csvSelect = document.getElementById("csvSelector");
         const EXCLUDED_MODULES = new Set();
-        const datasetFiles = insightedCsvFiles.filter(file => file !== schoolInfoFileName && !EXCLUDED_MODULES.has(file));
+        // Build the module selector from ALL candidate modules, not just the ones
+        // loaded so far, so lazy-loaded modules stay selectable immediately.
+        const datasetFiles = candidateFiles.filter(file => file !== schoolInfoFileName && file !== schoolInfoCandidate && !EXCLUDED_MODULES.has(file));
         if (csvSelect && datasetFiles.length) {
           const MODULE_CATEGORIES = [
             { label: "Human Resource", files: ["insighted_classes_organized.csv", "insighted_shifting.csv"] },
@@ -1073,6 +1119,11 @@
 
         init();
         setTimeout(() => setLoading(false), 350);
+
+        // Phase 2 (idle preload): warm the remaining modules in the background so
+        // later switches are instant, without ever blocking the first paint.
+        const remainingFiles = datasetFiles.filter(file => !insightedCsvDatasets[file]);
+        preloadRemainingDatasets(remainingFiles);
       } catch (err) {
         console.warn(err);
         const message = (err && err.message) ? err.message : "Could not load CSV files.";
@@ -1126,6 +1177,7 @@
 
     function rebuildJoinedData() {
       const joinedCacheKey = classesFileName || defaultDatasetFileName || "__default__";
+      activeDatasetKey = joinedCacheKey;
       const cachedJoin = joinedDataCache[joinedCacheKey];
       if (cachedJoin) {
         joinedData = cachedJoin.joinedData;
@@ -1186,13 +1238,25 @@
       renderAdvancedDimensionFilters(getCategoricalDimensions());
 
       // Bind Events
-      document.getElementById("csvSelector").addEventListener("change", event => {
+      document.getElementById("csvSelector").addEventListener("change", async event => {
         const selectedFile = event.target.value;
-        if (!insightedCsvDatasets[selectedFile]) return;
-        // Every insighted_ file is cached in memory from the initial load, so switching
-        // datasets never refetches from disk. The modal is only brief UX feedback while
-        // the joined data and dashboard re-render.
+        if (!selectedFile) return;
+        // With lazy loading, a module may not be in memory yet if the user selects it
+        // before idle-preload reaches it. Fetch on demand (warm cache/SW keeps this
+        // fast); modules already in memory render instantly with no refetch.
         setLoading(true, "Switching dataset", "Preparing selected dataset...");
+        try {
+          if (!insightedCsvDatasets[selectedFile]) {
+            const rows = await getRowsForFile(selectedFile);
+            if (!rows || !rows.length) throw new Error("Empty dataset: " + selectedFile);
+            insightedCsvDatasets[selectedFile] = rows;
+            if (!insightedCsvFiles.includes(selectedFile)) insightedCsvFiles.push(selectedFile);
+          }
+        } catch (e) {
+          console.warn(e);
+          setLoading(false);
+          return;
+        }
         setTimeout(() => {
           classesFileName = selectedFile;
           classesData = insightedCsvDatasets[selectedFile];
@@ -1529,6 +1593,8 @@
 
     function getCategoricalDimensions() {
       if (!joinedData.length) return [{ key: "grade", label: dimensionLabel("grade") }];
+      const metaCache = getDatasetMetaCache();
+      if (metaCache.categoricalDimensions) return metaCache.categoricalDimensions;
       const dims = [];
       Object.keys(joinedData[0]).forEach(key => {
         if (RESERVED_DIMENSION_KEYS.has(key)) return;
@@ -1539,6 +1605,7 @@
         dims.push({ key, label: dimensionLabel(key) });
       });
       if (!dims.length) dims.push({ key: "grade", label: dimensionLabel("grade") });
+      metaCache.categoricalDimensions = dims;
       return dims;
     }
 
@@ -1549,6 +1616,8 @@
     // "number" of 1) are never surfaced unless they exist in the CSV.
     function getTableColumns() {
       if (!joinedData.length) return [];
+      const metaCache = getDatasetMetaCache();
+      if (metaCache.tableColumns) return metaCache.tableColumns;
       const ordered = [];
       const seen = new Set(["row_id"]);
       const pushColumn = key => {
@@ -1559,6 +1628,7 @@
       };
       TABLE_INFO_COLUMN_ORDER.forEach(pushColumn);
       datasetColumnKeys.forEach(pushColumn);
+      metaCache.tableColumns = ordered;
       return ordered;
     }
 
@@ -1629,9 +1699,22 @@
     }
 
     function initializeCategorySelections() {
-      getCategoricalDimensions().forEach(dim => {
-        const counts = getCategoryCounts(dim.key, joinedData);
-        const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
+      const dims = getCategoricalDimensions();
+      // Single pass over the rows to tally every categorical dimension at once,
+      // instead of a separate full scan per dimension.
+      const countsByDim = {};
+      dims.forEach(dim => { countsByDim[dim.key] = {}; });
+      joinedData.forEach(d => {
+        const metric = getMetricValue(d);
+        dims.forEach(dim => {
+          const value = d[dim.key];
+          if (!isKnownSummaryValue(value)) return;
+          const counts = countsByDim[dim.key];
+          counts[value] = (counts[value] || 0) + metric;
+        });
+      });
+      dims.forEach(dim => {
+        const top = Object.entries(countsByDim[dim.key]).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
         categorySelections[dim.key] = new Set(top);
       });
     }
@@ -1743,14 +1826,18 @@
 
     function getNumericUnitFields() {
       if (!joinedData.length) return [];
+      const metaCache = getDatasetMetaCache();
+      if (metaCache.numericUnitFields) return metaCache.numericUnitFields;
       const exclude = new Set(["row_id", "school_id", "iern", "size"]);
-      return Object.keys(joinedData[0]).filter(key => {
+      const fields = Object.keys(joinedData[0]).filter(key => {
         if (exclude.has(key)) return false;
         // "number" is synthesized with a default of 1 during the join, so only treat it
         // as a real unit when the selected module's CSV actually contains that column.
         if (key === "number" && !datasetColumnKeys.includes("number")) return false;
         return fieldHasData(key) && isNumericField(joinedData, key);
       });
+      metaCache.numericUnitFields = fields;
+      return fields;
     }
 
     function populateUnitSelector() {

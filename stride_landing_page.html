@@ -129,7 +129,12 @@
         "./sdo_classification_202606151013.csv",
         "./stride_school_unique.csv"
       ];
-    function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
+    function scheduleIdle(fn){
+      if ("requestIdleCallback" in window) { requestIdleCallback(fn, { timeout: 2500 }); }
+      else { setTimeout(fn, 400); }
+    }
+    // Let the landing hero + screenshots win the network first, then prewarm the CSV cache on idle.
+    function warmCache(sw){ if (sw) scheduleIdle(function(){ sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }); }
     navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
       if (reg.active) warmCache(reg.active);
       navigator.serviceWorker.addEventListener("controllerchange", function(){ warmCache(navigator.serviceWorker.controller); });
@@ -200,11 +205,12 @@
       if (emptyEl) emptyEl.remove();
 
       var failed = 0;
+      function srcFor(file){ return "./" + encodeURIComponent(file).replace(/%2F/g, "/"); }
       var slides = files.map(function(file, i){
         var slide = document.createElement("img");
         slide.className = "slide " + (i === 0 ? "base active" : "stack");
         slide.alt = "STRIDE dashboard screenshot";
-        slide.loading = "eager";
+        slide.loading = i === 0 ? "eager" : "lazy";
         slide.onerror = function(){
           failed += 1;
           slide.remove();
@@ -212,10 +218,20 @@
             container.innerHTML = '<div class="empty">Screenshots were found in the manifest, but the PNG files did not load. Check filename case and GitHub Pages deployment cache.</div>';
           }
         };
-        slide.src = "./" + encodeURIComponent(file).replace(/%2F/g, "/");
+        // Paint the first (visible) screenshot immediately; defer the rest so the hero renders fast.
+        if (i === 0) { slide.src = srcFor(file); }
+        else { slide.dataset.src = srcFor(file); }
         container.appendChild(slide);
         return slide;
       });
+
+      function loadDeferredSlides(){
+        slides.forEach(function(slide){
+          if (slide.dataset && slide.dataset.src) { slide.src = slide.dataset.src; delete slide.dataset.src; }
+        });
+      }
+      if ("requestIdleCallback" in window) { requestIdleCallback(loadDeferredSlides, { timeout: 2000 }); }
+      else { setTimeout(loadDeferredSlides, 300); }
 
       var current = 0, timer = null;
       function show(index){

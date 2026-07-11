@@ -7,6 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  <!-- STRIDE shared data layer (load order matters: assets -> parse core -> data). -->
+  <!-- Provides window.STRIDE_ASSETS (incl. DATA_VERSION), window.StrideParseCore, window.StrideData. -->
+  <script src="./stride-assets.js"></script>
+  <script src="./stride-parse-core.js"></script>
+  <script src="./stride-data.js"></script>
   <style>
     :root {
       --navy: #08315F;
@@ -691,6 +696,11 @@
     }
 
     async function discoverRootCsvFiles(){
+      // Prefer the versioned manifest from stride-assets.js so every page shares one
+      // authoritative CSV list instead of scraping the directory listing at runtime.
+      if (window.STRIDE_ASSETS && Array.isArray(window.STRIDE_ASSETS.csvUrls) && window.STRIDE_ASSETS.csvUrls.length) {
+        return window.STRIDE_ASSETS.csvUrls.slice().sort();
+      }
       try {
         var res = await fetch("./?v=" + Date.now(), { cache: "no-store" });
         if (!res.ok) return FALLBACK_CSVS;
@@ -712,106 +722,26 @@
       }
     }
 
-    var PARSED_CACHE_NAME = "stride-parsed-v1";
+    // decodeCsvText / repairMojibake / canonicalCell / fastCleanCell / parseCsv
+    // (and the page-local parsed-cache helpers) used to be duplicated in this
+    // preloader. They now live in stride-parse-core.js (loaded in <head>) as the
+    // single source of truth, with parsing running off the main thread in
+    // csv-worker.js via StrideData. Page-local copies were removed so parsed-cache
+    // rows stay byte-identical across every STRIDE page.
 
-    function repairMojibake(text) {
-      return String(text || "")
-        .replace(/Ã‘/g, "Ñ").replace(/Ã±/g, "ñ")
-        .replace(/ã‘/g, "Ñ").replace(/ã±/g, "ñ")
-        .replace(/Ã/g, "Á").replace(/Ã¡/g, "á")
-        .replace(/Ã‰/g, "É").replace(/Ã©/g, "é")
-        .replace(/Ã/g, "Í").replace(/Ã­/g, "í")
-        .replace(/Ã“/g, "Ó").replace(/Ã³/g, "ó")
-        .replace(/Ãš/g, "Ú").replace(/Ãº/g, "ú")
-        .replace(/Ãœ/g, "Ü").replace(/Ã¼/g, "ü")
-        .replace(/â€“/g, "–").replace(/â€”/g, "—")
-        .replace(/â€˜/g, "‘").replace(/â€™/g, "’")
-        .replace(/â€œ/g, "“").replace(/â€/g, "”")
-        .replace(/Â /g, " ").replace(/Â/g, "");
-    }
-
-    function decodeCsvText(buffer) {
-      var bytes = new Uint8Array(buffer);
-      var utf8 = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-      var win1252 = new TextDecoder("windows-1252").decode(bytes);
-      function badness(text) {
-        return (text.match(/�/g) || []).length * 20 + (text.match(/Ã.|Â.|â[€-]/g) || []).length * 8;
-      }
-      var decoded = badness(utf8) > badness(win1252) ? win1252 : utf8;
-      return repairMojibake(decoded).replace(/^﻿/, "");
-    }
-
-    function canonicalCell(text) {
-      var value = repairMojibake(text).replace(/\s+/g, " ").trim();
-      return value
-        .replace(/\bLas\s+Pi(?:ñ|Ã±|ã±|ï¿½|�|n)as\b/gi, "Las Piñas")
-        .replace(/\bPara(?:ñ|Ã±|ã±|ï¿½|�|n)aque\b/gi, "Parañaque");
-    }
-
-    var SUSPICIOUS_CELL_RE = /[À-ÿ�]|\s{2,}/;
-    function fastCleanCell(text) {
-      if (!text) return "";
-      return SUSPICIOUS_CELL_RE.test(text) ? canonicalCell(text) : text;
-    }
-
-    // Mirror of the InsightED CSV parser so parsed rows in the shared cache match
-    // exactly what the InsightED page expects (same header + value shape).
-    function parseCsv(text) {
-      var rows = [];
-      var row = [];
-      var cell = "";
-      var quote = false;
-      for (var i = 0; i < text.length; i++) {
-        var ch = text[i];
-        var next = text[i + 1];
-        if (ch === '"' && quote && next === '"') { cell += '"'; i++; }
-        else if (ch === '"') { quote = !quote; }
-        else if (ch === "," && !quote) { row.push(fastCleanCell(cell)); cell = ""; }
-        else if ((ch === "\n" || ch === "\r") && !quote) {
-          if (ch === "\r" && next === "\n") i++;
-          row.push(fastCleanCell(cell));
-          if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
-          row = [];
-          cell = "";
-        } else { cell += ch; }
-      }
-      if (cell || row.length) {
-        row.push(fastCleanCell(cell));
-        if (row.some(function(x){ return String(x).trim() !== ""; })) rows.push(row);
-      }
-      if (!rows.length) return [];
-      var headers = rows.shift().map(function(h){ return String(h || "").trim().toLowerCase().replace(/[\s_\-]+/g, " "); });
-      return rows.map(function(values){
-        var record = {};
-        headers.forEach(function(h, idx){ record[h] = String(values[idx] || "").trim(); });
-        return record;
-      });
-    }
-
-    async function storeParsedCsv(fileName, rows) {
-      if (!("caches" in window)) return;
-      try {
-        var cache = await caches.open(PARSED_CACHE_NAME);
-        await cache.put(
-          new Request("./__parsed__/" + fileName),
-          new Response(JSON.stringify(rows), { headers: { "Content-Type": "application/json" } })
-        );
-      } catch (e) { console.warn("Could not store parsed CSV", e); }
-    }
-
-    async function hasParsedCsv(fileName) {
-      if (!("caches" in window)) return false;
-      try {
-        var cache = await caches.open(PARSED_CACHE_NAME);
-        return !!(await cache.match("./__parsed__/" + fileName));
-      } catch (e) { return false; }
-    }
-
+    // Raw-cache one CSV for instant/offline reuse. When a parse is requested we
+    // delegate to StrideData.loadDataset, which resolves IndexedDB -> parsed cache
+    // -> raw cache/SW -> network, parses in the worker, and persists parsed rows
+    // keyed by DATA_VERSION — keeping this shell's warming consistent with what
+    // InsightED and the other pages later read.
     async function cacheCsv(url, options){
       options = options || {};
       var fileName = url.replace(/^\.\//, "");
 
-      if (options.parse && await hasParsedCsv(fileName)) return;
+      if (options.parse && window.StrideData && typeof window.StrideData.loadDataset === "function") {
+        await window.StrideData.loadDataset(fileName);
+        return;
+      }
 
       var response = await fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "preload=" + Date.now(), { cache: "reload" });
       if (!response.ok) throw new Error("Could not preload " + url);
@@ -821,12 +751,6 @@
       if ("caches" in window) {
         var cache = await caches.open("stride-csv-preload-v1");
         await cache.put(url, new Response(buffer, { headers: { "Content-Type": "text/csv; charset=utf-8" } }));
-      }
-
-      if (options.parse) {
-        try {
-          await storeParsedCsv(fileName, parseCsv(decodeCsvText(buffer)));
-        } catch (e) { console.warn("Could not parse " + url, e); }
       }
     }
 
@@ -888,11 +812,18 @@
       hidePreloadSoon();
 
       if (backgroundCsvs.length) {
-        requestIdle(function(){
-          backgroundCsvs.forEach(function(url){
-            cacheCsv(url, { parse: isInsightedCsv(url) }).catch(function(e){ console.warn(e); });
+        // Warm the rest during idle time. Prefer StrideData.warm (idle queue + worker
+        // parsing + IndexedDB/parsed-cache persistence); fall back to the local idle
+        // loop only if the shared data layer failed to load.
+        if (window.StrideData && typeof window.StrideData.warm === "function") {
+          window.StrideData.warm(backgroundCsvs.map(function(url){ return url.replace(/^\.\//, ""); }));
+        } else {
+          requestIdle(function(){
+            backgroundCsvs.forEach(function(url){
+              cacheCsv(url, { parse: isInsightedCsv(url) }).catch(function(e){ console.warn(e); });
+            });
           });
-        });
+        }
       }
     }
 

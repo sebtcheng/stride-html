@@ -15,6 +15,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 
+  <!-- STRIDE shared data layer: manifest (STRIDE_ASSETS), parser (StrideParseCore), cache/data helpers (StrideData) -->
+  <script src="./stride-assets.js"></script>
+  <script src="./stride-parse-core.js"></script>
+  <script src="./stride-data.js"></script>
+
   <style>
     :root{
       --navy:#08315F; --blue:#075985; --blue-600:#0284C7; --blue-400:#7DD3FC;
@@ -139,16 +144,22 @@
   <script>
   (function(){
     if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-    var CSVS_TO_PRELOAD = [
-      "./stride_school_unique.csv",
-      "./efd_classroom_july2026.csv",
-      "./stride_shs_industries.csv",
-      "./sdo_classification_202606151013.csv",
-      "./ph_schools_20260616410.csv",
-      "./insighted_school_info.csv",
-      "./insighted_classes_organized.csv",
-      "./insighted_shifting.csv"
+    // Resolve the SW warm list from the shared manifest when present so paths/versioning stay in one place.
+    var WANTED = [
+      "stride_school_unique.csv",
+      "efd_classroom_july2026.csv",
+      "stride_shs_industries.csv",
+      "sdo_classification_202606151013.csv",
+      "ph_schools_20260616410.csv",
+      "insighted_school_info.csv",
+      "insighted_classes_organized.csv",
+      "insighted_shifting.csv"
     ];
+    var manifest = (window.STRIDE_ASSETS && Array.isArray(window.STRIDE_ASSETS.csvUrls)) ? window.STRIDE_ASSETS.csvUrls : null;
+    var CSVS_TO_PRELOAD = WANTED.map(function(name){
+      var hit = manifest ? manifest.filter(function(u){ return u.indexOf(name) >= 0; })[0] : null;
+      return hit || ("./" + name);
+    });
     function warmCache(sw){ if (sw) sw.postMessage({ type: "WARM_CSV_CACHE", urls: CSVS_TO_PRELOAD }); }
     navigator.serviceWorker.register("./stride-csv-cache-sw.js").then(function(reg){
       if (reg.active) warmCache(reg.active);
