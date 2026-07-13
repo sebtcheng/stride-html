@@ -66,8 +66,8 @@
     .result-item .r-meta{ margin-top:3px; color:var(--muted); font:700 10px var(--font-body); }
     .result-item .r-id{ display:inline-block; margin-top:5px; margin-right:5px; padding:2px 8px; border-radius:999px; background:var(--blue-100); color:var(--navy); font:800 9px var(--font-heading); letter-spacing:.05em; }
     .result-item.no-coord{ opacity:.66; }
-    .results-list{ padding:0; overflow:hidden; }
-    .results-table-wrap{ position:relative; width:100%; height:100%; overflow:auto; background:#fff; }
+    .results-list{ padding:0; overflow:hidden; display:flex; flex-direction:column; }
+    .results-table-wrap{ position:relative; width:100%; flex:1 1 auto; min-height:0; overflow:auto; background:#fff; }
     .results-table-wrap::-webkit-scrollbar{ width:11px; height:11px; }
     .results-table-wrap::-webkit-scrollbar-thumb{ border:3px solid #fff; border-radius:999px; background:#94A3B8; }
     .results-table-wrap::-webkit-scrollbar-track{ background:#F8FAFC; }
@@ -89,6 +89,13 @@
     .col-filter-input:focus{ border-color:var(--blue); box-shadow:0 0 0 2px color-mix(in srgb, var(--blue-100) 70%, transparent); }
     .results-table td .cell-id{ display:inline-block; padding:2px 8px; border-radius:999px; background:var(--blue-100); color:var(--navy); font:800 9px var(--font-heading); letter-spacing:.04em; }
     .results-table td.name-cell{ color:var(--navy); font-weight:900; }
+    .results-pager{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex:0 0 auto; flex-wrap:wrap; padding:8px 12px; border-top:1px solid var(--line); background:rgba(240,249,255,.6); }
+    .pager-info{ color:var(--muted); font:800 10px var(--font-heading); letter-spacing:.04em; }
+    .pager-controls{ display:flex; align-items:center; gap:4px; }
+    .results-pager button{ min-width:28px; height:28px; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--navy); font:800 10px var(--font-heading); cursor:pointer; transition:all .15s; }
+    .results-pager button:hover:not(:disabled){ background:var(--blue-50); border-color:var(--blue-400); }
+    .results-pager button.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+    .results-pager button:disabled{ opacity:.4; cursor:default; }
     .card-title{ display:flex; align-items:center; min-height:34px; padding:0 14px; color:#fff; background:var(--blue); font:900 11px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; }
     .map-panel{ min-height:calc(100vh - 130px); }
     #quickMap{ flex:1 1 auto; width:100%; min-height:520px; background:var(--blue-100); z-index:1; }
@@ -104,10 +111,10 @@
     .leaflet-tooltip.school-hover-card{ width:min(340px,90vw); padding:0; opacity:1; pointer-events:none; }
     .leaflet-tooltip.school-hover-card::before{ display:none; }
     .map-card{ overflow:hidden; background:#fff; }
-    .map-card-header{ position:relative; padding:12px 14px 10px; color:#fff; background:linear-gradient(135deg, var(--navy), var(--blue)); border-bottom:3px solid var(--gold); }
-    .map-card-eyebrow{ margin:0 0 3px; color:#BAE6FD; font:900 7px var(--font-heading); letter-spacing:.16em; text-transform:uppercase; }
-    .map-card-title{ margin:0; font:900 14px var(--font-heading); line-height:1.1; }
-    .map-card-location{ margin-top:4px; color:#E0F2FE; font:900 8.5px var(--font-body); }
+    .map-card-header{ position:relative; padding:12px 14px 11px; color:#fff; background:#0B4778; border-bottom:0; }
+    .map-card-eyebrow{ margin:0 0 4px; color:#E0F2FE; font:900 7px var(--font-heading); letter-spacing:.16em; text-transform:uppercase; }
+    .map-card-title{ margin:0; font:900 15px var(--font-heading); line-height:1.05; letter-spacing:-.03em; }
+    .map-card-location{ margin-top:5px; color:#E0F2FE; font:900 8px var(--font-body); line-height:1.15; text-transform:uppercase; opacity:.98; }
     .map-card-body{ display:grid; gap:0; padding:8px 14px 12px; }
     .map-card-row{ display:grid; grid-template-columns:minmax(96px,.9fr) minmax(0,1.2fr); gap:8px; padding:6px 0; border-bottom:1px solid #E2E8F0; font-size:10px; line-height:1.2; }
     .map-card-row:last-child{ border-bottom:0; }
@@ -118,25 +125,35 @@
     .detail-modal.open{ display:grid; }
     .detail-modal-panel{ width:min(860px,94vw); max-height:min(760px,88vh); overflow:hidden; border:3px solid color-mix(in srgb, var(--blue) 72%, var(--navy) 28%); border-radius:26px; background:#fff; box-shadow:0 28px 70px rgba(15,23,42,.34); animation:detailModalIn .22s cubic-bezier(.16,1,.3,1) both; }
     @keyframes detailModalIn{ from{ opacity:0; transform:translateY(14px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
-    .detail-modal-top{ position:relative; min-height:106px; padding:16px 116px 14px 18px; color:#fff; background:linear-gradient(135deg, var(--navy), var(--blue)); border-bottom:4px solid var(--gold); }
-    .detail-modal-kicker{ margin:0 0 5px; color:#BAE6FD; font:900 8px var(--font-heading); line-height:1; letter-spacing:.16em; text-transform:uppercase; }
-    .detail-modal-title{ margin:0; font:900 20px var(--font-heading); line-height:1.08; letter-spacing:-.01em; }
-    .detail-modal-location{ margin-top:5px; color:#E0F2FE; font:900 9px var(--font-body); line-height:1.15; text-transform:uppercase; opacity:.96; }
+    .detail-modal-top{ position:relative; min-height:96px; padding:16px 116px 14px 18px; color:#fff; background:#0B4778; border-bottom:0; }
+    .detail-modal-kicker{ margin:0 0 5px; color:#E0F2FE; font:900 8px var(--font-heading); line-height:1; letter-spacing:.16em; text-transform:uppercase; }
+    .detail-modal-title{ margin:0; font:900 22px var(--font-heading); line-height:1.05; letter-spacing:-.03em; }
+    .detail-modal-location{ margin-top:6px; color:#E0F2FE; font:900 8.5px var(--font-body); line-height:1.15; text-transform:uppercase; opacity:.98; }
     .detail-modal-actions{ position:absolute; top:14px; right:16px; display:flex; align-items:center; gap:8px; }
     .detail-modal-download, .detail-modal-close{ display:grid; place-items:center; height:34px; border:1px solid rgba(255,255,255,.28); border-radius:999px; color:#fff; background:rgba(255,255,255,.12); line-height:1; cursor:pointer; }
     .detail-modal-close{ width:34px; font-size:20px; }
     .detail-modal-download{ min-width:104px; padding:0 12px; font:900 8px var(--font-heading); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
     .detail-modal-download:hover, .detail-modal-close:hover{ background:rgba(255,255,255,.22); }
     .detail-modal-body{ max-height:calc(min(760px,88vh) - 124px); overflow:auto; background:#F8FCFF; }
-    .modal-section-grid{ display:grid; gap:12px; padding:14px 18px 24px; background:#F8FCFF; }
+    .modal-section-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:14px 18px 24px; background:#F8FCFF; }
+    .modal-section--wide{ grid-column:1 / -1; }
     .modal-section{ overflow:hidden; border:1px solid #BAE6FD; border-radius:18px; background:#fff; box-shadow:0 8px 18px rgba(15,23,42,.07); }
     .modal-section-title{ display:flex; align-items:center; gap:8px; padding:9px 12px; color:var(--navy); background:linear-gradient(90deg,#E0F2FE,#F8FCFF); border-bottom:1px solid #BAE6FD; font:900 10px var(--font-heading); letter-spacing:.12em; text-transform:uppercase; }
     .modal-section-title::before{ content:""; display:block; width:8px; height:8px; border-radius:999px; background:var(--gold); box-shadow:0 0 0 3px rgba(251,191,36,.18); flex:0 0 auto; }
-    .modal-section-body{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; padding:8px 12px 10px; }
+    .modal-section-body{ display:grid; grid-template-columns:minmax(0,1fr); gap:0 16px; padding:8px 12px 10px; }
     .modal-section .map-card-row{ grid-template-columns:minmax(100px,.9fr) minmax(0,1.1fr); padding:8px 0; font-size:10.5px; }
     .modal-section .map-card-label{ font-size:8.5px; }
     .modal-section .map-card-value{ font-size:10.5px; }
-    @media (max-width:680px){ .modal-section-body{ grid-template-columns:1fr; } }
+    .modal-count{ margin-left:auto; padding:2px 9px; border-radius:999px; background:var(--blue-100); color:var(--navy); font:800 9px var(--font-heading); letter-spacing:.04em; }
+    .modal-empty{ padding:12px 14px; color:var(--muted); font:800 11px var(--font-body); }
+    .modal-table-wrap{ overflow:auto; padding:6px 10px 12px; }
+    .modal-table{ width:100%; min-width:max-content; border-collapse:separate; border-spacing:0; font-size:10.5px; }
+    .modal-table th{ position:sticky; top:0; padding:7px 9px; background:var(--navy); color:#fff; font:900 8.5px var(--font-heading); letter-spacing:.05em; text-transform:uppercase; text-align:left; white-space:nowrap; }
+    .modal-table td{ padding:6px 9px; border-bottom:1px solid #E2E8F0; color:var(--navy); font:700 10.5px var(--font-body); vertical-align:top; white-space:nowrap; }
+    .modal-table tbody tr:last-child td{ border-bottom:0; }
+    .modal-table tbody tr:hover td{ background:var(--blue-50); }
+    .modal-table .cell-dash{ color:#94A3B8; }
+    @media (max-width:680px){ .modal-section-grid{ grid-template-columns:1fr; } .modal-section-body{ grid-template-columns:1fr; } }
     @media (max-width:900px){ .qs-body{ grid-template-columns:1fr; } .results-panel, .map-panel{ min-height:0; } #quickMap{ min-height:420px; } }
   </style>
 </head>
@@ -286,6 +303,8 @@
       var tableSortDir = "asc";
       var columnFilters = {};
       var columnFilterTimers = {};
+      var PAGE_SIZE = 10;
+      var currentPage = 1;
 
       function safeText(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
       function normalizeCsvHeader(value){ return String(value||"").replace(/^\uFEFF/,"").trim().toLowerCase().replace(/[\s_\-]+/g," "); }
@@ -342,7 +361,7 @@
       }
 
       function hoverCardHtml(r){
-        var loc=[r.region, r.division].filter(function(x){return !isBlankCsvValue(x);}).join(" | ");
+        var loc=formatSchoolHeaderLocation(r);
         return '<div class="map-card"><div class="map-card-header"><div class="map-card-eyebrow">'+(r.schoolId?"School ID "+safeText(r.schoolId):"School")+'</div><div class="map-card-title">'+safeText(r.name)+'</div>'+(loc?'<div class="map-card-location">'+safeText(loc)+'</div>':'')+'</div><div class="map-card-body">'+rowsHtml([["Municipality", r.municipality],["School District", r.district],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]])+'</div></div>';
       }
 
@@ -352,28 +371,222 @@
       }
 
       var currentRecord=null;
+      var insightedSchoolInfoById={};
+      var insightedData={};
+      var insightedReady=false;
+      var INSIGHTED_SCHOOL_INFO_FILE="insighted_school_info.csv";
+      var INSIGHTED_MODULES=[
+        { file:"insighted_classes_organized.csv", name:"Classes Organized" },
+        { file:"insighted_shifting.csv", name:"Class Shifting" },
+        { file:"insighted_classroom_conditions.csv", name:"Classroom Conditions" },
+        { file:"insighted_classroom_repairs.csv", name:"Classroom Repairs" },
+        { file:"insighted_infra_summary.csv", name:"Infrastructure Summary" },
+        { file:"insighted_furniture.csv", name:"Furniture Inventory" },
+        { file:"insighted_utilities.csv", name:"Utilities" },
+        { file:"insighted_wash.csv", name:"WASH Facilities" },
+        { file:"insighted_electrical_safety.csv", name:"Electrical Safety" },
+        { file:"insighted_safety_equipment.csv", name:"Safety Equipment" },
+        { file:"insighted_gadgets.csv", name:"ICT Devices" }
+      ];
+      var MODULE_EXCLUDE_KEYS={ "school id":1,"school name":1,"region":1,"province":1,"division":1,"municipality":1,"leg district":1,"district":1,"curricular offering":1,"barangay":1,"iern":1 };
+
+      var RESOURCE_CLASSROOM_FILE="efd_classroom_july2026.csv";
+      var resourceStrideById={};
+      var resourceClassroomById={};
+      var resourceReady=false;
+
+      function prettyLabel(key){
+        var k=String(key||"").trim();
+        if(!k) return "";
+        var overrides={ id:"ID", iern:"IERN", ict:"ICT", wash:"WASH", hr:"HR", cr:"CR", tvl:"TVL", shs:"SHS", jhs:"JHS", es:"ES", sy:"SY", cict:"CICT" };
+        return k.split(" ").map(function(w){
+          var lw=w.toLowerCase();
+          if(overrides[lw]) return overrides[lw];
+          return lw.charAt(0).toUpperCase()+lw.slice(1);
+        }).join(" ");
+      }
+
+      function indexById(rows){
+        var map={};
+        (rows||[]).forEach(function(row){
+          var id=String(row["school id"]==null?"":row["school id"]).trim();
+          if(!id) return;
+          if(!map[id]) map[id]=[];
+          map[id].push(row);
+        });
+        return map;
+      }
+
+      function labelValueSection(title, pairs){
+        var rows=(pairs||[]).filter(function(p){ return !isBlankCsvValue(p[1]); });
+        if(!rows.length) return "";
+        var body=rows.map(function(p){ return '<div class="map-card-row"><div class="map-card-label">'+safeText(p[0])+'</div><div class="map-card-value">'+safeText(p[1])+'</div></div>'; }).join("");
+        return '<section class="modal-section"><div class="modal-section-title">'+safeText(title)+'</div><div class="modal-section-body">'+body+'</div></section>';
+      }
+
+      function tableSection(title, rows){
+        var cols=[], seen={};
+        rows.forEach(function(row){
+          Object.keys(row).forEach(function(k){
+            if(MODULE_EXCLUDE_KEYS[k] || seen[k]) return;
+            var has=rows.some(function(rr){ return !isBlankCsvValue(rr[k]); });
+            if(!has) return;
+            seen[k]=1; cols.push(k);
+          });
+        });
+        var countPill='<span class="modal-count">'+rows.length+'</span>';
+        if(!cols.length){
+          return '<section class="modal-section"><div class="modal-section-title">'+safeText(title)+countPill+'</div><div class="modal-empty">'+rows.length+' record(s) on file with no additional detail fields.</div></section>';
+        }
+        var thead='<tr>'+cols.map(function(c){ return '<th>'+safeText(prettyLabel(c))+'</th>'; }).join("")+'</tr>';
+        var tbody=rows.map(function(row){
+          return '<tr>'+cols.map(function(c){ var v=row[c]; return '<td>'+(isBlankCsvValue(v)?'<span class="cell-dash">—</span>':safeText(v))+'</td>'; }).join("")+'</tr>';
+        }).join("");
+        var wideClass=cols.length>3?" modal-section--wide":"";
+        return '<section class="modal-section'+wideClass+'"><div class="modal-section-title">'+safeText(title)+countPill+'</div><div class="modal-table-wrap"><table class="modal-table"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div></section>';
+      }
+
+      function formatInsightedHeaderLocation(info){
+        var divisionMunicipality=[info["division"], info["municipality"]].filter(function(x){ return !isBlankCsvValue(x); }).join(", ");
+        return [info["region"], divisionMunicipality, info["leg district"], info["district"]].filter(function(x){ return !isBlankCsvValue(x); }).join(" | ");
+      }
+
+      function formatSchoolHeaderLocation(r){
+        var divisionMunicipality=[r.division, r.municipality].filter(function(x){ return !isBlankCsvValue(x); }).join(", ");
+        return [r.region, divisionMunicipality, r.legislativeDistrict, r.district].filter(function(x){ return !isBlankCsvValue(x); }).join(" | ");
+      }
+
+      async function loadInsightedData(){
+        try{
+          var infoRows=await getSharedRecords(INSIGHTED_SCHOOL_INFO_FILE, "./"+INSIGHTED_SCHOOL_INFO_FILE);
+          insightedSchoolInfoById=indexById(infoRows);
+        }catch(e){ console.warn("Could not load "+INSIGHTED_SCHOOL_INFO_FILE, e); }
+        for(var i=0;i<INSIGHTED_MODULES.length;i++){
+          var mod=INSIGHTED_MODULES[i];
+          try{
+            var rows=await getSharedRecords(mod.file, "./"+mod.file);
+            insightedData[mod.file]={ name:mod.name, byId:indexById(rows) };
+          }catch(e){ console.warn("Could not load "+mod.file, e); }
+        }
+        insightedReady=true;
+        var modal=document.getElementById("schoolDetailModal");
+        if(currentRecord && modal && modal.classList.contains("open")){
+          document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(currentRecord);
+        }
+      }
+
+      function formatResourceRate(v){
+        var n=toNumber(v); if(n===null) return "";
+        var norm=n<=1?n*100:n; var r=Math.round(norm*10)/10;
+        return (r%1===0?String(r):r.toFixed(1))+"%";
+      }
+
+      function formatDeployFlag(v){
+        if(isBlankCsvValue(v)) return "";
+        var n=toNumber(v);
+        if(n===1) return "Deployed";
+        if(n===0) return "Not deployed";
+        return String(v).trim();
+      }
+
+      function aggregateByItemAction(rows){
+        var order=[], map={};
+        (rows||[]).forEach(function(row){
+          var item=String(row["item name"]==null?"":row["item name"]).trim();
+          var action=String(row["recommended action"]==null?"":row["recommended action"]).trim();
+          var key=item.toLowerCase()+"||"+action.toLowerCase();
+          if(!map[key]){ map[key]={ "item name":item, "recommended action":action, "number":0 }; order.push(key); }
+          map[key]["number"]++;
+        });
+        return order.map(function(k){ var o=map[k]; o["number"]=String(o["number"]); return o; });
+      }
+
+      function buildResourceMappingSections(id){
+        var sections=[];
+        var srow=(resourceStrideById[id] && resourceStrideById[id][0]) || null;
+        if(srow){
+          sections.push(labelValueSection("Teaching Deployment", [
+            ["ES Excess", getVal(srow, ["es_excess","es excess"], "")],
+            ["ES Shortage", getVal(srow, ["es_shortage","es shortage"], "")],
+            ["JHS Excess", getVal(srow, ["jhs_excess","jhs excess"], "")],
+            ["JHS Shortage", getVal(srow, ["jhs_shortage","jhs shortage"], "")],
+            ["SHS Excess", getVal(srow, ["shs_excess","shs excess"], "")],
+            ["SHS Shortage", getVal(srow, ["shs_shortage","shs shortage"], "")],
+            ["Total Excess", getVal(srow, ["total_excess","total excess"], "")],
+            ["Total Shortage", getVal(srow, ["total_shortage","total shortage"], "")],
+            ["Total Teachers", getVal(srow, ["total_teachers","total teachers"], "")],
+            ["RO Filling-up Rate", formatResourceRate(getVal(srow, ["ro_filling_up","ro filling up"], ""))],
+            ["SDO Filling-up Rate", formatResourceRate(getVal(srow, ["sdo_filling_up","sdo filling up"], ""))]
+          ]));
+          sections.push(labelValueSection("Non-teaching Deployment", [
+            ["PDO I Deployment", formatDeployFlag(getVal(srow, ["pdoi_deployment","pdo i deployment"], ""))],
+            ["AO II Deployment", formatDeployFlag(getVal(srow, ["aoii_deployment","ao ii deployment"], ""))]
+          ]));
+        }
+        var crow=(resourceClassroomById[id] && resourceClassroomById[id][0]) || null;
+        if(crow){
+          sections.push(labelValueSection("Classrooms", [
+            ["Total Enrolment", getVal(crow, ["total_enrolment","total enrolment","total enrollment"], "")],
+            ["Total Classrooms", getVal(crow, ["total_classrooms","total classrooms","classroom inventory","classrooms inventory"], "")],
+            ["Classroom Requirement", getVal(crow, ["classroom_requirement","classroom requirement"], "")],
+            ["Estimated Classroom Shortage", getVal(crow, ["estimated_classroom_shortage","estimated classroom shortage","classroom shortage"], "")]
+          ]));
+        }
+        return sections;
+      }
 
       function buildModalSections(r){
-        var groups=[
-          ["School Identity", [["School ID", r.schoolId],["School Name", r.name],["Sector", r.sector],["Ownership Type", r.ownership]]],
-          ["Geography and Address", [["Region", r.region],["Division", r.division],["Province", r.province],["Municipality", r.municipality],["Barangay", r.barangay],["Legislative District", r.legislativeDistrict],["School District", r.district],["Street Address", r.street],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]]],
-          ["Enrollment and School Size", [["Total Enrolment", r.enrolment]]],
-          ["Classroom Inventory", [["Instructional Rooms", r.rooms]]]
-        ];
-        var html=groups.map(function(g){
-          var rows=g[1].filter(function(p){ return !isBlankCsvValue(p[1]); });
-          if(!rows.length) return "";
-          var rowsHtml=rows.map(function(p){ return '<div class="map-card-row"><div class="map-card-label">'+safeText(p[0])+'</div><div class="map-card-value">'+safeText(p[1])+'</div></div>'; }).join("");
-          return '<section class="modal-section"><div class="modal-section-title">'+safeText(g[0])+'</div><div class="modal-section-body">'+rowsHtml+'</div></section>';
-        }).join("");
-        return '<div class="modal-section-grid">'+html+'</div>';
+        var id=String(r.schoolId==null?"":r.schoolId).trim();
+        var sections=[];
+        var info=(insightedSchoolInfoById[id] && insightedSchoolInfoById[id][0]) || null;
+        if(info){
+          sections.push(labelValueSection("School Identity", [
+            ["School ID", info["school id"]],
+            ["School Name", info["school name"]],
+            ["Curricular Offering", info["curricular offering"]]
+          ]));
+          sections.push(labelValueSection("Geography and Address", [
+            ["Region", info["region"]],
+            ["Province", info["province"]],
+            ["Division", info["division"]],
+            ["Municipality", info["municipality"]],
+            ["Legislative District", info["leg district"]],
+            ["School District", info["district"]]
+          ]));
+        }
+        Array.prototype.push.apply(sections, buildResourceMappingSections(id));
+        for(var i=0;i<INSIGHTED_MODULES.length;i++){
+          var mod=INSIGHTED_MODULES[i];
+          var store=insightedData[mod.file];
+          if(!store) continue;
+          var rows=store.byId[id]||[];
+          if(!rows.length) continue;
+          if(rows.length===1){
+            var pairs=Object.keys(rows[0]).filter(function(k){ return !MODULE_EXCLUDE_KEYS[k]; }).map(function(k){ return [prettyLabel(k), rows[0][k]]; });
+            var sec=labelValueSection(mod.name, pairs);
+            if(sec) sections.push(sec);
+            else sections.push('<section class="modal-section"><div class="modal-section-title">'+safeText(mod.name)+'<span class="modal-count">1</span></div><div class="modal-empty">Record on file with no additional detail fields.</div></section>');
+          } else if(mod.file==="insighted_classroom_repairs.csv"){
+            sections.push(tableSection(mod.name, aggregateByItemAction(rows)));
+          } else {
+            sections.push(tableSection(mod.name, rows));
+          }
+        }
+        if(!sections.length){
+          var msg=insightedReady ? ("No InsightED records found for School ID "+safeText(id||"—")+".") : "Loading InsightED data…";
+          return '<div class="modal-section-grid"><section class="modal-section"><div class="modal-section-title">InsightED</div><div class="modal-empty">'+msg+'</div></section></div>';
+        }
+        return '<div class="modal-section-grid">'+sections.join("")+'</div>';
       }
 
       function openDetailModal(r){
         currentRecord=r;
-        var loc=[r.region, r.division, r.municipality, r.legislativeDistrict, r.district].filter(function(x){ return !isBlankCsvValue(x); }).join(" | ");
+        var id=String(r.schoolId==null?"":r.schoolId).trim();
+        var info=(insightedSchoolInfoById[id] && insightedSchoolInfoById[id][0]) || null;
+        var name=(info && !isBlankCsvValue(info["school name"])) ? info["school name"] : r.name;
+        var loc=info ? formatInsightedHeaderLocation(info) : formatSchoolHeaderLocation(r);
         document.getElementById("schoolDetailModalKicker").textContent=r.schoolId?("School ID "+r.schoolId):"School Detail";
-        document.getElementById("schoolDetailModalTitle").textContent=r.name;
+        document.getElementById("schoolDetailModalTitle").textContent=name;
         var locEl=document.getElementById("schoolDetailModalLocation");
         locEl.textContent=loc; locEl.style.display=loc?"block":"none";
         document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(r);
@@ -397,6 +610,7 @@
         var modal=document.getElementById("schoolDetailModal");
         var bodyElement=document.getElementById("schoolDetailModalBody");
         if(!modal || !modal.classList.contains("open") || !bodyElement){ console.warn("Open a school profile before printing to PDF."); return; }
+        var profileKicker=(document.getElementById("schoolDetailModalKicker").textContent||"School Profile").trim();
         var profileTitle=((document.getElementById("schoolDetailModalTitle").textContent||"School Profile").trim())||"School Profile";
         var profileLocation=(document.getElementById("schoolDetailModalLocation").textContent||"").trim();
         var doc=document.implementation.createHTMLDocument(profileTitle);
@@ -414,7 +628,7 @@
         doc.head.appendChild(style);
         var article=doc.createElement("article"); article.className="downloaded-profile";
         var header=doc.createElement("header"); header.className="detail-modal-top";
-        var kicker=doc.createElement("div"); kicker.className="detail-modal-kicker"; kicker.textContent="School Profile";
+        var kicker=doc.createElement("div"); kicker.className="detail-modal-kicker"; kicker.textContent=profileKicker;
         var title=doc.createElement("h1"); title.className="detail-modal-title"; title.textContent=profileTitle;
         var location=doc.createElement("div"); location.className="detail-modal-location"; location.textContent=profileLocation;
         var main=doc.createElement("main"); main.className="detail-modal-body"; main.innerHTML=bodyElement.innerHTML;
@@ -487,13 +701,46 @@
         var listEl=document.getElementById("resultsList");
         var table=listEl.querySelector("table.results-table");
         if(!table){ renderTable(); return; }
-        var numericByKey={}; TABLE_COLUMNS.forEach(function(c){ numericByKey[c.key]=isNumericColumn(currentResults, c.key); });
         var displayed=getDisplayedResults();
         document.getElementById("resultCount").textContent=displayed.length;
-        var oldBody=table.querySelector("tbody"); if(oldBody) oldBody.remove();
-        table.insertAdjacentHTML("beforeend", buildBodyHtml(displayed, numericByKey));
-        attachRowHandlers(listEl.querySelector(".results-table-wrap"));
+        renderPageRows();
         renderMarkers(displayed);
+      }
+
+      function renderPageRows(){
+        var listEl=document.getElementById("resultsList");
+        var table=listEl.querySelector("table.results-table");
+        if(!table) return;
+        var numericByKey={}; TABLE_COLUMNS.forEach(function(c){ numericByKey[c.key]=isNumericColumn(currentResults, c.key); });
+        var displayed=getDisplayedResults();
+        var totalPages=Math.max(1, Math.ceil(displayed.length/PAGE_SIZE));
+        if(currentPage>totalPages) currentPage=totalPages;
+        if(currentPage<1) currentPage=1;
+        var pageRows=displayed.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+        var oldBody=table.querySelector("tbody"); if(oldBody) oldBody.remove();
+        table.insertAdjacentHTML("beforeend", buildBodyHtml(pageRows, numericByKey));
+        attachRowHandlers(listEl.querySelector(".results-table-wrap"));
+        renderPager(displayed.length, totalPages);
+      }
+
+      function scrollResultsTop(){ var w=document.querySelector(".results-table-wrap"); if(w) w.scrollTop=0; }
+
+      function renderPager(totalRows, totalPages){
+        var pager=document.getElementById("resultsPager");
+        if(!pager) return;
+        if(totalRows<=PAGE_SIZE){ pager.innerHTML=""; pager.style.display="none"; return; }
+        pager.style.display="flex";
+        var start=(currentPage-1)*PAGE_SIZE+1;
+        var end=Math.min(currentPage*PAGE_SIZE, totalRows);
+        var maxButtons=5;
+        var from=Math.max(1, currentPage-2);
+        var to=Math.min(totalPages, from+maxButtons-1);
+        from=Math.max(1, Math.min(from, to-maxButtons+1));
+        var btns="";
+        for(var p=from;p<=to;p++){ btns+='<button type="button" class="pager-page'+(p===currentPage?" active":"")+'" data-page="'+p+'">'+p+'</button>'; }
+        pager.innerHTML='<div class="pager-info">Showing '+start+'–'+end+' of '+totalRows+'</div><div class="pager-controls"><button type="button" class="pager-nav" data-nav="prev"'+(currentPage<=1?" disabled":"")+'>‹ Prev</button>'+btns+'<button type="button" class="pager-nav" data-nav="next"'+(currentPage>=totalPages?" disabled":"")+'>Next ›</button></div>';
+        Array.prototype.forEach.call(pager.querySelectorAll(".pager-page"), function(b){ b.addEventListener("click", function(){ currentPage=parseInt(b.getAttribute("data-page"),10)||1; renderPageRows(); scrollResultsTop(); }); });
+        Array.prototype.forEach.call(pager.querySelectorAll(".pager-nav"), function(b){ b.addEventListener("click", function(){ var nav=b.getAttribute("data-nav"); if(nav==="prev"&&currentPage>1){ currentPage--; } else if(nav==="next"){ currentPage++; } renderPageRows(); scrollResultsTop(); }); });
       }
 
       function renderTable(){
@@ -504,10 +751,10 @@
           var arrow=tableSortKey===c.key?(tableSortDir==="asc"?"↑":"↓"):"";
           return '<th class="'+(numericByKey[c.key]?"num-col":"")+'"><button type="button" class="col-sort-btn" data-key="'+safeText(c.key)+'">'+safeText(c.label)+'<span class="col-sort-arrow">'+arrow+'</span></button><input class="col-filter-input" data-key="'+safeText(c.key)+'" type="text" placeholder="Filter" value="'+safeText(columnFilters[c.key]||"")+'" /></th>';
         }).join("")+'</tr></thead>';
-        listEl.innerHTML='<div class="results-table-wrap"><table class="results-table">'+head+'</table></div>';
+        listEl.innerHTML='<div class="results-table-wrap"><table class="results-table">'+head+'</table></div><div class="results-pager" id="resultsPager"></div>';
         var wrap=listEl.querySelector(".results-table-wrap");
-        Array.prototype.forEach.call(wrap.querySelectorAll(".col-sort-btn"), function(btn){ btn.addEventListener("click", function(e){ e.stopPropagation(); var k=btn.getAttribute("data-key"); if(tableSortKey===k){ tableSortDir=tableSortDir==="asc"?"desc":"asc"; } else { tableSortKey=k; tableSortDir="asc"; } renderTable(); }); });
-        Array.prototype.forEach.call(wrap.querySelectorAll(".col-filter-input"), function(inp){ inp.addEventListener("input", function(){ var k=inp.getAttribute("data-key"); columnFilters[k]=inp.value; clearTimeout(columnFilterTimers[k]); columnFilterTimers[k]=setTimeout(updateBody, 200); }); });
+        Array.prototype.forEach.call(wrap.querySelectorAll(".col-sort-btn"), function(btn){ btn.addEventListener("click", function(e){ e.stopPropagation(); var k=btn.getAttribute("data-key"); if(tableSortKey===k){ tableSortDir=tableSortDir==="asc"?"desc":"asc"; } else { tableSortKey=k; tableSortDir="asc"; } currentPage=1; renderTable(); }); });
+        Array.prototype.forEach.call(wrap.querySelectorAll(".col-filter-input"), function(inp){ inp.addEventListener("input", function(){ var k=inp.getAttribute("data-key"); columnFilters[k]=inp.value; currentPage=1; clearTimeout(columnFilterTimers[k]); columnFilterTimers[k]=setTimeout(updateBody, 200); }); });
         updateBody();
       }
 
@@ -544,14 +791,14 @@
       function runSearch(){
         var term=(document.getElementById("schoolSearchInput").value||"").trim().toLowerCase();
         document.getElementById("resultFilterInput").value="";
-        columnFilters={}; tableSortKey=""; tableSortDir="asc";
+        columnFilters={}; tableSortKey=""; tableSortDir="asc"; currentPage=1;
         if(!term){ currentResults=[]; document.getElementById("resultCount").textContent="0"; document.getElementById("resultsList").innerHTML='<div class="results-empty">Search a school name or ID to plot it on the map.</div>'; if(cluster) cluster.clearLayers(); map.setView(PH_CENTER, PH_ZOOM); return; }
         var matches=allRecords.filter(function(r){ return r.name.toLowerCase().indexOf(term)>=0 || r.schoolId.toLowerCase().indexOf(term)>=0; });
         if(matches.length>MAX_RESULTS) matches=matches.slice(0,MAX_RESULTS);
         currentResults=matches; renderTable();
       }
 
-      function applyQuickFilter(){ updateBody(); }
+      function applyQuickFilter(){ currentPage=1; updateBody(); }
 
       function initMap(){
         map=L.map("quickMap", { zoomControl:true }).setView(PH_CENTER, PH_ZOOM);
@@ -573,12 +820,25 @@
         try{
           var records=await getSharedRecords("stride_school_unique.csv", CSV_FILE);
           allRecords=buildRecords(records);
+          resourceStrideById=indexById(records);
           setStatus(allRecords.length.toLocaleString()+" schools ready — search to plot");
         }catch(err){
           console.warn(err);
           var listEl=document.getElementById("resultsList");
           if(window.location.protocol==="file:"){ setStatus("Open via Live Server to load data"); listEl.innerHTML='<div class="results-empty">This page was opened directly from disk (file://), so the browser blocked loading <strong>stride_school_unique.csv</strong>.<br><br>Run the folder through a local web server (VS Code Live Server) and reload.</div>'; }
           else{ setStatus("Could not load CSV"); listEl.innerHTML='<div class="results-empty">Could not load <strong>stride_school_unique.csv</strong>. Make sure it sits in the same folder as this file.</div>'; }
+        }
+      }
+
+      async function loadResourceMappingData(){
+        try{
+          var classroomRows=await getSharedRecords(RESOURCE_CLASSROOM_FILE, "./"+RESOURCE_CLASSROOM_FILE);
+          resourceClassroomById=indexById(classroomRows);
+        }catch(e){ console.warn("Could not load "+RESOURCE_CLASSROOM_FILE, e); }
+        resourceReady=true;
+        var modal=document.getElementById("schoolDetailModal");
+        if(currentRecord && modal && modal.classList.contains("open")){
+          document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(currentRecord);
         }
       }
 
@@ -594,7 +854,7 @@
         document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeDetailModal(); });
       }
 
-      window.addEventListener("load", function(){ initMap(); wire(); loadData(); });
+      window.addEventListener("load", function(){ initMap(); wire(); loadData(); loadInsightedData(); loadResourceMappingData(); });
     })();
   </script>
 </body>

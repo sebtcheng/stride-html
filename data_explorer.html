@@ -27,11 +27,19 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--font-body); color: var(--text); background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
     
-    /* Data Controls Card */
-    .command-bar { margin: 20px 24px; display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); border-radius: 20px; background: rgba(255,255,255,.94); flex-shrink: 0; }
-    .filter-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 2px; }
-    .filter-heading h2 { margin: 0; color: var(--navy); font: 900 18px var(--font-heading); letter-spacing: -0.02em; }
-    .filter-heading p { margin: 4px 0 0; color: var(--muted); font: 700 11px var(--font-body); line-height: 1.3; }
+    /* Data Controls trigger */
+    .open-controls-btn { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; border-radius: 999px; border: 1.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); background: #fff; color: var(--navy); font: 800 11px var(--font-heading); cursor: pointer; letter-spacing: 0.04em; }
+    .open-controls-btn:hover { background: var(--bg); }
+    .count-pill { background: var(--navy); color: #fff; border-radius: 999px; padding: 1px 8px; font: 800 10px var(--font-heading); min-width: 18px; text-align: center; }
+    /* Data Controls modal */
+    .dc-modal-overlay { position: fixed; inset: 0; background: rgba(8,49,95,0.32); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding-top: 68px; }
+    .dc-modal { background: #fff; border-radius: 20px; border: 2px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%); padding: 24px 28px 20px; width: min(900px, 94vw); max-height: 72vh; overflow-y: auto; box-shadow: 0 24px 56px rgba(8,49,95,0.2); display: flex; flex-direction: column; gap: 14px; }
+    .dc-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .dc-modal-head h2 { margin: 0; font: 900 18px var(--font-heading); color: var(--navy); letter-spacing: -0.02em; }
+    .dc-modal-head p { margin: 4px 0 0; font: 700 11px var(--font-body); color: var(--muted); }
+    .dc-modal-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .command-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--muted); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+    .command-close:hover { background: var(--bg); color: var(--navy); }
     .filters-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .select-pill { height: 32px; padding: 0 30px 0 14px; border: 1px solid var(--line); border-radius: 999px; background: #F8FCFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--text); font: 700 10.5px var(--font-body); appearance: none; cursor: pointer; }
     .select-pill:focus { border-color: var(--blue); outline: none; }
@@ -72,7 +80,9 @@
     table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
     th { background: var(--navy); padding: 12px 16px; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--navy); border-right: 1px solid rgba(255,255,255,0.1); min-width: 160px; }
     th:last-child { border-right: none; }
-    .th-label { font: 900 11px var(--font-heading); color: #fff; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; white-space: nowrap; }
+    .th-label { font: 900 11px var(--font-heading); color: #fff; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; user-select: none; }
+    .th-label:hover { opacity: 0.85; }
+    .sort-icon { font-size: 9px; flex-shrink: 0; transition: opacity 0.15s; }
     .th-search { width: 100%; background: #fff; border: none; border-radius: 4px; padding: 6px 10px; font: 500 12px var(--font-body); color: var(--text); outline: none; }
     .th-search::placeholder { color: #94A3B8; }
     
@@ -91,6 +101,11 @@
     .page-nav { display: flex; gap: 4px; }
     .page-nav button { border: none; background: transparent; color: var(--muted); font-size: 16px; padding: 4px 8px; cursor: pointer; }
     .page-nav button:hover { color: var(--navy); }
+    /* Loading spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2.5px solid rgba(8,49,95,0.12); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; flex-shrink: 0; }
+    .spinner-sm { width: 11px; height: 11px; border-width: 2px; margin-right: 5px; }
+    .spinner-green { border-color: rgba(6,95,70,0.15); border-top-color: #065F46; }
   </style>
 </head>
 <body>
@@ -132,33 +147,37 @@
         <div class="subtitle">STRIDE UNIFIED MASTER RECORD • AUTHENTICATED</div>
       </div>
       <div class="header-right">
+        <button id="openDataControlsBtn" class="open-controls-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Data Controls
+          <span id="countNum" class="count-pill">0</span>
+        </button>
         <span class="school-count">48,423 Schools Visible</span>
         <div class="action-btns">
           <button class="btn btn-navy">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             CSV
           </button>
-          <button class="btn btn-outline">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            PRINT
-          </button>
-          <button class="btn btn-outline">Excel</button>
-          <button class="btn btn-outline">PDF</button>
+
         </div>
       </div>
     </header>
 
-    <section class="command-bar">
-      <div class="filter-header">
-        <div class="filter-heading">
-          <h2>Data Controls</h2>
-          <p>Filter the dataset view and configure columns.</p>
+    <div id="dataControlsModal" class="dc-modal-overlay" style="display:none;">
+      <div class="dc-modal">
+        <div class="dc-modal-head">
+          <div>
+            <h2>Data Controls</h2>
+            <p>Filter and configure columns across all datasets.</p>
+          </div>
+          <div class="dc-modal-actions">
+            <button class="btn btn-outline" id="resetControlsBtn" type="button" style="height:32px;padding:0 16px;font-size:10px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+              RESET
+            </button>
+            <button class="command-close" id="closeDataControlsBtn" type="button">&times;</button>
+          </div>
         </div>
-        <button class="btn btn-outline" id="resetControlsBtn" type="button" style="height: 32px; padding: 0 16px; font-size: 10px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-          RESET
-        </button>
-      </div>
       <div class="filters-row">
         <select class="select-pill">
           <option>All Regions</option>
@@ -245,7 +264,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </div></div>
 
     <div class="table-container">
       <table id="dataTable">
@@ -277,16 +296,75 @@
 
   <script>
     (function(){
-      var CSV_FILES = [
-        "./stride_school_unique.csv",
-        "./efd_classroom_july2026.csv",
-        "./stride_shs_industries.csv",
-        "./sdo_classification_202606151013.csv",
-        "./ph_schools_20260616410.csv",
-        "./insighted_school_info.csv",
-        "./insighted_classes_organized.csv",
-        "./insighted_shifting.csv"
+      var FALLBACK_CSVS = [
+        "stride_school_unique.csv",
+        "efd_classroom_july2026.csv",
+        "stride_shs_industries.csv",
+        "sdo_classification_202606151013.csv",
+        "ph_schools_20260616410.csv",
+        "insighted_school_info.csv",
+        "insighted_classes_organized.csv",
+        "insighted_shifting.csv",
+        "insighted_classroom_conditions.csv",
+        "insighted_classroom_repairs.csv",
+        "insighted_infra_summary.csv",
+        "insighted_furniture.csv",
+        "insighted_utilities.csv",
+        "insighted_wash.csv",
+        "insighted_electrical_safety.csv",
+        "insighted_safety_equipment.csv",
+        "insighted_gadgets.csv"
       ];
+      var DATASET_LABELS = {
+        "stride_school_unique.csv": "School Master List",
+        "efd_classroom_july2026.csv": "Classroom Inventory and Shortage",
+        "stride_shs_industries.csv": "SHS Industries",
+        "sdo_classification_202606151013.csv": "SDO Classification",
+        "ph_schools_20260616410.csv": "Philippine Schools Directory",
+        "insighted_school_info.csv": "School Profile and Location",
+        "insighted_classes_organized.csv": "Classes Organized",
+        "insighted_shifting.csv": "Class Shifting",
+        "insighted_classroom_conditions.csv": "Classroom Conditions",
+        "insighted_classroom_repairs.csv": "Classroom Repairs",
+        "insighted_infra_summary.csv": "Infrastructure Summary",
+        "insighted_furniture.csv": "Furniture Inventory",
+        "insighted_utilities.csv": "Utilities",
+        "insighted_wash.csv": "WASH Facilities",
+        "insighted_electrical_safety.csv": "Electrical Safety",
+        "insighted_safety_equipment.csv": "Safety Equipment",
+        "insighted_gadgets.csv": "ICT Devices and Gadgets"
+      };
+      function csvBaseName(url){
+        var parts = String(url == null ? "" : url).split("?")[0].split("#")[0].split("/");
+        return parts[parts.length - 1] || "";
+      }
+      function manifestCsvFiles(){
+        var a = window.STRIDE_ASSETS || {};
+        var list = a.csvFiles || a.csvUrls || a.csvs || a.csv || [];
+        if (!Array.isArray(list)) list = [];
+        var names = [];
+        for (var i = 0; i < list.length; i++){
+          var name = csvBaseName(list[i]);
+          if (name && name.slice(-4).toLowerCase() === ".csv") names.push(name);
+        }
+        if (!names.length) names = FALLBACK_CSVS.slice();
+        var seen = {}, out = [];
+        for (var j = 0; j < names.length; j++){ if (!seen[names[j]]) { seen[names[j]] = true; out.push(names[j]); } }
+        out.sort();
+        // Always keep the school master first so it is the startup dataset.
+        var si = out.indexOf("stride_school_unique.csv");
+        if (si > 0){ out.splice(si, 1); out.unshift("stride_school_unique.csv"); }
+        return out;
+      }
+      function datasetLabel(file){
+        if (DATASET_LABELS[file]) return DATASET_LABELS[file];
+        var base = file.slice(-4).toLowerCase() === ".csv" ? file.slice(0, -4) : file;
+        var words = base.split("_");
+        var out = [];
+        for (var i = 0; i < words.length; i++){ if (!words[i]) continue; out.push(words[i].charAt(0).toUpperCase() + words[i].slice(1)); }
+        return out.join(" ");
+      }
+      var CSV_FILES = manifestCsvFiles();
 
       var COLUMN_ALIASES = {
         "School ID": ["school id", "schoolid", "school code", "beis school id"],
@@ -337,11 +415,33 @@
         "Specialization SPED": ["specialization sped", "sped"]
       };
 
+      var datasets = {};
+      var entities = [];
+      var iernBySid = {};
+      var multiRowFiles = {};
+      var pivotKeys = {};
+      var pivotValues = {};
+      var compositeCache = {};
+      var COL_SEP = "||";
+      var EXCLUDE_PICKER_KEYS = { "iern": 1, "school id": 1, "schoolid": 1, "school code": 1, "beis school id": 1 };
+      function prettyCol(key){
+        var k = String(key == null ? "" : key).trim();
+        if (!k) return "";
+        var over = { id:"ID", iern:"IERN", ict:"ICT", wash:"WASH", hr:"HR", cr:"CR", tvl:"TVL", shs:"SHS", jhs:"JHS", es:"ES", sy:"SY", ro:"RO", sdo:"SDO", pdo:"PDO", ao:"AO", coc:"COC", esp:"ESP", mapeh:"MAPEH", sped:"SPED", ece:"ECE", ap:"AP" };
+        var words = k.split(" ");
+        var out = [];
+        for (var i = 0; i < words.length; i++){ var w = words[i]; if (!w) continue; var lw = w.toLowerCase(); out.push(over[lw] || (lw.charAt(0).toUpperCase() + lw.slice(1))); }
+        return out.join(" ");
+      }
+      function csvCell(v){ return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+      function columnKeysOf(file){ var rows = datasets[file] || []; return rows.length ? Object.keys(rows[0]) : []; }
       var rawRows = [];
       var columnFilters = {};
       var currentPage = 1;
       var pageSize = 20;
       var dataReady = false;
+      var sortColId = null;
+      var sortDir = "asc";
 
       function normalizeHeader(value){
         return String(value || "").replace(/^﻿/, "").trim().toLowerCase().replace(/[\s_\-\/]+/g, " ");
@@ -389,6 +489,292 @@
         var base = [normalizeHeader(label)];
         var extra = COLUMN_ALIASES[label] || [];
         return base.concat(extra.map(normalizeHeader));
+      }
+      function rebuildEntities(){
+        buildCrosswalk();
+        entities = [];
+        var byKey = {};
+        for (var f = 0; f < CSV_FILES.length; f++){
+          var file = CSV_FILES[f];
+          var rows = datasets[file] || [];
+          for (var i = 0; i < rows.length; i++){
+            var rec = rows[i];
+            var key = canonicalKey(rec) || ("ROW:" + file + "#" + i);
+            var ent = byKey[key];
+            if (!ent){ if (file !== CSV_FILES[0]) continue; ent = { key: key, iern: "", sid: "", name: "", region: "", division: "", district: "", values: {}, rowsByFile: {}, pivotRows: {} }; byKey[key] = ent; entities.push(ent); }
+            if (!ent.values[file]) ent.values[file] = {};
+            if (!ent.rowsByFile[file]) ent.rowsByFile[file] = [];
+            ent.rowsByFile[file].push(rec);
+            for (var h in rec){
+              if (!Object.prototype.hasOwnProperty.call(rec, h)) continue;
+              if (isBlank(rec[h])) continue;
+              if (ent.values[file][h] === undefined) ent.values[file][h] = rec[h];
+            }
+            if (!ent.iern){ var iv = rowIern(rec); if (iv) ent.iern = iv; }
+            if (!ent.sid){ var sv = rowSid(rec); if (sv) ent.sid = sv; }
+            if (!ent.name){ var nv = getValue(rec, "School Name"); if (nv) ent.name = nv; }
+            if (!ent.region){ var rv = getValue(rec, "Region"); if (rv) ent.region = rv; }
+            if (!ent.division){ var dv = getValue(rec, "Division"); if (dv) ent.division = dv; }
+            if (!ent.district){ var tv = getValue(rec, "District"); if (tv) ent.district = tv; }
+          }
+        }
+      }
+      function ensurePickerHost(){
+        var host = document.getElementById("columnPickers");
+        if (host) return host;
+        var row = document.querySelector(".filters-row");
+        if (row){
+          var existing = row.querySelectorAll(".dropdown-check");
+          for (var i = 0; i < existing.length; i++) existing[i].parentNode.removeChild(existing[i]);
+        }
+        host = document.createElement("div");
+        host.id = "columnPickers";
+        host.style.display = "contents";
+        if (row) row.appendChild(host);
+        return host;
+      }
+      function buildColumnPickers(){
+        var host = ensurePickerHost();
+        var prevChecked = {};
+        var prevBoxes = host.querySelectorAll("input[type='checkbox']:checked");
+        for (var p = 0; p < prevBoxes.length; p++){ prevChecked[prevBoxes[p].getAttribute("data-file") + "||" + prevBoxes[p].value] = true; }
+        var html = "";
+        for (var f = 0; f < CSV_FILES.length; f++){
+          var file = CSV_FILES[f];
+          var loaded = !!(datasets[file] && datasets[file].length);
+          var inner = "";
+          if (loaded){
+            var keys = columnKeysOf(file);
+            for (var k = 0; k < keys.length; k++){
+              var key = keys[k];
+              if (EXCLUDE_PICKER_KEYS[key]) continue;
+              inner += "<label><input type='checkbox' class='col-toggle' data-file='" + safeText(file) + "' value='" + safeText(key) + "'> " + safeText(prettyCol(key)) + "</label>";
+            }
+          } else {
+            inner = "<div style='padding:4px 2px; color:var(--muted); font:600 11px var(--font-body);'>Not loaded yet.<br><button class='load-dataset-btn' data-file='" + safeText(file) + "' style='margin-top:6px; padding:4px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); font:700 10px var(--font-body); cursor:pointer;'>Load now</button></div>";
+          }
+          var badge = loaded ? "" : " <span style='font-size:9px; opacity:0.5;'>(not loaded)</span>";
+          html += "<div class='dropdown-check'><button class='select-pill' type='button' style='padding-right:14px; background-image:none;'>" + safeText(datasetLabel(file)) + badge + " ▾</button><div class='dropdown-check-content'>" + inner + "</div></div>";
+        }
+        host.innerHTML = html;
+        var boxes = host.querySelectorAll("input[type='checkbox']");
+        for (var b = 0; b < boxes.length; b++){
+          if (prevChecked[boxes[b].getAttribute("data-file") + "||" + boxes[b].value]) boxes[b].checked = true;
+          boxes[b].addEventListener("change", function(){ currentPage = 1; renderTable(); });
+        }
+        // If nothing was previously checked, default-check key columns from the school master.
+        var anyChecked = host.querySelectorAll("input[type='checkbox']:checked").length > 0;
+        if (!anyChecked){
+          var DEFAULT_COLS = { "school name":1, "region":1, "division":1, "district":1, "municipality":1, "province":1, "school size typology":1, "modified coc":1 };
+          var allBoxes = host.querySelectorAll("input[type='checkbox'][data-file='stride_school_unique.csv']");
+          for (var d = 0; d < allBoxes.length; d++){
+            if (DEFAULT_COLS[allBoxes[d].value]) allBoxes[d].checked = true;
+          }
+        }
+        var loadBtns = host.querySelectorAll(".load-dataset-btn");
+        for (var lb = 0; lb < loadBtns.length; lb++){
+          loadBtns[lb].addEventListener("click", function(e){
+            e.stopPropagation();
+            loadDatasetOnDemand(this.getAttribute("data-file"), this);
+          });
+        }
+      }
+      function detectPivotKey(file){
+        var rows = datasets[file] || [];
+        if (!rows.length) return null;
+        var exclude = { "iern":1, "school id":1, "school name":1, "region":1, "division":1, "district":1, "province":1, "municipality":1, "barangay":1 };
+        var allKeys = Object.keys(rows[0]).filter(function(k){ return !exclude[k]; });
+        var best = null, bestScore = -1;
+        for (var ci = 0; ci < allKeys.length; ci++){
+          var col = allKeys[ci];
+          var globalVals = {}, bySchool = {}, perSchoolMulti = 0;
+          for (var i = 0; i < rows.length; i++){
+            var k = canonicalKey(rows[i]);
+            if (!k) continue;
+            var v = rows[i][col];
+            if (isBlank(v)) continue;
+            globalVals[v] = 1;
+            if (!bySchool[k]) bySchool[k] = {};
+            if (!bySchool[k][v]){ bySchool[k][v] = 1; if (Object.keys(bySchool[k]).length > 1) perSchoolMulti++; }
+          }
+          var gc = Object.keys(globalVals).length;
+          if (gc >= 2 && gc <= 60 && perSchoolMulti > 0){
+            var score = perSchoolMulti / (gc + 1);
+            if (score > bestScore){ bestScore = score; best = col; }
+          }
+        }
+        return best;
+      }
+      // Detect if a column in a file is predominantly numeric.
+      function isNumericKey(file, key){
+        var rows = datasets[file] || [];
+        var checked = 0, numeric = 0;
+        for (var i = 0; i < rows.length && checked < 50; i++){
+          var v = rows[i][key];
+          if (isBlank(v)) continue;
+          checked++;
+          if (!isNaN(parseFloat(v)) && isFinite(Number(v))) numeric++;
+        }
+        return checked > 0 && numeric / checked >= 0.8;
+      }
+      // Compute unique value-combinations for a set of keys in a multi-row file.
+      // Results are cached per (file, keys) and invalidated on each data load.
+      function getCompositeColumns(file, keys){
+        var ck = file + "|||" + keys.slice().sort().join(",");
+        if (compositeCache[ck]) return compositeCache[ck];
+        var seen = {}, list = [];
+        for (var e = 0; e < entities.length; e++){
+          var eRows = (entities[e].rowsByFile && entities[e].rowsByFile[file]) || [];
+          for (var r = 0; r < eRows.length; r++){
+            var row = eRows[r]; var vals = []; var skip = false;
+            for (var k = 0; k < keys.length; k++){
+              var v = row[keys[k]] || ""; if (!v) { skip = true; break; } vals.push(v);
+            }
+            if (skip) continue;
+            var ck2 = vals.join("\x00");
+            if (!seen[ck2]){ seen[ck2] = 1; list.push(vals); }
+          }
+        }
+        list.sort(function(a,b){ return a.join("\x00").localeCompare(b.join("\x00"), undefined, {numeric:true, sensitivity:"base"}); });
+        compositeCache[ck] = list;
+        return list;
+      }
+      function computePivots(){
+        // Detect which files have >1 row per school; invalidate combo cache.
+        multiRowFiles = {}; pivotKeys = {}; pivotValues = {}; compositeCache = {};
+        for (var f = 0; f < CSV_FILES.length; f++){
+          var file = CSV_FILES[f];
+          for (var e = 0; e < entities.length; e++){
+            var rb = entities[e].rowsByFile;
+            if (rb && rb[file] && rb[file].length > 1){ multiRowFiles[file] = true; break; }
+          }
+        }
+      }
+      function rowIern(rec){ var v = rec ? rec["iern"] : ""; return (v !== undefined && !isBlank(v)) ? String(v).trim() : ""; }
+      function rowSid(rec){ return getValue(rec, "School ID"); }
+      function buildCrosswalk(){
+        iernBySid = {};
+        for (var f = 0; f < CSV_FILES.length; f++){
+          var rows = datasets[CSV_FILES[f]] || [];
+          for (var i = 0; i < rows.length; i++){
+            var iern = rowIern(rows[i]); var sid = rowSid(rows[i]);
+            if (iern && sid && !iernBySid[sid]) iernBySid[sid] = iern;
+          }
+        }
+      }
+      function canonicalKey(rec){
+        var iern = rowIern(rec);
+        if (iern) return "IERN:" + iern;
+        var sid = rowSid(rec);
+        if (sid) return iernBySid[sid] ? ("IERN:" + iernBySid[sid]) : ("SID:" + sid);
+        return "";
+      }
+      function idColumns(){
+        return [
+          { file: "__id", key: "sid", label: "School ID", id: "__id||sid", frozen: true },
+          { file: "__id", key: "name", label: "School Name", id: "__id||name", frozen: true }
+        ];
+      }
+      function getRenderColumns(){
+        var cols = idColumns();
+        var boxes = document.querySelectorAll('#columnPickers input[type="checkbox"]:checked');
+        var byFile = {}, fileOrder = [];
+        for (var i = 0; i < boxes.length; i++){
+          var f2 = boxes[i].getAttribute("data-file");
+          var k2 = boxes[i].value;
+          if (!byFile[f2]){ byFile[f2] = []; fileOrder.push(f2); }
+          byFile[f2].push(k2);
+        }
+        for (var fi = 0; fi < fileOrder.length; fi++){
+          var file = fileOrder[fi];
+          var keys = byFile[file];
+          if (multiRowFiles[file]){
+            // Split checked keys into categorical (pivot axes) and numeric (aggregated).
+            var catKeys = keys.filter(function(k){ return !isNumericKey(file, k); });
+            var numKeys = keys.filter(function(k){ return isNumericKey(file, k); });
+            if (catKeys.length > 0){
+              var combos = getCompositeColumns(file, catKeys);
+              for (var c = 0; c < combos.length; c++){
+                var vals = combos[c];
+                var baseLabel = vals[0] + (vals.length > 1 ? " [" + vals.slice(1).join(", ") + "]" : "");
+                if (numKeys.length === 0){
+                  // No numeric keys: show count per combo.
+                  cols.push({ file: file, keys: catKeys, comboVals: vals,
+                    label: datasetLabel(file) + " · " + baseLabel,
+                    id: file + COL_SEP + catKeys.join("+") + COL_SEP + "COMBO" + COL_SEP + vals.join("|||"),
+                    frozen: false });
+                } else {
+                  // Numeric keys: show SUM of each numeric key per combo.
+                  for (var n = 0; n < numKeys.length; n++){
+                    cols.push({ file: file, keys: catKeys, comboVals: vals, numKey: numKeys[n],
+                      label: datasetLabel(file) + " · " + prettyCol(numKeys[n]) + " · " + baseLabel,
+                      id: file + COL_SEP + catKeys.join("+") + "+" + numKeys[n] + COL_SEP + "COMBO" + COL_SEP + vals.join("|||"),
+                      frozen: false });
+                  }
+                }
+              }
+            } else {
+              // Only numeric keys checked — sum each across all rows per school.
+              for (var n = 0; n < numKeys.length; n++){
+                cols.push({ file: file, numOnly: true, numKey: numKeys[n],
+                  label: datasetLabel(file) + " · " + prettyCol(numKeys[n]),
+                  id: file + COL_SEP + numKeys[n] + COL_SEP + "SUM",
+                  frozen: false });
+              }
+            }
+          } else {
+            for (var ki = 0; ki < keys.length; ki++){
+              cols.push({ file: file, key: keys[ki], label: datasetLabel(file) + " · " + prettyCol(keys[ki]), id: file + COL_SEP + keys[ki], frozen: false });
+            }
+          }
+        }
+        return cols;
+      }
+      function valueOf(ent, col){
+        if (!ent || !col) return "";
+        if (col.file === "__id"){ return col.key === "name" ? (ent.name || "") : (ent.sid || ""); }
+        // Sum a numeric key across all rows for this entity (no pivot).
+        if (col.numOnly){
+          var eRows0 = (ent.rowsByFile && ent.rowsByFile[col.file]) || [];
+          var sum0 = 0; var has0 = false;
+          for (var r = 0; r < eRows0.length; r++){
+            var nv0 = parseFloat(eRows0[r][col.numKey]);
+            if (!isNaN(nv0)){ sum0 += nv0; has0 = true; }
+          }
+          return has0 ? String(sum0) : "";
+        }
+        if (col.comboVals !== undefined){
+          var eRows = (ent.rowsByFile && ent.rowsByFile[col.file]) || [];
+          if (col.numKey){
+            // Sum numKey for rows matching the categorical combo.
+            var sum = 0; var hasAny = false;
+            for (var r = 0; r < eRows.length; r++){
+              var match = true;
+              for (var k = 0; k < col.keys.length; k++){
+                if ((eRows[r][col.keys[k]] || "") !== col.comboVals[k]){ match = false; break; }
+              }
+              if (match){
+                var nv = parseFloat(eRows[r][col.numKey]);
+                if (!isNaN(nv)){ sum += nv; hasAny = true; }
+              }
+            }
+            return hasAny ? String(sum) : "";
+          } else {
+            // Count rows matching the categorical combo.
+            var count = 0;
+            for (var r = 0; r < eRows.length; r++){
+              var match = true;
+              for (var k = 0; k < col.keys.length; k++){
+                if ((eRows[r][col.keys[k]] || "") !== col.comboVals[k]){ match = false; break; }
+              }
+              if (match) count++;
+            }
+            return count > 0 ? String(count) : "";
+          }
+        }
+        var bucket = ent.values[col.file];
+        var v = bucket ? bucket[col.key] : "";
+        return isBlank(v) ? "" : String(v).trim();
       }
       function getValue(record, label){
         var aliases = aliasesFor(label);
@@ -444,52 +830,63 @@
         if ("requestIdleCallback" in window) { requestIdleCallback(fn, { timeout: 2000 }); }
         else { setTimeout(fn, 200); }
       }
+      // Re-key rows from StrideData (StrideParseCore preserves underscores) to match
+      // this page's normalizeHeader format (underscores/dashes/slashes -> space).
+      function renormalizeRows(rows){
+        if (!rows || !rows.length) return rows;
+        var keys = Object.keys(rows[0]);
+        var remap = {}; var needsRemap = false;
+        for (var i = 0; i < keys.length; i++){
+          var n = normalizeHeader(keys[i]);
+          remap[keys[i]] = n;
+          if (n !== keys[i]) needsRemap = true;
+        }
+        if (!needsRemap) return rows;
+        return rows.map(function(rec){
+          var obj = {};
+          for (var k in rec){ if (Object.prototype.hasOwnProperty.call(rec, k)) obj[remap[k] || k] = rec[k]; }
+          return obj;
+        });
+      }
       async function loadCsvData(){
-        setLoadingMessage("Loading connected CSV data...");
-        var byId = {};
-        var order = [];
-        var loadedCount = 0;
-
-        // Paint as soon as the primary school file is parsed; merge the other sources on idle so first paint isn't blocked by all 8 CSVs.
+        setLoadingMessage("Loading data...");
+        var batchEarly = document.querySelector(".batch-pill");
+        if (batchEarly) batchEarly.innerHTML = '<span class="spinner spinner-sm spinner-green"></span> LOADING';
+        // Only load the primary school file on startup — paint immediately.
+        // All other datasets load on demand when the user opens their picker.
         var primary = CSV_FILES[0];
-        var primaryRecords = await loadCsvFile(primary);
-        loadedCount++;
-        mergeRecordsInto(byId, order, primaryRecords, primary);
-        rebuildRawRows(byId, order);
+        datasets[primary] = renormalizeRows(await StrideData.loadDataset(primary));
+        rebuildEntities();
+        computePivots();
         dataReady = true;
+        buildColumnPickers();
         populateRegionDivisionControls();
         currentPage = 1;
         renderTable();
-
         var batch = document.querySelector(".batch-pill");
-        if (batch) batch.innerHTML = '<span class="dot"></span> LOADING • 1/' + CSV_FILES.length + ' CSV SOURCES';
-
-        var rest = CSV_FILES.slice(1);
-        (function mergeNext(){
-          if (!rest.length) {
-            rebuildRawRows(byId, order);
-            populateRegionDivisionControls();
-            renderTable();
-            if (batch) batch.innerHTML = '<span class="dot"></span> READY • ' + loadedCount + ' CSV SOURCES';
-            return;
-          }
-          var file = rest.shift();
-          scheduleIdle(async function(){
-            try {
-              var records = await loadCsvFile(file);
-              loadedCount++;
-              mergeRecordsInto(byId, order, records, file);
-              if (batch) batch.innerHTML = '<span class="dot"></span> LOADING • ' + loadedCount + '/' + CSV_FILES.length + ' CSV SOURCES';
-            } catch (err) {
-              console.warn("Skipped CSV:", file, err);
-            }
-            mergeNext();
-          });
-        })();
+        if (batch) batch.innerHTML = '<span class="dot"></span> READY • ' + CSV_FILES.length + ' DATASETS AVAILABLE';
+        // Silently warm remaining datasets in the background during idle time.
+        StrideData.warm(CSV_FILES.slice(1));
+      }
+      function loadDatasetOnDemand(file, triggerBtn){
+        if (triggerBtn){ triggerBtn.innerHTML = '<span class="spinner spinner-sm"></span>Loading...'; triggerBtn.disabled = true; }
+        // Also update the always-visible pill so it shows feedback after the dropdown closes.
+        var pillBtn = triggerBtn && triggerBtn.closest && triggerBtn.closest('.dropdown-check') ? triggerBtn.closest('.dropdown-check').querySelector('.select-pill') : null;
+        if (pillBtn){ pillBtn.innerHTML = '<span class="spinner spinner-sm"></span>' + safeText(datasetLabel(file)); pillBtn.style.color = 'var(--muted)'; }
+        StrideData.loadDataset(file).then(function(rows){
+          datasets[file] = renormalizeRows(rows);
+          rebuildEntities();
+          computePivots();
+          buildColumnPickers();
+          renderTable();
+        }).catch(function(err){
+          console.warn("Failed to load", file, err);
+          if (triggerBtn){ triggerBtn.textContent = "Retry"; triggerBtn.disabled = false; }
+        });
       }
       function setLoadingMessage(message){
         document.getElementById("dataHead").innerHTML = "";
-        document.getElementById("dataBody").innerHTML = '<tr><td style="padding:28px 24px;color:var(--muted);font-weight:800;">' + safeText(message) + '</td></tr>';
+        document.getElementById("dataBody").innerHTML = '<tr><td style="padding:28px 24px;color:var(--muted);font-weight:800;"><span class="spinner"></span>' + safeText(message) + '</td></tr>';
       }
       function getCheckedColumns(){
         var cols = [];
@@ -499,12 +896,12 @@
         }
         return cols;
       }
-      function getRegionSelect(){ return document.querySelectorAll('.filters-row select.select-pill')[0] || null; }
-      function getDivisionSelect(){ return document.querySelectorAll('.filters-row select.select-pill')[1] || null; }
-      function uniqueValues(label, sourceRows){
+      function getRegionSelect(){ return document.querySelector('#dataControlsModal .filters-row select.select-pill:nth-of-type(1)') || null; }
+      function getDivisionSelect(){ return document.querySelector('#dataControlsModal .filters-row select.select-pill:nth-of-type(2)') || null; }
+      function uniqueValues(field, sourceRows){
         var seen = {}, vals = [];
-        (sourceRows || rawRows).forEach(function(row){
-          var v = getValue(row, label);
+        (sourceRows || entities).forEach(function(ent){
+          var v = ent[field];
           if (!isBlank(v) && !seen[v]) { seen[v] = true; vals.push(v); }
         });
         return vals.sort(function(a,b){ return a.localeCompare(b, undefined, { numeric:true, sensitivity:"base" }); });
@@ -516,67 +913,78 @@
         if (values.indexOf(current) >= 0) select.value = current;
       }
       function populateRegionDivisionControls(){
-        fillSelect(getRegionSelect(), "All Regions", uniqueValues("Region"));
+        fillSelect(getRegionSelect(), "All Regions", uniqueValues("region"));
         refreshDivisionOptions();
       }
       function refreshDivisionOptions(){
         var regionSelect = getRegionSelect();
         var selectedRegion = regionSelect ? regionSelect.value : "All Regions";
-        var rows = rawRows.filter(function(row){ return !selectedRegion || selectedRegion === "All Regions" || getValue(row, "Region") === selectedRegion; });
-        fillSelect(getDivisionSelect(), "All Divisions", uniqueValues("Division", rows));
+        var rows = entities.filter(function(ent){ return !selectedRegion || selectedRegion === "All Regions" || (ent.region || "") === selectedRegion; });
+        fillSelect(getDivisionSelect(), "All Divisions", uniqueValues("division", rows));
       }
       function getFilteredRows(){
         var regionSelect = getRegionSelect();
         var divisionSelect = getDivisionSelect();
         var region = regionSelect ? regionSelect.value : "All Regions";
         var division = divisionSelect ? divisionSelect.value : "All Divisions";
-        var allCols = getAllColumns();
+        var cols = getRenderColumns();
 
-        return rawRows.filter(function(row){
-          if (region && region !== "All Regions" && getValue(row, "Region") !== region) return false;
-          if (division && division !== "All Divisions" && getValue(row, "Division") !== division) return false;
-          for (var i = 0; i < allCols.length; i++) {
-            var col = allCols[i];
-            var filter = (columnFilters[col] || "").trim().toLowerCase();
-            if (filter && getValue(row, col).toLowerCase().indexOf(filter) < 0) return false;
+        return entities.filter(function(ent){
+          if (region && region !== "All Regions" && (ent.region || "") !== region) return false;
+          if (division && division !== "All Divisions" && (ent.division || "") !== division) return false;
+          for (var i = 0; i < cols.length; i++) {
+            var col = cols[i];
+            var filter = (columnFilters[col.id] || "").trim().toLowerCase();
+            if (filter && valueOf(ent, col).toLowerCase().indexOf(filter) < 0) return false;
           }
           return true;
         });
       }
       function renderTable(){
-        var cols = getCheckedColumns();
+        var cols = getRenderColumns();
         var thead = document.getElementById('dataHead');
         var tbody = document.getElementById('dataBody');
         if (!dataReady) { setLoadingMessage("Loading connected CSV data..."); return; }
-        if (!cols.length) {
-          thead.innerHTML = "";
-          tbody.innerHTML = '<tr><td style="padding:28px 24px;color:var(--muted);font-weight:800;">Choose at least one column to display.</td></tr>';
-          updateFooter(0, 0, 0);
-          return;
-        }
 
         var filtered = getFilteredRows();
+        // Apply column sort if active.
+        if (sortColId){
+          var sortColObj = null;
+          for (var sc = 0; sc < cols.length; sc++){ if (cols[sc].id === sortColId){ sortColObj = cols[sc]; break; } }
+          if (sortColObj){
+            filtered = filtered.slice();
+            filtered.sort(function(a, b){
+              var av = valueOf(a, sortColObj), bv = valueOf(b, sortColObj);
+              var an = parseFloat(av), bn = parseFloat(bv);
+              if (!isNaN(an) && !isNaN(bn)) return sortDir === "asc" ? an - bn : bn - an;
+              var cmp = av.localeCompare(bv, undefined, {sensitivity:"base", numeric:true});
+              return sortDir === "asc" ? cmp : -cmp;
+            });
+          }
+        }
         var total = filtered.length;
         var totalPages = Math.max(1, Math.ceil(total / pageSize));
         if (currentPage > totalPages) currentPage = totalPages;
         var start = total ? (currentPage - 1) * pageSize : 0;
         var pageRows = filtered.slice(start, start + pageSize);
 
-        var frozenWidths = { "School ID": "100px", "School Name": "240px" };
+        var frozenWidths = ["120px", "240px"];
         var frozenLeft = 0;
 
         var headHtml = "<tr>";
         for (var i = 0; i < cols.length; i++) {
           var col = cols[i];
-          var isFrozen = (col === "School ID" || col === "School Name");
           var style = "";
-          if (isFrozen) {
-            var w = frozenWidths[col];
+          if (col.frozen) {
+            var w = frozenWidths[i] || "160px";
             style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + ";";
             frozenLeft += parseInt(w, 10);
-            if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06);";
+            if (i === 1) style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06);";
           }
-          headHtml += "<th class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'><span class='th-label'>" + safeText(col) + "</span><input type='text' class='th-search' data-col='" + safeText(col) + "' placeholder='Search...' value='" + safeText(columnFilters[col] || "") + "'></th>";
+          var isActive = sortColId === col.id;
+          var sortIcon = isActive ? (sortDir === "asc" ? "▲" : "▼") : "⇅";
+          var iconOpacity = isActive ? "1" : "0.22";
+          headHtml += "<th class='" + (col.frozen ? "frozen-col" : "") + "' style='" + style + "'><span class='th-label' data-sort-col='" + safeText(col.id) + "'>" + safeText(col.label) + "<span class='sort-icon' style='opacity:" + iconOpacity + ";'>" + sortIcon + "</span></span><input type='text' class='th-search' data-col='" + safeText(col.id) + "' placeholder='Search...' value='" + safeText(columnFilters[col.id] || "") + "'></th>";
         }
         headHtml += "</tr>";
         thead.innerHTML = headHtml;
@@ -586,21 +994,20 @@
           bodyHtml = '<tr><td colspan="' + cols.length + '" style="padding:28px 24px;color:var(--muted);font-weight:800;text-align:center;">No rows match the current filters.</td></tr>';
         } else {
           for (var r = 0; r < pageRows.length; r++) {
-            var row = pageRows[r];
+            var ent = pageRows[r];
             bodyHtml += "<tr>";
             frozenLeft = 0;
             for (var c = 0; c < cols.length; c++) {
               var col = cols[c];
-              var isFrozen = (col === "School ID" || col === "School Name");
-              var val = getValue(row, col);
+              var val = valueOf(ent, col);
               var style = "";
-              if (isFrozen) {
-                var w = frozenWidths[col];
+              if (col.frozen) {
+                var w = frozenWidths[c] || "160px";
                 style = "left: " + frozenLeft + "px; min-width: " + w + "; max-width: " + w + "; overflow: hidden; text-overflow: ellipsis;";
                 frozenLeft += parseInt(w, 10);
-                if (col === "School Name") style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06); font-weight: 700; color: var(--navy);";
+                if (c === 1) style += " border-right: 1px solid #CBD5E1; box-shadow: 8px 0 12px rgba(15,23,42,.06); font-weight: 700; color: var(--navy);";
               }
-              bodyHtml += "<td class='" + (isFrozen ? "frozen-col" : "") + "' style='" + style + "'>" + (isBlank(val) ? '<span style="color:#94A3B8;">—</span>' : safeText(val)) + "</td>";
+              bodyHtml += "<td class='" + (col.frozen ? "frozen-col" : "") + "' style='" + style + "'>" + (isBlank(val) ? '<span style="color:#94A3B8;">—</span>' : safeText(val)) + "</td>";
             }
             bodyHtml += "</tr>";
           }
@@ -608,6 +1015,8 @@
         tbody.innerHTML = bodyHtml;
         wireHeaderFilters();
         updateFooter(start, pageRows.length, total);
+        var countEl = document.getElementById('countNum');
+        if (countEl){ var checked = document.querySelectorAll('#columnPickers input[type="checkbox"]:checked').length; countEl.textContent = checked; }
       }
       function wireHeaderFilters(){
         var inputs = document.querySelectorAll(".th-search");
@@ -615,6 +1024,21 @@
           inputs[i].addEventListener("input", function(){
             columnFilters[this.getAttribute("data-col")] = this.value;
             currentPage = 1;
+            renderTable();
+          });
+        }
+        // Sort on label click: 1st click = asc, 2nd = desc, 3rd = clear.
+        var labels = document.querySelectorAll(".th-label[data-sort-col]");
+        for (var j = 0; j < labels.length; j++){
+          labels[j].addEventListener("click", function(){
+            var cid = this.getAttribute("data-sort-col");
+            if (sortColId === cid){
+              if (sortDir === "asc") { sortDir = "desc"; }
+              else { sortColId = null; sortDir = "asc"; }
+            } else {
+              sortColId = cid;
+              sortDir = "asc";
+            }
             renderTable();
           });
         }
@@ -638,11 +1062,11 @@
         if (buttons[3]) buttons[3].disabled = currentPage >= totalPages;
       }
       function exportVisibleCsv(){
-        var cols = getCheckedColumns();
+        var cols = getRenderColumns();
         var rows = getFilteredRows();
-        var lines = [cols.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",")];
-        rows.forEach(function(row){
-          lines.push(cols.map(function(c){ return '"' + getValue(row, c).replace(/"/g, '""') + '"'; }).join(","));
+        var lines = [cols.map(function(c){ return csvCell(c.label); }).join(",")];
+        rows.forEach(function(ent){
+          lines.push(cols.map(function(c){ return csvCell(valueOf(ent, c)); }).join(","));
         });
         var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
         var a = document.createElement("a");
@@ -652,11 +1076,6 @@
         setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
       }
       function wire(){
-        var checkboxes = document.querySelectorAll('.column-toggles input[type="checkbox"]');
-        for (var i = 0; i < checkboxes.length; i++) {
-          checkboxes[i].addEventListener('change', function(){ currentPage = 1; renderTable(); });
-        }
-
         var regionSelect = getRegionSelect();
         var divisionSelect = getDivisionSelect();
         if (regionSelect) regionSelect.addEventListener("change", function(){ currentPage = 1; refreshDivisionOptions(); renderTable(); });
@@ -679,8 +1098,8 @@
         document.getElementById('resetControlsBtn').addEventListener('click', function() {
           var selects = document.querySelectorAll('.filters-row select.select-pill');
           for (var i = 0; i < selects.length; i++) selects[i].selectedIndex = 0;
-          var checks = document.querySelectorAll('.column-toggles input[type="checkbox"]');
-          for (var j = 0; j < checks.length; j++) checks[j].checked = checks[j].defaultChecked;
+          var checks = document.querySelectorAll('#columnPickers input[type="checkbox"]');
+          for (var j = 0; j < checks.length; j++) checks[j].checked = false;
           columnFilters = {};
           pageSize = 20;
           var pageSelect = document.querySelector(".page-info select");
@@ -689,7 +1108,13 @@
           refreshDivisionOptions();
           renderTable();
         });
+        document.getElementById('openDataControlsBtn').addEventListener('click', openDataControlsModal);
+        document.getElementById('closeDataControlsBtn').addEventListener('click', closeDataControlsModal);
+        document.getElementById('dataControlsModal').addEventListener('click', function(e){ if (e.target === this) closeDataControlsModal(); });
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeDataControlsModal(); });
       }
+      function openDataControlsModal(){ document.getElementById('dataControlsModal').style.display = 'flex'; }
+      function closeDataControlsModal(){ document.getElementById('dataControlsModal').style.display = 'none'; }
 
       wire();
       loadCsvData().catch(function(err){
