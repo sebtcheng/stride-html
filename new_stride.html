@@ -12,6 +12,15 @@
   <script src="./stride-assets.js"></script>
   <script src="./stride-parse-core.js"></script>
   <script src="./stride-data.js"></script>
+  <script>
+    // Session Guard
+    (function() {
+      const session = localStorage.getItem('stride_session');
+      if (!session) {
+        window.location.replace('./login.html');
+      }
+    })();
+  </script>
   <style>
     :root {
       --navy: #08315F;
@@ -854,6 +863,7 @@
           <span class="brand-sub">Strategic Resource Inventory for Deployment Efficiency</span>
         </div>
       </div>
+
       <nav class="nav" aria-label="Primary navigation">
         <a href="#" class="nav-link active" onclick="showExternal(event, this, 'stride_landing_page.html')">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span>
@@ -911,10 +921,7 @@
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></span>
           Data Explorer
         </a>
-        <a href="#">
-          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg></span>
-          Contact Us
-        </a>
+
         <a href="#" class="logout icon-only" aria-label="Logout" title="Logout">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 3v18"/></svg></span>
         </a>
@@ -1146,6 +1153,20 @@
       const frame = document.getElementById('external-frame');
       const msg = document.getElementById('frame-message');
 
+      // Retrieve session from localStorage
+      const session = JSON.parse(localStorage.getItem('stride_session') || '{}');
+      let params = '';
+      const queryParams = new URLSearchParams();
+      if (session.region) {
+        queryParams.set('region', session.region);
+        queryParams.set('region_v2', session.region);
+        if (session.district) queryParams.set('district', session.district);
+      }
+      if (session.role) queryParams.set('role', session.role);
+      if (session.no_csv || session.role === 'guest') queryParams.set('no_csv', '1');
+      const qs = queryParams.toString();
+      if (qs) params = (url.includes('?') ? '&' : '?') + qs;
+
       // Case 1: page opened directly from disk (file://). Browsers block
       // loading other local files inside an iframe, so it would appear blank.
       if (window.location.protocol === 'file:') {
@@ -1161,8 +1182,31 @@
 
       msg.style.display = 'none';
       frame.style.display = 'block';
-      frame.src = './' + url;
+      frame.src = './' + url + params;
     }
+
+    // Setup logout click listener
+    document.addEventListener('DOMContentLoaded', function() {
+      const logoutBtn = document.querySelector('.logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('stride_session');
+          window.location.replace('./login.html');
+        });
+      }
+
+      // Trigger click on first active nav link to load with params automatically on startup
+      const firstActive = document.querySelector('.nav-link.active');
+      if (firstActive) {
+        // Find corresponding URL from the onclick attribute or just call showExternal manually
+        const onclickAttr = firstActive.getAttribute('onclick');
+        const match = onclickAttr ? onclickAttr.match(/'([^']+)'/) : null;
+        if (match && match[1]) {
+          showExternal(new Event('click'), firstActive, match[1]);
+        }
+      }
+    });
   </script>
 </body>
 </html>

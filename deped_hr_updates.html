@@ -286,7 +286,7 @@ let tableViewRows=[];
 const currentPage = state.dataset;
 
 const RAW_CACHE_NAME = "stride-csv-preload-v1";
-const PARSED_CACHE_NAME = "stride-parsed-v1";
+const PARSED_CACHE_NAME = "stride-parsed-v2";
 function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
 function datasetFileName(key){ return String(CSV_SOURCES[key][0]).replace(/^\.?\/?/,"").replace(/^data\//,""); }
 async function readSharedParsed(fileName){
@@ -406,6 +406,8 @@ function coerceRows(datasetKey,raw){
       const rawValue=sourceValue(r,k,c.aliases?.[k]||[]);
       out[k]=numeric.has(k)?parseNumber(rawValue):cleanCell(rawValue);
     });
+    // Preserve region_v2 for cross-column region matching (not in schema but needed for filtering)
+    if(r.region_v2!==undefined&&String(r.region_v2).trim()) out.region_v2=cleanCell(r.region_v2);
     return out;
   });
 }
@@ -494,10 +496,39 @@ function validateDataset(){
   if(missing.length) throw new Error(`Missing fields for ${cfg().label}: ${missing.join(", ")}`);
 }
 
+function normalizeRegion(s){
+  // Normalize to lowercase, collapse hyphens/dashes to spaces, strip extra whitespace
+  return String(s||'').toLowerCase().replace(/[-–—]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function regionMatches(rowVal, query){
+  const r = normalizeRegion(rowVal);
+  const q = normalizeRegion(query);
+  if(!r || !q) return false;
+  if(r === q) return true;
+  // Allow one to be a prefix of the other (e.g. "region i" vs "region i ilocos region")
+  if(r.startsWith(q + ' ') || q.startsWith(r + ' ')) return true;
+  // Abbreviation contained in parentheses or at end (e.g. "ncr" in "national capital region (ncr)")
+  const shorter = r.length <= q.length ? r : q;
+  const longer  = r.length <= q.length ? q : r;
+  if(new RegExp('(?:^|[\\s(])' + shorter.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?:[\\s)]|$)').test(longer)) return true;
+  return false;
+}
 function currentRows(){
   const c=cfg(), q=globalSearch.value.toLowerCase().trim(), keys=activeFilterKeys();
+  const params = new URLSearchParams(window.location.search);
+  const queryRegion = params.get('region');
+  const queryDivision = params.get('division');
+  const queryRole = params.get('role');
+
   return rows().filter(r=>{
-    for(const k of keys){const fv=state.filters[k]||"all";if(fv!=="all"&&value(r,k)!==fv) return false;}
+    if (queryRegion && queryRole !== 'admin') {
+      const rowRegion = value(r, 'region_v2') || value(r, 'region');
+      if (!regionMatches(rowRegion, queryRegion)) return false;
+    }
+    for(const k of keys){
+      if(k==="region"&&queryRegion&&queryRole!=="admin") continue; // already handled via region_v2||region check above
+      const fv=state.filters[k]||"all";if(fv!=="all"&&value(r,k)!==fv) return false;
+    }
     for(let i=0;i<state.drill.length;i++) if(value(r,c.hierarchy[i])!==state.drill[i]) return false;
     if(q&&!Object.values(r).join(" ").toLowerCase().includes(q)) return false;
     return true;
@@ -521,10 +552,33 @@ function renderFilters(){
   const c=cfg();
   heroTitle.innerHTML=c.heroTitle;
   const keys=activeFilterKeys();
+  
+  const params = new URLSearchParams(window.location.search);
+  const queryRegion = params.get('region');
+  const queryDivision = params.get('division');
+  const queryRole = params.get('role');
+
   const regionSel=state.filters.region&&state.filters.region!=="all"?state.filters.region:null;
   dynamicFilters.innerHTML=keys.map(key=>{
+    if (queryRegion && queryRole !== 'admin') {
+      if (key === 'region') {
+        state.filters.region = queryRegion;
+        return `<label><span>Region</span><select class="select" data-filter-key="region" disabled><option value="${safe(queryRegion)}">${safe(queryRegion)}</option></select></label>`;
+      }
+      if (key === 'division' && queryDivision) {
+        state.filters.division = queryDivision;
+        return `<label><span>Division</span><select class="select" data-filter-key="division" disabled><option value="${safe(queryDivision)}">${safe(queryDivision)}</option></select></label>`;
+      }
+    }
     let source=rows();
-    if(key==="division"&&regionSel)source=source.filter(r=>value(r,"region")===regionSel);
+    if(key==="division"){
+      if(queryRegion&&queryRole!=="admin"){
+        const qrl=queryRegion.toLowerCase();
+        source=source.filter(r=>(value(r,"region_v2")||value(r,"region")).toLowerCase()===qrl);
+      } else if(regionSel){
+        source=source.filter(r=>value(r,"region")===regionSel);
+      }
+    }
     if(key==="position"&&state.filters.classification&&state.filters.classification!=="all")source=source.filter(r=>value(r,"classification")===state.filters.classification);
     const opts=["all",...Array.from(new Set(source.map(r=>value(r,key)))).filter(Boolean).sort()];
     const cur=state.filters[key]||"all";
@@ -872,7 +926,16 @@ function renderAdvControls(){
 }
 function renderAll(){validateDataset();renderFilters();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage()}
 
-document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("active",a.dataset.page===currentPage));
+// Intercept nav tab clicks to preserve region/role/district params
+document.querySelectorAll(".nav a").forEach(a=>{
+  a.classList.toggle("active",a.dataset.page===currentPage);
+  a.addEventListener("click",function(e){
+    e.preventDefault();
+    const params=new URLSearchParams(window.location.search);
+    params.set("dataset",this.dataset.page);
+    window.location.href="?"+params.toString();
+  });
+});
 globalSearch.addEventListener("input",()=>{state.page=1;renderAll()});
 advToggle.onclick=()=>{state.advOpen=!state.advOpen;renderAdvControls()};
 distSelect.onchange=()=>{state.distKey=distSelect.value||null;state.barDistKey=state.distKey;state.shareDistKey=state.distKey;state.issueDistKey=state.distKey;state.page=1;renderAll()};

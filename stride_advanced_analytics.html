@@ -1181,6 +1181,20 @@ async function runAnalysis(){
       }
     }
     await attachCoordinates(files, geo);
+    const params = new URLSearchParams(window.location.search);
+    const queryRegion = params.get('region');
+    const queryDivision = params.get('division');
+    const queryRole = params.get('role');
+    if (queryRegion && queryRole !== 'admin') {
+      resultRows = resultRows.filter(rec => {
+        // Check __geo_region__ (from CSV region col) OR __geo_region_v2__ (from region_v2 col)
+        const rVal = String(rec['__geo_region__'] || "").trim().toUpperCase();
+        const rV2 = String(rec['__geo_region_v2__'] || "").trim().toUpperCase();
+        const regionMatch = rVal === queryRegion.toUpperCase() || rV2 === queryRegion.toUpperCase() || !rVal;
+        if (!regionMatch) return false;
+        return true;
+      });
+    }
   } catch (e) {}
   updateCount(resultRows.length);
   populateChartSelectors();

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRIDE — Register</title>
+  <script src="./stride-assets.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #08315F;
+      --blue: #075985;
+      --blue-600: #0284C7;
+      --blue-50: #F0F9FF;
+      --gold: #FBBF24;
+      --amber: #D97706;
+      --red: #B91C1C;
+      --green: #16A34A;
+      --text: #0F172A;
+      --muted: #64748B;
+      --line: #BAE6FD;
+      --radius: 24px;
+      --font-heading: "Plus Jakarta Sans", sans-serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-color: var(--blue-50);
+      background-image:
+        radial-gradient(43.5% 49.5% at 10% 12%, rgba(7, 89, 133, .30) 0 34%, transparent 78%),
+        radial-gradient(46.5% 54% at 92% 10%, rgba(251, 191, 36, .42) 0 36%, transparent 80%),
+        radial-gradient(40.5% 48% at 84% 92%, rgba(125, 211, 252, .30) 0 34%, transparent 78%);
+      background-attachment: fixed;
+    }
+
+    .auth-container {
+      width: min(580px, 100%);
+      background: rgba(255, 255, 255, 0.96);
+      border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 60px rgba(8, 49, 95, 0.16);
+      backdrop-filter: blur(14px);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-weight: 900;
+      font-size: 28px;
+      font-style: italic;
+      color: var(--navy);
+      letter-spacing: -0.04em;
+    }
+
+    .brand-title span { color: var(--gold); }
+    .brand-title .de { color: var(--red); }
+
+    .brand-sub {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .form-step-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--navy);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-step-title span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 500px) {
+      .input-row { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--navy);
+    }
+
+    .input-group input, .input-group select {
+      height: 42px;
+      padding: 0 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus, .input-group select:focus {
+      border-color: var(--blue-600);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+    }
+
+    .otp-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .otp-row input {
+      flex: 1;
+    }
+
+    .btn-otp {
+      padding: 0 16px;
+      height: 42px;
+      border: 1.5px solid var(--navy);
+      background: white;
+      color: var(--navy);
+      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .btn-otp:hover {
+      background: var(--blue-50);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-action {
+      flex: 1;
+      height: 44px;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--navy);
+      color: white;
+      box-shadow: inset 0 -3px 0 var(--gold);
+    }
+
+    .btn-primary:hover {
+      background: var(--blue);
+    }
+
+    .btn-secondary {
+      background: var(--blue-50);
+      color: var(--navy);
+      border: 1.5px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #E0F2FE;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert-error {
+      background: #FEE2E2;
+      border: 1px solid #FCA5A5;
+      color: var(--red);
+    }
+
+    .alert-success {
+      background: #D1FAE5;
+      border: 1px solid #6EE7B7;
+      color: var(--green);
+    }
+
+    /* Custom toast style for simulated OTP */
+    .otp-toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      width: 320px;
+      background: #08315F;
+      color: white;
+      border-radius: 16px;
+      border: 2px solid var(--gold);
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      z-index: 9999;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: none;
+    }
+
+    .otp-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+      display: block;
+    }
+
+    .otp-toast h4 {
+      font-family: var(--font-heading);
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .otp-toast p {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #E0F2FE;
+      margin-bottom: 10px;
+    }
+
+    .otp-toast-code {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: 4px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="brand-group">
+      <div class="brand-title">STR<span>I</span><span class="de">DE</span></div>
+      <span class="brand-sub">Create your account</span>
+    </div>
+
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <form id="registerForm" onsubmit="event.preventDefault();">
+      <!-- Step 1: Personal Info -->
+      <div id="step1" class="form-step active">
+        <div class="form-step-title">Personal Information <span>Step 1 of 3</span></div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="firstName">First Name *</label>
+            <input type="text" id="firstName" required>
+          </div>
+          <div class="input-group">
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="middleName">Middle Name</label>
+          <input type="text" id="middleName">
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-action btn-secondary" onclick="window.location.href='./login.html'">Back to Login</button>
+          <button type="button" class="btn-action btn-primary" onclick="goToStep(2)">Next Step</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Credentials & OTP -->
+      <div id="step2" class="form-step">
+        <div class="form-step-title">Credentials & Verification <span>Step 2 of 3</span></div>
+        <div class="input-group">
+          <label for="email">DepEd Email Address *</label>
+          <input type="email" id="email" placeholder="username@deped.gov.ph" required>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="password">Password *</label>
+            <input type="password" id="password" minlength="8" placeholder="Min. 8 characters" required>
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword">Confirm Password *</label>
+            <input type="password" id="confirmPassword" placeholder="Repeat password" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="otp">Verify Email OTP *</label>
+          <div class="otp-row">
+            <input type="text" id="otp" maxlength="6" placeholder="Enter 6-digit OTP" required>
+            <button type="button" id="btnSendOtp" class="btn-otp" onclick="sendSimulatedOtp()">Send OTP</button>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-action btn-secondary" onclick="goToStep(1)">Back</button>
+          <button type="button" class="btn-action btn-primary" onclick="goToStep(3)">Next Step</button>
+        </div>
+      </div>
+
+      <!-- Step 3: DepEd Assignment -->
+      <div id="step3" class="form-step">
+        <div class="form-step-title">DepEd Assignment <span>Step 3 of 3</span></div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="stationLevel">Station Level *</label>
+            <select id="stationLevel" required onchange="onStationLevelChange(this.value)">
+              <option value="">Select station level…</option>
+              <option value="Central Office">Central Office</option>
+              <option value="Regional Office">Regional Office</option>
+              <option value="Division Office">Division Office</option>
+              <option value="School">School</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="officeName">Office</label>
+            <input type="text" id="officeName" placeholder="e.g. HROD Division">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="position">Position / Designation</label>
+          <input type="text" id="position" placeholder="e.g. Planning Officer III">
+        </div>
+        <div id="regionGroup" class="input-group">
+          <label for="region">Region *</label>
+          <select id="region">
+            <option value="">Loading regions…</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-action btn-secondary" onclick="goToStep(2)">Back</button>
+          <button type="button" class="btn-action btn-primary" onclick="submitRegistration()">Complete Register</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- OTP toast notification -->
+  <div id="otpToast" class="otp-toast">
+    <h4>🔑 STRIDE Security Gate</h4>
+    <p>A One-Time Password was generated for your DepEd registration:</p>
+    <div id="otpCodeDisplay" class="otp-toast-code">------</div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+
+    function showAlert(message, type = 'error') {
+      const box = document.getElementById('alertBox');
+      box.textContent = message;
+      box.className = `alert alert-${type}`;
+      box.style.display = 'block';
+    }
+
+    function hideAlert() {
+      document.getElementById('alertBox').style.display = 'none';
+    }
+
+    function goToStep(step) {
+      hideAlert();
+
+      if (step === 2 && currentStep === 1) {
+        if (!document.getElementById('firstName').value.trim() || !document.getElementById('lastName').value.trim()) {
+          showAlert('First Name and Last Name are required.');
+          return;
+        }
+      }
+
+      if (step === 3 && currentStep === 2) {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const pwd = document.getElementById('password').value;
+        const confirmPwd = document.getElementById('confirmPassword').value;
+        const otpInput = document.getElementById('otp').value.trim();
+
+        if (!email.endsWith('@deped.gov.ph')) {
+          showAlert('Unauthorized: Only @deped.gov.ph emails are allowed.');
+          return;
+        }
+        if (pwd.length < 8) {
+          showAlert('Password must be at least 8 characters.');
+          return;
+        }
+        if (pwd !== confirmPwd) {
+          showAlert('Passwords do not match.');
+          return;
+        }
+        if (!otpInput) {
+          showAlert('OTP verification code is required.');
+          return;
+        }
+      }
+
+      document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+      currentStep = step;
+    }
+
+    function sendSimulatedOtp() {
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      if (!email.endsWith('@deped.gov.ph')) {
+        showAlert('Please enter a valid @deped.gov.ph email first.');
+        return;
+      }
+      hideAlert();
+
+      fetch('http://localhost:4000/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to send OTP.');
+        }
+        return data;
+      })
+      .then(data => {
+        // Show OTP code in toast (dev mode returns dev_otp directly)
+        const otpDisplay = document.getElementById('otpCodeDisplay');
+        if (data.dev_otp) {
+          otpDisplay.textContent = data.dev_otp;
+          // Auto-fill the OTP input for convenience
+          const otpInput = document.getElementById('otp');
+          if (otpInput) otpInput.value = data.dev_otp;
+        } else {
+          otpDisplay.textContent = 'SENT ✓';
+        }
+
+        const toast = document.getElementById('otpToast');
+        // Force display before transition so CSS animation fires correctly
+        toast.style.display = 'block';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+          });
+        });
+
+        // Change button state to resend timer
+        const btn = document.getElementById('btnSendOtp');
+        btn.disabled = true;
+        let count = 60;
+        const timer = setInterval(() => {
+          count--;
+          if (count <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'Send OTP';
+          } else {
+            btn.textContent = `Retry in ${count}s`;
+          }
+        }, 1000);
+
+        // Keep toast visible for 15 seconds in dev mode, 8 in prod
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, data.dev_otp ? 15000 : 8000);
+      })
+      .catch(err => {
+        showAlert(err.message);
+      });
+    }
+
+    function onStationLevelChange(val) {
+      const regionGroup = document.getElementById('regionGroup');
+      if (val === 'Central Office') {
+        regionGroup.style.display = 'none';
+        document.getElementById('region').value = '';
+      } else {
+        regionGroup.style.display = '';
+      }
+    }
+
+    function submitRegistration() {
+      hideAlert();
+
+      const stationLevel = document.getElementById('stationLevel').value;
+      const isCentralOffice = stationLevel === 'Central Office';
+      const region = isCentralOffice ? '' : document.getElementById('region').value;
+
+      if (!stationLevel) {
+        showAlert('Station Level is required.');
+        return;
+      }
+      if (!isCentralOffice && !region) {
+        showAlert('Region is required.');
+        return;
+      }
+
+      const userData = {
+        first_name: document.getElementById('firstName').value.trim(),
+        last_name: document.getElementById('lastName').value.trim(),
+        middle_name: document.getElementById('middleName').value.trim(),
+        email: document.getElementById('email').value.trim().toLowerCase(),
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+        otpCode: document.getElementById('otp').value.trim(),
+        station_level: stationLevel,
+        position: document.getElementById('position').value.trim(),
+        office_name: document.getElementById('officeName').value.trim(),
+        region: region || null,
+        role: 'structural'
+      };
+
+      fetch('http://localhost:4000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Registration failed.');
+        }
+        return data;
+      })
+      .then(data => {
+        const user = data.user;
+        const sessionData = {
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          role: user.role,
+          region: user.region,
+          division: user.division,
+          district: user.district,
+          station: user.station_level,
+          position: user.position,
+          token: data.token
+        };
+        localStorage.setItem('stride_session', JSON.stringify(sessionData));
+
+        showAlert('Registration successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = './new_stride.html';
+        }, 1000);
+      })
+      .catch(err => {
+        showAlert(err.message);
+      });
+    }
+
+    // ── Region loader from stride_school_unique.csv ──
+    (function loadRegions() {
+      const regionSel = document.getElementById('region');
+      const FALLBACK_REGIONS = ['BARMM','CAR','NCR','NIR','REGION I','REGION II','REGION III',
+        'REGION IV-A','REGION IV-B','REGION V','REGION VI','REGION VII','REGION VIII',
+        'REGION IX','REGION X','REGION XI','REGION XII','REGION XIII'];
+
+      function parseCSVLine(line) {
+        const result = []; let cur = '', inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQ = !inQ; }
+          else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+          else { cur += ch; }
+        }
+        result.push(cur.trim());
+        return result;
+      }
+
+      function populateRegions(regions) {
+        regionSel.innerHTML = '<option value="">Select region…</option>';
+        regions.sort().forEach(r => {
+          const o = document.createElement('option');
+          o.value = r; o.textContent = r;
+          regionSel.appendChild(o);
+        });
+      }
+
+      const csvUrl = (window.STRIDE_ASSETS && window.STRIDE_ASSETS.csvUrls &&
+        window.STRIDE_ASSETS.csvUrls.find(u => u.includes('stride_school_unique')))
+        || './stride_school_unique.csv';
+      fetch(csvUrl)
+        .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.text(); })
+        .then(text => {
+          const lines = text.split(/\r?\n/);
+          if (lines.length < 2) throw new Error('empty');
+          const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g,'').toLowerCase().trim());
+          const rIdx = headers.findIndex(h => h === 'region_v2' || h === 'region' || h === 'beis_region');
+          if (rIdx === -1) throw new Error('region column missing');
+          const regionSet = new Set();
+          for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const cols = parseCSVLine(lines[i]);
+            const reg = (cols[rIdx]||'').replace(/"/g,'').trim();
+            if (reg) regionSet.add(reg);
+          }
+          if (!regionSet.size) throw new Error('no data');
+          populateRegions([...regionSet]);
+        })
+        .catch(err => {
+          console.warn('CSV load failed:', err.message, '— using fallback regions.');
+          populateRegions(FALLBACK_REGIONS);
+        });
+    })();
+  </script>
+</body>
+</html>

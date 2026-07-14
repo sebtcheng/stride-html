@@ -2900,7 +2900,25 @@
     }
 
     function initializeFilters() {
-      populateSelect("regionFilter", [...new Set(rawRows.map(row => row.region))], "All Regions");
+      const params = new URLSearchParams(window.location.search);
+      const queryRegion = params.get('region');
+      const queryRole = params.get('role');
+
+      if (queryRegion && queryRole !== 'admin') {
+        populateSelect("regionFilter", [queryRegion], queryRegion);
+        const regionControl = document.getElementById("regionFilter");
+        const checkbox = regionControl.querySelector(`.multi-select-menu input[type="checkbox"][value="${queryRegion}"]`);
+        if (checkbox) {
+          checkbox.checked = true;
+          const allCheckbox = regionControl.querySelector('.multi-select-menu input[type="checkbox"][value="all"]');
+          if (allCheckbox) allCheckbox.checked = false;
+          updateMultiSelectLabel("regionFilter");
+        }
+        const btn = regionControl.querySelector(".multi-select-button");
+        if (btn) btn.disabled = true;
+      } else {
+        populateSelect("regionFilter", [...new Set(rawRows.map(row => row.region))], "All Regions");
+      }
       populateSelect("sizeFilter", [...new Set(rawRows.map(row => row.size))], "All Sizes");
       populateSelect("localityFilter", [...new Set(rawRows.map(row => row.locality))], "All Localities");
       populateSelect("classificationFilter", [...new Set(rawRows.map(row => row.locality_classification))], "All Classifications");

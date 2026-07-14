@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRIDE — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #08315F;
+      --blue: #075985;
+      --blue-600: #0284C7;
+      --blue-50: #F0F9FF;
+      --gold: #FBBF24;
+      --amber: #D97706;
+      --red: #B91C1C;
+      --green: #16A34A;
+      --text: #0F172A;
+      --muted: #64748B;
+      --line: #BAE6FD;
+      --radius: 24px;
+      --font-heading: "Plus Jakarta Sans", sans-serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-color: var(--blue-50);
+      background-image:
+        radial-gradient(43.5% 49.5% at 10% 12%, rgba(7, 89, 133, .30) 0 34%, transparent 78%),
+        radial-gradient(46.5% 54% at 92% 10%, rgba(251, 191, 36, .42) 0 36%, transparent 80%),
+        radial-gradient(40.5% 48% at 84% 92%, rgba(125, 211, 252, .30) 0 34%, transparent 78%);
+      background-attachment: fixed;
+    }
+
+    .auth-container {
+      width: min(480px, 100%);
+      background: rgba(255, 255, 255, 0.96);
+      border: 2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 60px rgba(8, 49, 95, 0.16);
+      backdrop-filter: blur(14px);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      padding: 0;
+      background: transparent;
+      border: none;
+    }
+
+    .logo-strip img {
+      height: 57px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-weight: 900;
+      font-size: 64px;
+      font-style: italic;
+      color: var(--navy);
+      letter-spacing: -0.04em;
+    }
+
+    .brand-title span { color: var(--gold); }
+    .brand-title .de { color: var(--red); }
+
+    .brand-sub {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--blue-50);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--navy);
+      color: white;
+      box-shadow: inset 0 -2px 0 var(--gold);
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--navy);
+    }
+
+    .input-group input, .input-group select, .input-group textarea {
+      height: 44px;
+      padding: 0 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+      border-color: var(--blue-600);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+    }
+
+    .input-group textarea {
+      height: auto;
+      padding: 12px 14px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      box-shadow: inset 0 -3px 0 var(--gold);
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+      background: var(--blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert-error {
+      background: #FEE2E2;
+      border: 1px solid #FCA5A5;
+      color: var(--red);
+    }
+
+    .alert-success {
+      background: #D1FAE5;
+      border: 1px solid #6EE7B7;
+      color: var(--green);
+    }
+
+    .footer-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .footer-link a {
+      color: var(--blue-600);
+      text-decoration: none;
+    }
+
+    .footer-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="brand-group">
+      <div class="logo-strip">
+        <img src="./deped_logo.png" alt="DepEd" onerror="this.style.display='none'">
+      </div>
+      <div class="brand-title">STR<span>I</span><span class="de">DE</span></div>
+      <span class="brand-sub">Strategic Resource Inventory for Deployment Efficiency</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('deped')">DepEd Account</button>
+      <button class="tab" onclick="switchTab('guest')">Guest Access</button>
+    </div>
+
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <!-- DepEd Login Section -->
+    <div id="depedSection" class="form-section active">
+      <form id="depedForm" onsubmit="handleDepEdLogin(event)">
+        <div class="input-group">
+          <label for="depedEmail">DepEd Email</label>
+          <input type="email" id="depedEmail" placeholder="username@deped.gov.ph" required>
+        </div>
+        <div class="input-group">
+          <label for="depedPassword">Password</label>
+          <input type="password" id="depedPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit">Sign In</button>
+      </form>
+      <div class="footer-link">
+        No account? <a href="./register.html">Register here</a>
+      </div>
+    </div>
+
+    <!-- Guest Access Section -->
+    <div id="guestSection" class="form-section">
+      <form id="guestForm" onsubmit="handleGuestAccess(event)">
+        <div class="input-group">
+          <label for="guestName">Full Name</label>
+          <input type="text" id="guestName" placeholder="Juan Dela Cruz" required>
+        </div>
+        <div class="input-group">
+          <label for="guestEmail">Email Address</label>
+          <input type="email" id="guestEmail" placeholder="juan@example.com" required>
+        </div>
+        <div class="input-group">
+          <label for="guestOrg">Organization / Affiliation</label>
+          <input type="text" id="guestOrg" placeholder="e.g. UNESCO, University of the Philippines" required>
+        </div>
+        <div class="input-group">
+          <label for="guestRegion">Region</label>
+          <select id="guestRegion" required>
+            <option value="" disabled selected>Select a region…</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="guestPurpose">Purpose of Access</label>
+          <textarea id="guestPurpose" rows="3" placeholder="Describe the reason for accessing the database..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Request Access</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Ensure stride_session clears if logging in again
+    localStorage.removeItem('stride_session');
+
+    function showAlert(message, type = 'error') {
+      const box = document.getElementById('alertBox');
+      box.textContent = message;
+      box.className = `alert alert-${type}`;
+      box.style.display = 'block';
+    }
+
+    function hideAlert() {
+      document.getElementById('alertBox').style.display = 'none';
+    }
+
+    function switchTab(target) {
+      hideAlert();
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+      
+      if (target === 'deped') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('depedSection').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('guestSection').classList.add('active');
+      }
+    }
+
+    function handleDepEdLogin(event) {
+      event.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById('depedEmail').value.trim().toLowerCase();
+      const password = document.getElementById('depedPassword').value;
+
+      if (!email.endsWith('@deped.gov.ph')) {
+        showAlert('Unauthorized: Only @deped.gov.ph emails are allowed.');
+        return;
+      }
+
+      fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Login failed.');
+        }
+        return data;
+      })
+      .then(data => {
+        const user = data.user;
+        const sessionData = {
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          role: user.role || 'structural',
+          region: user.region || '',
+          division: user.division || '',
+          district: user.district || '',
+          station: user.station_level || '',
+          position: user.position || '',
+          token: data.token
+        };
+        localStorage.setItem('stride_session', JSON.stringify(sessionData));
+        showAlert('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = './new_stride.html';
+        }, 1000);
+      })
+      .catch(err => {
+        showAlert(err.message);
+      });
+    }
+
+    function handleGuestAccess(event) {
+      event.preventDefault();
+      hideAlert();
+
+      const name = document.getElementById('guestName').value.trim();
+      const email = document.getElementById('guestEmail').value.trim().toLowerCase();
+      const organization = document.getElementById('guestOrg').value.trim();
+      const purpose = document.getElementById('guestPurpose').value.trim();
+      const region = document.getElementById('guestRegion').value.trim();
+
+      if (!region) {
+        showAlert('Please select a region.');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert('Please provide a valid email address.');
+        return;
+      }
+
+      fetch('http://localhost:4000/api/auth/guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, organization, purpose })
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Guest registration failed.');
+        }
+        return data;
+      })
+      .then(data => {
+        const guestSession = {
+          name: name,
+          email: email,
+          role: 'guest',
+          region: region,
+          division: '',
+          district: '',
+          station: 'Guest Access',
+          position: 'Visitor',
+          no_csv: true
+        };
+        localStorage.setItem('stride_session', JSON.stringify(guestSession));
+        showAlert('Guest access granted! Redirecting...', 'success');
+        setTimeout(() => {
+          const dest = region
+            ? './new_stride.html?mode=guest&region=' + encodeURIComponent(region) + '&role=guest'
+            : './new_stride.html?mode=guest&role=guest';
+          window.location.href = dest;
+        }, 1000);
+      })
+      .catch(err => {
+        showAlert(err.message);
+      });
+    }
+
+    // ── Guest Region loader ──
+    (function loadGuestRegions() {
+      const sel = document.getElementById('guestRegion');
+      const FALLBACK = ['BARMM','CAR','NCR','NIR','REGION I','REGION II','REGION III',
+        'REGION IV-A','REGION IV-B','REGION V','REGION VI','REGION VII','REGION VIII',
+        'REGION IX','REGION X','REGION XI','REGION XII','REGION XIII'];
+
+      function populate(regions) {
+        // No blank/all-regions option — guests must pick a specific region
+        regions.sort().forEach(function(r) {
+          const o = document.createElement('option');
+          o.value = r; o.textContent = r;
+          sel.appendChild(o);
+        });
+      }
+
+      fetch('./stride_school_unique.csv')
+        .then(function(r) { if (!r.ok) throw new Error('fetch failed'); return r.text(); })
+        .then(function(text) {
+          const lines = text.split(/\r?\n/);
+          if (lines.length < 2) throw new Error('empty');
+          const headers = lines[0].split(',').map(function(h) { return h.replace(/"/g,'').toLowerCase().trim(); });
+          const rIdx = headers.findIndex(function(h) { return h === 'region_v2' || h === 'region' || h === 'beis_region'; });
+          if (rIdx === -1) throw new Error('column missing');
+          const regionSet = new Set();
+          for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const cols = lines[i].split(',');
+            const reg = (cols[rIdx]||'').replace(/"/g,'').trim();
+            if (reg) regionSet.add(reg);
+          }
+          if (!regionSet.size) throw new Error('no data');
+          populate([...regionSet]);
+        })
+        .catch(function() { populate(FALLBACK); });
+    })();
+  </script>
+</body>
+</html>

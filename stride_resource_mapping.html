@@ -2685,8 +2685,24 @@
       const select = getGeoSelect(key);
       if (!select) return;
 
+      const params = new URLSearchParams(window.location.search);
+      const queryRegion = params.get('region');
+      const queryDivision = params.get('division');
+      const queryDistrict = params.get('district');
+      const queryRole = params.get('role');
+
       const aliases = key === "district" ? SCHOOL_META_FIELDS.district : SCHOOL_META_FIELDS[key];
       const selected = select.value;
+
+      if (queryRegion && queryRole !== 'admin') {
+        if (key === 'region') {
+          select.innerHTML = `<option value="${queryRegion}">${queryRegion}</option>`;
+          select.value = queryRegion;
+          select.disabled = true;
+          return;
+        }
+      }
+
       const values = Array.from(new Set(
         geoOptionRecords
           .filter(function(record) { return recordMatchesHigherFilters(record, key); })
@@ -2720,9 +2736,21 @@
     }
 
     function resetGeoFilters() {
+      const params = new URLSearchParams(window.location.search);
+      const queryRegion = params.get('region');
+      const queryDivision = params.get('division');
+      const queryDistrict = params.get('district');
+      const queryRole = params.get('role');
+
       GEO_FILTER_ORDER.forEach(function(key) {
         const select = getGeoSelect(key);
-        if (select) select.value = "";
+        if (select) {
+          if (queryRegion && queryRole !== 'admin' && key === 'region') {
+            select.value = queryRegion;
+            return;
+          }
+          select.value = "";
+        }
       });
 
       GEO_FILTER_ORDER.forEach(populateGeoSelect);
@@ -4718,6 +4746,18 @@ let currentSchoolProfileContext = null;
     }
     window.addEventListener("load", async function() {
       setupSchoolDetailModal();
+
+      // Hide download/print buttons for guests (no_csv=1 in URL)
+      (function() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('no_csv') === '1') {
+          const dlBtn = document.getElementById('schoolDetailModalDownload');
+          if (dlBtn) dlBtn.style.display = 'none';
+          const printBtn = document.getElementById('schoolDetailModalPrint');
+          if (printBtn) printBtn.style.display = 'none';
+        }
+      })();
+
       initMap();
       setupTableControls();
       await setupGeoFilterControls();

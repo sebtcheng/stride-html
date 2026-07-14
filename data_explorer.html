@@ -494,11 +494,23 @@
         buildCrosswalk();
         entities = [];
         var byKey = {};
+
+        var params = new URLSearchParams(window.location.search);
+        var queryRegion = params.get('region');
+        var queryDivision = params.get('division');
+        var queryRole = params.get('role');
+
         for (var f = 0; f < CSV_FILES.length; f++){
           var file = CSV_FILES[f];
           var rows = datasets[file] || [];
           for (var i = 0; i < rows.length; i++){
             var rec = rows[i];
+
+            if (file === CSV_FILES[0] && queryRegion && queryRole !== 'admin') {
+              var regVal = rec["region_v2"] || rec["region v2"] || getValue(rec, "Region");
+              if (regVal && regVal.trim().toLowerCase() !== queryRegion.toLowerCase()) continue;
+            }
+
             var key = canonicalKey(rec) || ("ROW:" + file + "#" + i);
             var ent = byKey[key];
             if (!ent){ if (file !== CSV_FILES[0]) continue; ent = { key: key, iern: "", sid: "", name: "", region: "", division: "", district: "", values: {}, rowsByFile: {}, pivotRows: {} }; byKey[key] = ent; entities.push(ent); }
@@ -913,8 +925,29 @@
         if (values.indexOf(current) >= 0) select.value = current;
       }
       function populateRegionDivisionControls(){
-        fillSelect(getRegionSelect(), "All Regions", uniqueValues("region"));
-        refreshDivisionOptions();
+        var params = new URLSearchParams(window.location.search);
+        var queryRegion = params.get('region');
+        var queryDivision = params.get('division');
+        var queryRole = params.get('role');
+
+        var regionSelect = getRegionSelect();
+        var divisionSelect = getDivisionSelect();
+
+        if (queryRegion && queryRole !== 'admin') {
+          if (regionSelect) {
+            regionSelect.innerHTML = `<option value="${queryRegion}">${queryRegion}</option>`;
+            regionSelect.value = queryRegion;
+            regionSelect.disabled = true;
+          }
+          if (divisionSelect && queryDivision) {
+            divisionSelect.innerHTML = `<option value="${queryDivision}">${queryDivision}</option>`;
+            divisionSelect.value = queryDivision;
+            divisionSelect.disabled = true;
+          }
+        } else {
+          fillSelect(regionSelect, "All Regions", uniqueValues("region"));
+          refreshDivisionOptions();
+        }
       }
       function refreshDivisionOptions(){
         var regionSelect = getRegionSelect();

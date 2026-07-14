@@ -1519,20 +1519,52 @@
     }
 
     function populateLocationFilters() {
-      const region = document.getElementById("regionFilter").value || "All";
-      const province = document.getElementById("provinceFilter").value || "All";
-      const division = document.getElementById("divisionFilter").value || "All";
+      const params = new URLSearchParams(window.location.search);
+      const queryRegion = params.get('region');
+      const queryDivision = params.get('division');
+      const queryRole = params.get('role');
+
+      let region = document.getElementById("regionFilter").value || "All";
+      if (queryRegion && region === "All") {
+        region = queryRegion;
+        document.getElementById("regionFilter").value = queryRegion;
+      }
+
+      let province = document.getElementById("provinceFilter").value || "All";
+      
+      let division = document.getElementById("divisionFilter").value || "All";
+      if (queryDivision && division === "All") {
+        division = queryDivision;
+        document.getElementById("divisionFilter").value = queryDivision;
+      }
+
       const jurisdictionKey = getJurisdictionKey();
       const jurisdictionLabel = jurisdictionKey === "leg_district" ? "Legislative District" : "Municipality";
 
       let scoped = joinedData.slice();
-      updateSelectOptions("regionFilter", [...new Set(joinedData.map(d => d.region))], "All Regions");
+      
+      const regionSelect = document.getElementById("regionFilter");
+      if (queryRegion && queryRole !== 'admin') {
+        regionSelect.innerHTML = `<option value="${queryRegion}">${queryRegion}</option>`;
+        regionSelect.value = queryRegion;
+        regionSelect.disabled = true;
+      } else {
+        updateSelectOptions("regionFilter", [...new Set(joinedData.map(d => d.region))], "All Regions");
+      }
 
       if (region !== "All") scoped = scoped.filter(d => d.region === region);
       updateSelectOptions("provinceFilter", [...new Set(scoped.map(d => d.province))], "All Provinces");
 
       if (province !== "All") scoped = scoped.filter(d => d.province === province);
-      updateSelectOptions("divisionFilter", [...new Set(scoped.map(d => d.division))], "All Divisions");
+      
+      const divisionSelect = document.getElementById("divisionFilter");
+      if (queryDivision && queryRole !== 'admin') {
+        divisionSelect.innerHTML = `<option value="${queryDivision}">${queryDivision}</option>`;
+        divisionSelect.value = queryDivision;
+        divisionSelect.disabled = true;
+      } else {
+        updateSelectOptions("divisionFilter", [...new Set(scoped.map(d => d.division))], "All Divisions");
+      }
 
       if (division !== "All") scoped = scoped.filter(d => d.division === division);
       document.getElementById("jurisdictionFilterLabel").textContent = jurisdictionLabel;

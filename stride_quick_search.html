@@ -55,9 +55,12 @@
     .results-panel{ min-height:calc(100vh - 130px); }
     .results-header{ padding:14px 16px 10px; border-bottom:1px solid var(--line); background:rgba(240,249,255,.6); }
     .results-header h2{ margin:0 0 10px; color:var(--navy); font:900 16px var(--font-heading); letter-spacing:-.01em; }
-    .quick-filter{ display:flex; align-items:center; gap:8px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#F8FCFF; min-height:34px; }
-    .quick-filter span{ color:var(--muted); font-size:12px; }
-    .quick-filter input{ flex:1; border:0; outline:0; background:transparent; font:700 11px var(--font-body); color:var(--text); }
+    .quick-filter{ display:flex; align-items:center; gap:10px; padding:8px 10px 8px 14px; border:2.5px solid var(--blue-600); border-radius:999px; background:rgba(255,255,255,.96); min-height:42px; box-shadow:0 0 0 4px rgba(2,132,199,.12), 0 4px 16px rgba(7,89,133,.10); transition:box-shadow .2s; }
+    .quick-filter:focus-within{ box-shadow:0 0 0 6px rgba(2,132,199,.18), 0 4px 20px rgba(7,89,133,.16); border-color:var(--navy); }
+    .quick-filter span{ color:var(--blue-600); font-size:16px; flex:0 0 auto; }
+    .quick-filter input{ flex:1; border:0; outline:0; background:transparent; font:700 13px var(--font-body); color:var(--text); }
+    .quick-filter input::placeholder{ color:var(--muted); font-weight:600; }
+    .quick-filter-btn{ border:0; border-radius:999px; padding:7px 18px; cursor:pointer; background:var(--navy); color:#fff; font:800 11px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; box-shadow:inset 0 -2px 0 var(--gold); flex:0 0 auto; white-space:nowrap; }
     .results-list{ flex:1 1 auto; overflow:auto; padding:8px; }
     .results-empty{ padding:40px 20px; text-align:center; color:var(--muted); font:700 12px var(--font-body); line-height:1.5; }
     .result-item{ padding:10px 12px; margin:6px 4px; border:1px solid var(--line); border-radius:12px; background:#fff; cursor:pointer; transition:all .15s; }
@@ -187,18 +190,14 @@
   })();
   </script>
   <div class="qs-shell">
-    <div class="qs-searchbar">
-      <span class="qs-icon">🔍</span>
-      <input id="schoolSearchInput" type="text" placeholder="Search school name or school ID..." autocomplete="off" />
-      <button id="schoolSearchBtn" type="button">Search</button>
-    </div>
     <div class="qs-body">
       <section class="card results-panel">
         <div class="results-header">
           <h2>Search Results (<span id="resultCount">0</span>)</h2>
           <div class="quick-filter">
             <span>🔍</span>
-            <input id="resultFilterInput" type="text" placeholder="Quick filter results..." autocomplete="off" />
+            <input id="resultFilterInput" type="text" placeholder="Search school name or school ID..." autocomplete="off" />
+            <button id="schoolSearchBtn" class="quick-filter-btn" type="button">Search</button>
           </div>
         </div>
         <div class="results-list" id="resultsList">
@@ -329,6 +328,11 @@
       }
 
       function buildRecords(rawRows){
+        var params = new URLSearchParams(window.location.search);
+        var queryRegion = params.get('region');
+        var queryDivision = params.get('division');
+        var queryRole = params.get('role');
+
         return rawRows.map(function(rec, idx){
           var lat=toNumber(getVal(rec, FIELD.lat, ""));
           var lng=toNumber(getVal(rec, FIELD.lng, ""));
@@ -351,7 +355,16 @@
             rooms:getVal(rec, FIELD.rooms, ""),
             lat:valid?lat:null, lng:valid?lng:null, valid:valid
           };
-        }).filter(function(r){ return !isBlankCsvValue(r.name); });
+        }).filter(function(r){ 
+          if (!isBlankCsvValue(r.name)) {
+            if (queryRegion && queryRole !== 'admin') {
+              if (r.region.toLowerCase() !== queryRegion.toLowerCase()) return false;
+              if (queryDivision && r.division.toLowerCase() !== queryDivision.toLowerCase()) return false;
+            }
+            return true;
+          }
+          return false;
+        });
       }
 
       function rowsHtml(pairs){
@@ -789,8 +802,7 @@
       }
 
       function runSearch(){
-        var term=(document.getElementById("schoolSearchInput").value||"").trim().toLowerCase();
-        document.getElementById("resultFilterInput").value="";
+        var term=(document.getElementById("resultFilterInput").value||"").trim().toLowerCase();
         columnFilters={}; tableSortKey=""; tableSortDir="asc"; currentPage=1;
         if(!term){ currentResults=[]; document.getElementById("resultCount").textContent="0"; document.getElementById("resultsList").innerHTML='<div class="results-empty">Search a school name or ID to plot it on the map.</div>'; if(cluster) cluster.clearLayers(); map.setView(PH_CENTER, PH_ZOOM); return; }
         var matches=allRecords.filter(function(r){ return r.name.toLowerCase().indexOf(term)>=0 || r.schoolId.toLowerCase().indexOf(term)>=0; });
@@ -844,9 +856,8 @@
 
       function wire(){
         document.getElementById("schoolSearchBtn").addEventListener("click", runSearch);
-        document.getElementById("schoolSearchInput").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); runSearch(); } });
-        var t; document.getElementById("schoolSearchInput").addEventListener("input", function(){ clearTimeout(t); if(this.value.trim().length>=3){ t=setTimeout(runSearch, 300); } });
-        var t2; document.getElementById("resultFilterInput").addEventListener("input", function(){ clearTimeout(t2); t2=setTimeout(applyQuickFilter, 200); });
+        var t; document.getElementById("resultFilterInput").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); runSearch(); } });
+        document.getElementById("resultFilterInput").addEventListener("input", function(){ clearTimeout(t); if(this.value.trim().length>=3){ t=setTimeout(runSearch, 300); } else if(this.value.trim().length===0){ t=setTimeout(runSearch, 100); } });
         document.getElementById("schoolDetailModalClose").addEventListener("click", closeDetailModal);
         document.getElementById("schoolDetailModalDownload").addEventListener("click", printCurrentSchoolProfilePdf);
         var qsModal=document.getElementById("schoolDetailModal");
@@ -854,7 +865,17 @@
         document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeDetailModal(); });
       }
 
-      window.addEventListener("load", function(){ initMap(); wire(); loadData(); loadInsightedData(); loadResourceMappingData(); });
+      window.addEventListener("load", function(){
+        initMap(); wire(); loadData(); loadInsightedData(); loadResourceMappingData();
+        // Hide download/print buttons for guests (no_csv=1 in URL)
+        (function() {
+          var params = new URLSearchParams(window.location.search);
+          if (params.get('no_csv') === '1') {
+            var dlBtn = document.getElementById('schoolDetailModalDownload');
+            if (dlBtn) dlBtn.style.display = 'none';
+          }
+        })();
+      });
     })();
   </script>
 </body>
