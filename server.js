@@ -369,6 +369,43 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Route: Reset Password
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { email, otp_code, newPassword } = req.body;
+    if (!email || !otp_code || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP, and new password are required.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    const lowerEmail = email.toLowerCase();
+    // Check user exists
+    const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [lowerEmail]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'No account found with that email.' });
+    }
+    // Verify OTP
+    const otpCheck = await pool.query(
+      'SELECT id FROM otps WHERE email = $1 AND otp_code = $2 AND expires_at > NOW()',
+      [lowerEmail, otp_code]
+    );
+    if (otpCheck.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or expired OTP.' });
+    }
+    // Delete used OTP
+    await pool.query('DELETE FROM otps WHERE email = $1', [lowerEmail]);
+    // Hash and update password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE email = $2', [passwordHash, lowerEmail]);
+    res.status(200).json({ success: true, message: 'Password reset successfully.' });
+  } catch (error) {
+    console.error('Reset password error:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Route: Guest Access
 app.post('/api/auth/guest', async (req, res) => {
   try {
