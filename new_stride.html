@@ -682,6 +682,28 @@
     var cachedCount = 0;
     var preloadTotal = 0;
 
+    // Version-aware cache gating so a refresh with unchanged data skips re-downloading.
+    var DATA_VERSION = (window.STRIDE_ASSETS && window.STRIDE_ASSETS.DATA_VERSION) ? String(window.STRIDE_ASSETS.DATA_VERSION) : "";
+    var PRELOAD_VERSION_KEY = "stride_preload_version";
+
+    function dataVersionUnchanged(){
+      // Without a known version we can't prove data is unchanged, so don't skip.
+      if (!DATA_VERSION) return false;
+      try { return localStorage.getItem(PRELOAD_VERSION_KEY) === DATA_VERSION; }
+      catch (e) { return false; }
+    }
+    function markPreloadVersion(){
+      if (!DATA_VERSION) return;
+      try { localStorage.setItem(PRELOAD_VERSION_KEY, DATA_VERSION); } catch (e) {}
+    }
+    async function isRawCached(url){
+      if (!("caches" in window)) return false;
+      try {
+        var cache = await caches.open("stride-csv-preload-v1");
+        return !!(await cache.match(url));
+      } catch (e) { return false; }
+    }
+
     function preloadEl(id){ return document.getElementById(id); }
 
     function showPreload(){
@@ -763,7 +785,18 @@
         return;
       }
 
-      var response = await fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "preload=" + Date.now(), { cache: "reload" });
+      // Skip the network entirely when this CSV is already raw-cached and the data
+      // version has not changed since the last successful preload. This is what makes
+      // a plain refresh instant instead of re-downloading identical files.
+      if (!options.force && dataVersionUnchanged() && await isRawCached(url)) {
+        return;
+      }
+
+      // Use a stable, version-based cache-buster (not a per-request timestamp) so the
+      // HTTP cache / 304 revalidation can help; the URL only changes when DATA_VERSION
+      // changes, which is exactly when we want a fresh copy.
+      var versioned = url + (url.indexOf("?") >= 0 ? "&" : "?") + "v=" + encodeURIComponent(DATA_VERSION || "0");
+      var response = await fetch(versioned, { cache: "default" });
       if (!response.ok) throw new Error("Could not preload " + url);
 
       var buffer = await response.arrayBuffer();
@@ -788,15 +821,26 @@
 
     function isInsightedCsv(url){ return /(^|\/)insighted_.+\.csv$/i.test(url); }
 
-    async function preloadBatch(urls, phase){
-      for (var i = 0; i < urls.length; i++) {
-        var fileName = urls[i].replace("./", "");
-        var parse = isInsightedCsv(urls[i]);
-        updatePreload(cachedCount, preloadTotal, fileName, parse ? "Parsing" : phase);
-        try { await cacheCsv(urls[i], { parse: parse }); } catch (e) { console.warn(e); }
-        cachedCount++;
-        updatePreload(cachedCount, preloadTotal, fileName, parse ? "Parsed & cached" : phase);
+    async function preloadBatch(urls, phase, opts){
+      // Raw-cache in parallel by default. Parsing is expensive, so it only runs
+      // when opts.parse is explicitly set (never on the shell's startup batch).
+      opts = opts || {};
+      var concurrency = 4;
+      var i = 0;
+      async function worker(){
+        while (i < urls.length) {
+          var idx = i++;
+          var url = urls[idx];
+          var fileName = url.replace(/^\.\//, "");
+          updatePreload(cachedCount, preloadTotal, fileName, opts.parse ? "Parsing" : phase);
+          try { await cacheCsv(url, { parse: !!opts.parse }); } catch (e) { console.warn(e); }
+          cachedCount++;
+          updatePreload(cachedCount, preloadTotal, fileName, opts.parse ? "Parsed & cached" : phase);
+        }
       }
+      var pool = [];
+      for (var w = 0; w < Math.min(concurrency, urls.length); w++) pool.push(worker());
+      await Promise.all(pool);
     }
 
     function requestIdle(fn){
@@ -805,7 +849,6 @@
     }
 
     async function startCsvPreload(){
-      showPreload();
       preloadStartedAt = performance.now();
 
       var allCsvs = await discoverRootCsvFiles();
@@ -821,6 +864,38 @@
       var startupCsvs = insightedCsvs.concat(otherStartup);
       if (!startupCsvs.length) startupCsvs = allCsvs.slice(0, Math.max(1, Math.ceil(allCsvs.length / 2)));
 
+      // Parse InsightED datasets off the main thread during idle so the shell stays
+      // responsive on startup and the InsightED page still opens quickly.
+      var warmCsvs = insightedCsvs.concat(backgroundCsvs);
+      function warmRemaining(){
+        if (!warmCsvs.length) return;
+        // Prefer StrideData.warm (idle queue + worker parsing + IndexedDB/parsed-cache
+        // persistence); fall back to the local idle loop only if the shared data layer
+        // failed to load.
+        if (window.StrideData && typeof window.StrideData.warm === "function") {
+          window.StrideData.warm(warmCsvs.map(function(url){ return url.replace(/^\.\//, ""); }));
+        } else {
+          requestIdle(function(){
+            warmCsvs.forEach(function(url){
+              cacheCsv(url, { parse: isInsightedCsv(url) }).catch(function(e){ console.warn(e); });
+            });
+          });
+        }
+      }
+
+      // Fast path: the data version is unchanged AND every startup CSV is already
+      // cached, so there is nothing to download. Skip the whole preload cycle and
+      // never show the preloader -- this is the common case for a plain refresh.
+      if (dataVersionUnchanged()) {
+        var cachedFlags = await Promise.all(startupCsvs.map(isRawCached));
+        if (cachedFlags.every(Boolean)) {
+          warmServiceWorker(allCsvs);
+          warmRemaining();
+          return;
+        }
+      }
+
+      showPreload();
       cachedCount = 0;
       preloadTotal = startupCsvs.length;
       updatePreload(0, preloadTotal, "", "Preparing dashboard resources");
@@ -828,23 +903,13 @@
       warmServiceWorker(allCsvs);
       await preloadBatch(startupCsvs, "Preloading");
 
+      // Record the version only after a successful startup preload so the next refresh
+      // can take the fast path above.
+      markPreloadVersion();
       updatePreload(preloadTotal, preloadTotal, "", "Dashboard resources ready");
       hidePreloadSoon();
 
-      if (backgroundCsvs.length) {
-        // Warm the rest during idle time. Prefer StrideData.warm (idle queue + worker
-        // parsing + IndexedDB/parsed-cache persistence); fall back to the local idle
-        // loop only if the shared data layer failed to load.
-        if (window.StrideData && typeof window.StrideData.warm === "function") {
-          window.StrideData.warm(backgroundCsvs.map(function(url){ return url.replace(/^\.\//, ""); }));
-        } else {
-          requestIdle(function(){
-            backgroundCsvs.forEach(function(url){
-              cacheCsv(url, { parse: isInsightedCsv(url) }).catch(function(e){ console.warn(e); });
-            });
-          });
-        }
-      }
+      warmRemaining();
     }
 
     if (document.readyState === "loading") {
@@ -857,7 +922,7 @@
   <div class="app">
     <div class="top-nav-container">
       <div class="brand-group">
-        <img class="brand-logo" src="./hrod_logo.png" alt="HROD logo">
+        <img class="brand-logo" src="./hrod_logo.png" alt="HROD logo" onerror="this.onerror=null;this.style.display='none'">
         <div class="brand-text">
           <a href="#" class="brand">STR<span>I</span><span class="de">DE</span></a>
           <span class="brand-sub">Strategic Resource Inventory for Deployment Efficiency</span>
