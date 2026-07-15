@@ -556,7 +556,10 @@
           sections.push(labelValueSection("School Identity", [
             ["School ID", info["school id"]],
             ["School Name", info["school name"]],
-            ["Curricular Offering", info["curricular offering"]]
+            ["Curricular Offering", info["curricular offering"]],
+            ["Total Enrolment", r.enrolment],
+            ["Latitude", (r.lat!=null?r.lat:"")],
+            ["Longitude", (r.lng!=null?r.lng:"")]
           ]));
           sections.push(labelValueSection("Geography and Address", [
             ["Region", info["region"]],
