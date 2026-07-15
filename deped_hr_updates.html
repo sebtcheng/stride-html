@@ -601,16 +601,23 @@ function renderKpis(list){
   const c=cfg();
   const colorPool=["ok","purple","warn","info","slate","risk"];
   const cards=[];
-  numericKeys().forEach((k,i)=>{
-    const total=list.reduce((s,r)=>s+(Number(r[k])||0),0);
-    const label=(c.numericLabels&&c.numericLabels[k])||`Total ${pretty(k)}`;
-    cards.push([label,total,`sum of ${pretty(k)} in view`,colorPool[i%colorPool.length]]);
-  });
   const segKey=state.distKey||c.compositionKey;
   const allowed=segKey?allowedCats(segKey,list):[];
+  const selectedSet=new Set(allowed);
+  const selectedRows=allowed.length?list.filter(r=>selectedSet.has(value(r,segKey))):list;
+  const selectedLabel=allowed.length?`selected ${pretty(segKey)} in view`:"current view";
+
+  // Main KPI total must follow the Distribution by selection, not only the top filters.
+  // Example: if Distribution by = Position and only selected positions are shown,
+  // Total Personnel is the sum of Number for those selected positions only.
+  numericKeys().forEach((k,i)=>{
+    const total=selectedRows.reduce((s,r)=>s+(Number(r[k])||0),0);
+    const label=(c.numericLabels&&c.numericLabels[k])||`Total ${pretty(k)}`;
+    cards.push([label,total,`sum of ${pretty(k)} for ${selectedLabel}`,colorPool[i%colorPool.length]]);
+  });
   if(allowed.length){
     const segTotals={};
-    list.forEach(r=>{const cat=value(r,segKey);if(allowed.includes(cat))segTotals[cat]=(segTotals[cat]||0)+baseNum(r)});
+    selectedRows.forEach(r=>{const cat=value(r,segKey);segTotals[cat]=(segTotals[cat]||0)+baseNum(r)});
     allowed.forEach((cat,i)=>cards.push([cat,segTotals[cat]||0,`${pretty(segKey)} · total ${pretty(c.valueKey)}`,colorPool[i%colorPool.length]]));
   }
   const n=cards.length;
@@ -924,7 +931,19 @@ function renderAdvControls(){
   advToggle.className=state.advOpen?"button":"button secondary active";
   resetBtn.className=state.advOpen?"button outline":"button";
 }
-function renderAll(){validateDataset();renderFilters();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage()}
+let hasRenderedOnce=false;
+function restoreScrollPosition(x,y){
+  // Re-rendering filters/charts/tables can replace focused controls and cause the browser
+  // to snap to the bottom duplicate controls. Keep the user's viewport stable instead.
+  requestAnimationFrame(()=>window.scrollTo(x,y));
+  setTimeout(()=>window.scrollTo(x,y),0);
+}
+function renderAll(){
+  const keepX=window.scrollX, keepY=window.scrollY, shouldRestore=hasRenderedOnce;
+  validateDataset();renderFilters();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage();
+  hasRenderedOnce=true;
+  if(shouldRestore)restoreScrollPosition(keepX,keepY);
+}
 
 // Intercept nav tab clicks to preserve region/role/district params
 document.querySelectorAll(".nav a").forEach(a=>{
