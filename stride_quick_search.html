@@ -123,6 +123,7 @@
     .map-card-row:last-child{ border-bottom:0; }
     .map-card-label{ color:var(--muted); font:900 8px var(--font-heading); letter-spacing:.08em; text-transform:uppercase; }
     .map-card-value{ color:var(--navy); font-weight:900; overflow-wrap:anywhere; }
+    .map-card-hint{ padding:8px 14px 11px; border-top:1px solid #E2E8F0; color:var(--blue); font:900 8.5px var(--font-heading); letter-spacing:.10em; text-transform:uppercase; text-align:center; background:#F8FCFF; }
     .map-status{ padding:8px 9px; border:1px solid #CBD5E1; border-radius:6px; background:rgba(255,255,255,.92); box-shadow:0 4px 12px rgba(15,23,42,.18); color:var(--muted); font:800 8px var(--font-heading); letter-spacing:.06em; text-transform:uppercase; }
     .detail-modal{ position:fixed; inset:0; display:none; place-items:center; padding:24px; background:rgba(8,49,95,.42); backdrop-filter:blur(6px); z-index:9999; }
     .detail-modal.open{ display:grid; }
@@ -375,7 +376,12 @@
 
       function hoverCardHtml(r){
         var loc=formatSchoolHeaderLocation(r);
-        return '<div class="map-card"><div class="map-card-header"><div class="map-card-eyebrow">'+(r.schoolId?"School ID "+safeText(r.schoolId):"School")+'</div><div class="map-card-title">'+safeText(r.name)+'</div>'+(loc?'<div class="map-card-location">'+safeText(loc)+'</div>':'')+'</div><div class="map-card-body">'+rowsHtml([["Municipality", r.municipality],["School District", r.district],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]])+'</div></div>';
+        var id=String(r.schoolId==null?"":r.schoolId).trim();
+        var info=(insightedSchoolInfoById[id] && insightedSchoolInfoById[id][0]) || null;
+        var classroom=(resourceClassroomById[id] && resourceClassroomById[id][0]) || null;
+        var totalClassrooms=classroom ? getVal(classroom, ["total_classrooms","total classrooms","classroom inventory","classrooms inventory"], "") : r.rooms;
+        var curricularOffering=info ? info["curricular offering"] : "";
+        return '<div class="map-card"><div class="map-card-header"><div class="map-card-eyebrow">'+(r.schoolId?"School ID "+safeText(r.schoolId):"School")+'</div><div class="map-card-title">'+safeText(r.name)+'</div>'+(loc?'<div class="map-card-location">'+safeText(loc)+'</div>':'')+'</div><div class="map-card-body">'+rowsHtml([["Total Enrolment", r.enrolment],["Total Classrooms", totalClassrooms],["Curricular Offering", curricularOffering],["Coordinates", (r.lat!=null&&r.lng!=null)?(r.lat.toFixed(5)+", "+r.lng.toFixed(5)):""]])+'</div><div class="map-card-hint">Click icon for more details</div></div>';
       }
 
       function popupHtml(r){
@@ -486,6 +492,7 @@
         if(currentRecord && modal && modal.classList.contains("open")){
           document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(currentRecord);
         }
+        if(currentResults.length){ renderMarkers(getDisplayedResults()); }
       }
 
       function formatResourceRate(v){
@@ -512,6 +519,32 @@
           map[key]["number"]++;
         });
         return order.map(function(k){ var o=map[k]; o["number"]=String(o["number"]); return o; });
+      }
+
+      function aggregateClassroomStatus(rows){
+        var order=[], map={};
+        (rows||[]).forEach(function(row){
+          var status=String(row["status"]==null?"":row["status"]).trim();
+          if(isBlankCsvValue(status)) status="Missing status";
+          var key=status.toLowerCase();
+          if(!map[key]){ map[key]={ "status":status, "count":0 }; order.push(key); }
+          map[key]["count"]++;
+        });
+        return order.map(function(k){ var o=map[k]; o["count"]=String(o["count"]); return o; })
+          .sort(function(a,b){ return (toNumber(b["count"])||0)-(toNumber(a["count"])||0) || String(a["status"]).localeCompare(String(b["status"]), undefined, { sensitivity:"base" }); });
+      }
+
+      function aggregateClassesBySize(rows){
+        var order=[], map={};
+        (rows||[]).forEach(function(row){
+          var size=String(row["size"]==null?"":row["size"]).trim();
+          if(isBlankCsvValue(size)) size="Missing size";
+          var key=size.toLowerCase();
+          if(!map[key]){ map[key]={ "size":size, "count":0 }; order.push(key); }
+          map[key]["count"]++;
+        });
+        return order.map(function(k){ var o=map[k]; o["count"]=String(o["count"]); return o; })
+          .sort(function(a,b){ return (toNumber(b["count"])||0)-(toNumber(a["count"])||0) || String(a["size"]).localeCompare(String(b["size"]), undefined, { sensitivity:"base" }); });
       }
 
       function buildResourceMappingSections(id){
@@ -582,6 +615,10 @@
             var sec=labelValueSection(mod.name, pairs);
             if(sec) sections.push(sec);
             else sections.push('<section class="modal-section"><div class="modal-section-title">'+safeText(mod.name)+'<span class="modal-count">1</span></div><div class="modal-empty">Record on file with no additional detail fields.</div></section>');
+          } else if(mod.file==="insighted_classes_organized.csv"){
+            sections.push(tableSection(mod.name, aggregateClassesBySize(rows)));
+          } else if(mod.file==="insighted_classroom_conditions.csv"){
+            sections.push(tableSection(mod.name, aggregateClassroomStatus(rows)));
           } else if(mod.file==="insighted_classroom_repairs.csv"){
             sections.push(tableSection(mod.name, aggregateByItemAction(rows)));
           } else {
@@ -855,6 +892,7 @@
         if(currentRecord && modal && modal.classList.contains("open")){
           document.getElementById("schoolDetailModalBody").innerHTML=buildModalSections(currentRecord);
         }
+        if(currentResults.length){ renderMarkers(getDisplayedResults()); }
       }
 
       function wire(){

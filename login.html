@@ -206,6 +206,33 @@
       transform: translateY(0);
     }
 
+    .btn-submit:disabled {
+      opacity: 0.78;
+      cursor: wait;
+      transform: none;
+    }
+
+    .btn-submit.is-loading {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-spinner {
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,.42);
+      border-top-color: #fff;
+      border-radius: 999px;
+      animation: btnSpin .75s linear infinite;
+      flex: 0 0 auto;
+    }
+
+    @keyframes btnSpin {
+      to { transform: rotate(360deg); }
+    }
+
     .alert {
       padding: 12px 14px;
       border-radius: 10px;
@@ -358,6 +385,23 @@
       document.getElementById('alertBox').style.display = 'none';
     }
 
+    function setButtonLoading(button, isLoading, loadingText) {
+      if (!button) return;
+      if (isLoading) {
+        if (!button.dataset.originalText) button.dataset.originalText = button.textContent.trim();
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-loading-text"></span>';
+        const label = button.querySelector('.btn-loading-text');
+        if (label) label.textContent = loadingText || 'Processing...';
+      } else {
+        button.disabled = false;
+        button.classList.remove('is-loading');
+        button.textContent = button.dataset.originalText || 'Submit';
+        delete button.dataset.originalText;
+      }
+    }
+
     function switchTab(target) {
       hideAlert();
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -379,11 +423,13 @@
 
     function sendForgotOtp() {
       hideAlert();
+      const btn = document.querySelector('#forgotStep1 .btn-submit');
       const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
       if (!email.endsWith('@deped.gov.ph')) {
         showAlert('Please enter a valid @deped.gov.ph email.');
         return;
       }
+      setButtonLoading(btn, true, 'Sending OTP...');
       fetch('http://localhost:4000/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -402,11 +448,13 @@
         document.getElementById('forgotStep2').style.display = 'block';
         showAlert('OTP sent! Check your email.', 'success');
       })
-      .catch(err => showAlert(err.message));
+      .catch(err => showAlert(err.message))
+      .finally(() => setButtonLoading(btn, false));
     }
 
     function submitForgotPassword() {
       hideAlert();
+      const btn = document.querySelector('#forgotStep2 .btn-submit');
       const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
       const otp_code = document.getElementById('forgotOtp').value.trim();
       const newPassword = document.getElementById('forgotNewPass').value;
@@ -416,6 +464,7 @@
       if (newPassword !== confirmPass) { showAlert('Passwords do not match.'); return; }
       if (!otp_code) { showAlert('Please enter the OTP.'); return; }
 
+      setButtonLoading(btn, true, 'Resetting...');
       fetch('http://localhost:4000/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -430,13 +479,15 @@
         showAlert('Password reset! You can now log in.', 'success');
         setTimeout(() => switchTab('deped'), 2000);
       })
-      .catch(err => showAlert(err.message));
+      .catch(err => showAlert(err.message))
+      .finally(() => setButtonLoading(btn, false));
     }
 
     function handleDepEdLogin(event) {
       event.preventDefault();
       hideAlert();
 
+      const submitBtn = event.submitter || document.querySelector('#depedForm .btn-submit');
       const email = document.getElementById('depedEmail').value.trim().toLowerCase();
       const password = document.getElementById('depedPassword').value;
 
@@ -445,6 +496,7 @@
         return;
       }
 
+      setButtonLoading(submitBtn, true, 'Signing in...');
       fetch('http://localhost:4000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -478,13 +530,15 @@
       })
       .catch(err => {
         showAlert(err.message);
-      });
+      })
+      .finally(() => setButtonLoading(submitBtn, false));
     }
 
     function handleGuestAccess(event) {
       event.preventDefault();
       hideAlert();
 
+      const submitBtn = event.submitter || document.querySelector('#guestForm .btn-submit');
       const name = document.getElementById('guestName').value.trim();
       const email = document.getElementById('guestEmail').value.trim().toLowerCase();
       const organization = document.getElementById('guestOrg').value.trim();
@@ -502,6 +556,7 @@
         return;
       }
 
+      setButtonLoading(submitBtn, true, 'Requesting access...');
       fetch('http://localhost:4000/api/auth/guest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -561,7 +616,8 @@
         } else {
           showAlert(err.message);
         }
-      });
+      })
+      .finally(() => setButtonLoading(submitBtn, false));
     }
 
     // ── Guest Region loader ──
