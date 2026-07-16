@@ -38,7 +38,7 @@
   window.STRIDE_ASSETS = {
     // >>> ADD THIS LINE <<<
     // Bump whenever ANY csv above is regenerated (invalidates IndexedDB + parsed cache).
-    DATA_VERSION: "2026-07-11-v1",
+    DATA_VERSION: "2026-07-11-v2",
 
     csvFiles,
     pngFiles,

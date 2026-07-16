@@ -39,12 +39,13 @@ body{margin:0;min-height:100vh;color:var(--text);font-family:var(--font-body);ba
 .eyebrow{margin:0 0 6px;color:var(--gold)!important;font-family:var(--font-heading);font-size:10px!important;font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;max-width:100%}
 .page-title{max-width:min(70%,900px)}.page-title h1{margin:0;color:var(--blue-100);font-family:var(--font-heading);font-size:clamp(25px,2.4vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.05;text-shadow:0 2px 0 rgba(15,23,42,.28)}.page-title h1 span{color:#F87171}.page-title p:last-child{max-width:780px;margin:7px 0 0;color:#DFF6FF;font-size:13px;font-weight:600;line-height:1.35}
 .status-pill{min-width:230px;padding:12px 14px;border:2px solid var(--blue-100);border-radius:18px;background:rgba(255,255,255,.92);color:var(--navy);text-align:right}
+.header-search{width:min(360px,42vw);margin-left:auto}.header-search .search{height:42px;background:white}
 .status-pill small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.status-pill strong{display:block;margin-top:4px;font-size:15px;font-weight:800}.status-pill span{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:600}
 .content{width:min(1500px,calc(100% - 56px));margin:12px auto 0;display:grid;gap:10px}
 .card{min-width:0;background:var(--card);border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);border-radius:var(--radius)}
-.card-inner{padding:16px}.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px}.card h2{margin:0;color:var(--navy);font-family:var(--font-heading);font-size:20px;font-weight:800;letter-spacing:-.02em}.card-subtitle{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:600;line-height:1.35}
+.card-inner{padding:16px}.card-header{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:12px}.card h2{margin:0;color:var(--navy);font-family:var(--font-heading);font-size:20px;font-weight:800;letter-spacing:-.02em}.card-subtitle{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:600;line-height:1.35}
 .subcard{padding:16px;border:1.5px solid var(--line);border-radius:16px;background:var(--blue-50);margin-bottom:10px}.subcard.adv{border-color:var(--gold);background:#FFFBEB}.subcard-head{margin:0 0 12px;color:var(--navy);font-size:14px;font-weight:800;font-family:var(--font-heading)}
-.button{height:42px;border:0;border-radius:14px;background:var(--blue);color:white;padding:10px 12px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer}.button:hover{background:var(--navy)}.button.secondary{background:var(--blue-100);color:var(--navy)}.button.secondary.active{background:var(--gold);color:var(--navy);box-shadow:inset 0 -3px 0 rgba(8,49,95,.16)}.button.outline{background:white;color:var(--navy);border:1.5px solid var(--line);box-shadow:none}.button.outline:hover{background:var(--blue-50);border-color:var(--blue-400)}.button:disabled{opacity:.45;cursor:not-allowed}.chart-toggle{position:relative;width:auto!important;height:32px!important;padding:7px 14px!important;border:1.5px solid #DBEAFE!important;border-radius:999px!important;background:#F8FAFC!important;color:var(--blue)!important;font-size:11px!important;font-weight:800}
+.button{height:42px;border:0;border-radius:14px;background:var(--blue);color:white;padding:10px 12px;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer}.button:hover{background:var(--navy)}.button.secondary{background:var(--blue-100);color:var(--navy)}.button.secondary.active{background:var(--gold);color:var(--navy);box-shadow:inset 0 -3px 0 rgba(8,49,95,.16)}.button.outline{background:white;color:var(--navy);border:1.5px solid var(--line);box-shadow:none}.button.outline:hover{background:var(--blue-50);border-color:var(--blue-400)}.button:disabled{opacity:.45;cursor:not-allowed}.chart-toggle{position:relative;width:auto!important;height:32px!important;padding:7px 14px!important;border:1.5px solid #DBEAFE!important;border-radius:999px!important;background:#F8FAFC!important;color:var(--blue)!important;font-size:11px!important;font-weight:800}
 .controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end}
 label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.select,.search{width:100%;height:42px;border:2px solid var(--line);border-radius:14px;background:white;color:var(--navy);padding:10px 12px;font-family:var(--font);font-size:12px;font-weight:700;outline:none}
 .kpi-grid{display:flex;flex-wrap:wrap;gap:8px}
@@ -62,7 +63,7 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
 @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes growX{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes growY{from{transform:scaleY(0)}to{transform:scaleY(1)}}@keyframes popIn{from{opacity:.2;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @media(max-width:1180px){.kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.grid{grid-template-columns:1fr}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){body{padding-bottom:82px}.app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:80;width:auto;padding:8px 10px;display:block;border:0;border-top:1px solid rgba(255,255,255,.46);background:linear-gradient(90deg,color-mix(in srgb,var(--blue) 80%,var(--navy) 20%),var(--blue-600))}.sidebar:hover{width:auto;padding:8px 10px}.brand{display:none}.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:min(760px,100%);margin:0 auto}.nav a,.sidebar:hover .nav a{display:grid;place-items:center;gap:2px;min-height:48px;padding:6px 2px;border-radius:16px;font-size:8px;line-height:1;text-align:center}.nav-icon{width:auto;min-width:0;font-size:14px}.topbar{min-height:104px;margin:15px 16px 0;padding:15px 23px}.content{width:calc(100% - 32px)}.bar-row{grid-template-columns:110px minmax(0,1fr) 58px;gap:7px}}
-@media(max-width:680px){.topbar{display:grid}.topbar::before{width:100%;clip-path:none}.topbar::after{display:none}.page-title{max-width:100%}.status-pill{width:100%;text-align:left}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls,.donut-layout,.detail-grid,.bar-row{grid-template-columns:1fr}}
+@media(max-width:680px){.topbar{display:grid}.topbar::before{width:100%;clip-path:none}.topbar::after{display:none}.page-title{max-width:100%}.status-pill{width:100%;text-align:left}.header-search{width:100%;margin-left:0}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls,.donut-layout,.detail-grid,.bar-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-current-page="personnel">
@@ -116,6 +117,9 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
               <h2>Data Controls</h2>
               <p class="card-subtitle">Filter the active file page. Multiple files are selected from the sidebar, not from tabs inside the main content.</p>
             </div>
+            <div class="header-search">
+              <input id="globalSearch" class="search" type="search" placeholder="Search records...">
+            </div>
             <div style="display:flex;gap:8px;align-items:center;">
               <button id="resetBtn" class="button" type="button">Reset</button>
               <button id="advToggle" class="button secondary active" type="button">Toggle Advanced Mode</button>
@@ -125,7 +129,7 @@ label{display:grid;gap:6px;min-width:0}label span{color:var(--muted);font-size:1
           <div class="subcard">
             <div class="controls">
               <span id="dynamicFilters" style="display:contents"></span>
-              <label><span>Search</span><input id="globalSearch" class="search" type="search" placeholder="Search records..."></label>
+              <label><span>Item Status</span><select id="itemStatusFilter" class="select"></select></label>
             </div>
           </div>
 
@@ -281,12 +285,19 @@ const DATASETS = {
   enrolment:{label:"Enrolment SY 2025–2026",heroTitle:"Enrolment <span>Monitoring Dashboard</span>",recordLabel:"Enrolment Records",recordSub:"enrolment records in view",numericLabels:{inventory:"Total Learners"},fields:"region · province · division · district · barangay · grade · gender · track · inventory",rows:[],required:["region","province","division","legislative_district","barangay","grade_level","gender","track","inventory"],valueKey:"inventory",filterKeys:["region","division","grade_level","track"],filterLabels:["Region","Division","Grade Level","Track"],hierarchy:["region","province","division","legislative_district","barangay"],distributionKeys:["grade_level","gender","track"],compositionKey:"grade_level",issueKey:"gender",columns:["region","province","division","legislative_district","barangay","grade_level","gender","track","inventory"],aliases:{legislative_district:["district"],grade_level:["grade","gradelevel"],inventory:["learners","learner_count","enrolment","enrollment","total"]}}
 };
 
-let state={dataset:inferDatasetPage(),drill:[],drillChartMode:"stacked",shareMode:"donut",issueMode:"histogram",page:1,pageSize:10,sortKey:null,sortDir:"asc",distKey:null,barDistKey:null,shareDistKey:null,issueDistKey:null,unitKey:null,advOpen:false,tableFilters:{},activeTableFilter:null,segFilters:{},filters:{},heatSortKey:null,heatSortDir:"desc"};
+let state={dataset:inferDatasetPage(),drill:[],drillChartMode:"stacked",shareMode:"donut",issueMode:"histogram",page:1,pageSize:10,sortKey:null,sortDir:"asc",distKey:null,barDistKey:null,shareDistKey:null,issueDistKey:null,unitKey:null,advOpen:false,tableFilters:{},activeTableFilter:null,segFilters:{},filters:{},itemStatusFilter:"all",heatSortKey:null,heatSortDir:"desc"};
 let tableViewRows=[];
 const currentPage = state.dataset;
 
-const RAW_CACHE_NAME = "stride-csv-preload-v1";
-const PARSED_CACHE_NAME = "stride-parsed-v2";
+const DATA_VERSION =
+  (typeof window !== "undefined" &&
+   window.STRIDE_ASSETS &&
+   window.STRIDE_ASSETS.DATA_VERSION)
+    ? String(window.STRIDE_ASSETS.DATA_VERSION)
+    : "2026-07-16-v2";
+
+const RAW_CACHE_NAME = "stride-csv-preload-v2-" + DATA_VERSION;
+const PARSED_CACHE_NAME = "stride-parsed-v3-" + DATA_VERSION;
 function sharedCacheEnabled(){ return typeof caches !== "undefined" && location.protocol !== "file:"; }
 function datasetFileName(key){ return String(CSV_SOURCES[key][0]).replace(/^\.?\/?/,"").replace(/^data\//,""); }
 async function readSharedParsed(fileName){
@@ -329,6 +340,7 @@ function num(r){const k=state.unitKey||cfg().valueKey;return k==="__count__"?1:(
 function pretty(k){return String(k).replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase())}
 function numericKeys(){const c=cfg();const first=c.rows[0]||{};return c.columns.filter(k=>typeof first[k]==="number")}
 function groupKeys(){const c=cfg();const nk=numericKeys();return c.columns.filter(k=>!nk.includes(k))}
+function tableColumns(){const c=cfg();const cols=c.columns.slice();if(state.dataset==="personnel"&&!cols.includes("item_status")){const at=cols.indexOf("number");cols.splice(at>=0?at:cols.length,0,"item_status")}return cols}
 function distributionKeys(){const c=cfg();return (c.distributionKeys||groupKeys()).filter(k=>groupKeys().includes(k))}
 function isLocationKey(k){return ["region","province","division","legislative_district","district","municipality","city","barangay","site","school_district","purok","sitio"].includes(k)}
 function activeFilterKeys(){const cats=groupKeys();const base=["region","division"].filter(k=>cats.includes(k));let attrs=cats.filter(k=>!isLocationKey(k)&&!base.includes(k));if(attrs.includes("classification")&&attrs.includes("position"))attrs=["classification","position",...attrs.filter(k=>k!=="classification"&&k!=="position")];return [...base,...attrs]}
@@ -408,6 +420,8 @@ function coerceRows(datasetKey,raw){
     });
     // Preserve region_v2 for cross-column region matching (not in schema but needed for filtering)
     if(r.region_v2!==undefined&&String(r.region_v2).trim()) out.region_v2=cleanCell(r.region_v2);
+    // Preserve item_status so the Item Status filter can read distinct CSV values (not in schema)
+    if(r.item_status!==undefined&&String(r.item_status).trim()) out.item_status=cleanCell(r.item_status);
     return out;
   });
 }
@@ -529,6 +543,7 @@ function currentRows(){
       if(k==="region"&&queryRegion&&queryRole!=="admin") continue; // already handled via region_v2||region check above
       const fv=state.filters[k]||"all";if(fv!=="all"&&value(r,k)!==fv) return false;
     }
+    if(state.itemStatusFilter&&state.itemStatusFilter!=="all"&&value(r,"item_status")!==state.itemStatusFilter) return false;
     for(let i=0;i<state.drill.length;i++) if(value(r,c.hierarchy[i])!==state.drill[i]) return false;
     if(q&&!Object.values(r).join(" ").toLowerCase().includes(q)) return false;
     return true;
@@ -548,6 +563,15 @@ function groupBy(list,key,compKey){
   return Array.from(m.values()).sort((a,b)=>b.total-a.total);
 }
 
+function renderItemStatusFilter(){
+  const sel=document.getElementById("itemStatusFilter");
+  if(!sel) return;
+  const values=Array.from(new Set(rows().map(r=>value(r,"item_status")))).filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}));
+  const cur=values.includes(state.itemStatusFilter)?state.itemStatusFilter:"all";
+  state.itemStatusFilter=cur;
+  sel.innerHTML=[`<option value="all">All</option>`,...values.map(v=>`<option value="${safe(v)}" ${v===cur?"selected":""}>${safe(v)}</option>`)].join("");
+  sel.onchange=()=>{state.itemStatusFilter=sel.value;state.page=1;renderAll()};
+}
 function renderFilters(){
   const c=cfg();
   heroTitle.innerHTML=c.heroTitle;
@@ -739,6 +763,7 @@ function renderCharts(list){renderShareChart(list);renderIssueChart(list)}
 
 function badge(k,v){
   if(k==="status") return `<span class="badge ${String(v).toLowerCase()==="filled"?"ok":"warn"}">${safe(v)}</span>`;
+  if(k==="item_status") return `<span class="badge info">${safe(v||"—")}</span>`;
   if(k==="gender") return `<span class="badge ${String(v).toLowerCase()==="female"?"purple":"info"}">${safe(v)}</span>`;
   if(k===cfg().valueKey) return `<b>${fmt(v)}</b>`;
   return safe(v);
@@ -763,14 +788,14 @@ function sortTableRows(list){
 }
 function setColumnFilter(k,v){state.tableFilters[k]=v;state.activeTableFilter=k;state.page=1;renderAll()}
 function renderTable(list){
-  const c=cfg();
+  const c=cfg(), cols=tableColumns();
   const sorted=sortTableRows(applyTableColumnFilters(list));
   tableViewRows=sorted;
   const pages=Math.max(1,Math.ceil(sorted.length/state.pageSize));
   state.page=Math.min(state.page,pages);
   const start=(state.page-1)*state.pageSize, page=sorted.slice(start,start+state.pageSize);
-  thead.innerHTML=`<tr>${c.columns.map(k=>{const isNum=numericKeys().includes(k);return `<th style="${isNum?'text-align:center':''}"><button class="sort-button ${state.sortKey===k?"active":""}" style="${isNum?'justify-content:center':''}" onclick="sortBy('${k}')">${safe(k.replaceAll("_"," "))}<span class="sort-icon">${state.sortKey===k?(state.sortDir==="asc"?"▲":"▼"):"↕"}</span></button></th>`}).join("")}</tr><tr>${c.columns.map(k=>`<th><input class="column-filter" type="search" data-column-filter="${k}" value="${safe(state.tableFilters[k]||"")}" placeholder="Filter" oninput="setColumnFilter('${k}',this.value)"></th>`).join("")}</tr>`;
-  tbody.innerHTML=page.map((r,i)=>`<tr class="record-row" onclick="openModalFromTable(${start+i})">${c.columns.map(k=>{const isNum=numericKeys().includes(k);return `<td style="${isNum?'text-align:center':''}">${badge(k,r[k])}</td>`}).join("")}</tr>`).join("");
+  thead.innerHTML=`<tr>${cols.map(k=>{const isNum=numericKeys().includes(k);return `<th style="${isNum?'text-align:center':''}"><button class="sort-button ${state.sortKey===k?"active":""}" style="${isNum?'justify-content:center':''}" onclick="sortBy('${k}')">${safe(k.replaceAll("_"," "))}<span class="sort-icon">${state.sortKey===k?(state.sortDir==="asc"?"▲":"▼"):"↕"}</span></button></th>`}).join("")}</tr><tr>${cols.map(k=>`<th><input class="column-filter" type="search" data-column-filter="${k}" value="${safe(state.tableFilters[k]||"")}" placeholder="Filter" oninput="setColumnFilter('${k}',this.value)"></th>`).join("")}</tr>`;
+  tbody.innerHTML=page.map((r,i)=>`<tr class="record-row" onclick="openModalFromTable(${start+i})">${cols.map(k=>{const isNum=numericKeys().includes(k);return `<td style="${isNum?'text-align:center':''}">${badge(k,r[k])}</td>`}).join("")}</tr>`).join("");
   renderTableControls(sorted.length,pages,start,page.length);
   if(state.activeTableFilter){
     const active=thead.querySelector(`[data-column-filter="${state.activeTableFilter}"]`);
@@ -788,7 +813,7 @@ function openModalFromTable(index){
   const r=tableViewRows[index]; if(!r) return;
   modalTitle.textContent=state.dataset==="personnel"?value(r,"position"):`${value(r,"grade_level")} · ${value(r,"track")}`;
   modalMeta.textContent=state.dataset==="personnel"?`${value(r,"region")} · ${value(r,"division")}`:`${value(r,"region")} · ${value(r,"division")} · ${value(r,"barangay")}`;
-  modalDetails.innerHTML=cfg().columns.map(k=>`<div class="detail"><small>${safe(k.replaceAll("_"," "))}</small><b>${badge(k,r[k])}</b></div>`).join("");
+  modalDetails.innerHTML=tableColumns().map(k=>`<div class="detail"><small>${safe(k.replaceAll("_"," "))}</small><b>${badge(k,r[k])}</b></div>`).join("");
   modalBackdrop.classList.add("open");
 }
 function closeModal(){modalBackdrop.classList.remove("open")}
@@ -940,7 +965,7 @@ function restoreScrollPosition(x,y){
 }
 function renderAll(){
   const keepX=window.scrollX, keepY=window.scrollY, shouldRestore=hasRenderedOnce;
-  validateDataset();renderFilters();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage();
+  validateDataset();renderFilters();renderItemStatusFilter();renderAdvControls();const list=currentRows();renderKpis(list);renderTrail();renderBars(list);renderCharts(list);renderTable(list);setActiveSidebarPage();
   hasRenderedOnce=true;
   if(shouldRestore)restoreScrollPosition(keepX,keepY);
 }
@@ -965,7 +990,7 @@ catFilterBtn.onclick=openCatModal;
 catSearch.addEventListener("input",()=>{syncCatModalChecked();clearTimeout(catModalTimer);catModalTimer=setTimeout(()=>{catModalQuery=catSearch.value.trim();renderCatModalList()},180)});
 catModalBackdrop.onclick=e=>{if(e.target===catModalBackdrop) closeCatModal()};
 unitSelect.onchange=()=>{state.unitKey=unitSelect.value||null;state.page=1;renderAll()};
-resetBtn.onclick=()=>{state.drill=[];state.page=1;state.sortKey=null;state.tableFilters={};state.activeTableFilter=null;state.distKey=null;state.barDistKey=null;state.shareDistKey=null;state.issueDistKey=null;state.unitKey=null;state.advOpen=false;state.segFilters={};state.filters={};globalSearch.value="";renderAll()};
+resetBtn.onclick=()=>{state.drill=[];state.page=1;state.sortKey=null;state.tableFilters={};state.activeTableFilter=null;state.distKey=null;state.barDistKey=null;state.shareDistKey=null;state.issueDistKey=null;state.unitKey=null;state.advOpen=false;state.segFilters={};state.filters={};state.itemStatusFilter="all";globalSearch.value="";renderAll()};
 heatToggle.onclick=()=>{state.drillChartMode=state.drillChartMode==="stacked"?"heatmap":"stacked";renderBars(currentRows())};
 shareToggle.onclick=()=>{state.shareMode=state.shareMode==="donut"?"histogram":"donut";renderShareChart(currentRows())};
 issueToggle.onclick=()=>{state.issueMode=state.issueMode==="histogram"?"donut":"histogram";renderIssueChart(currentRows())};
