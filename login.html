@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STRIDE — Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --navy: #08315F;
@@ -25,7 +28,11 @@
       --font-body: "DM Sans", sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: var(--font-body);
@@ -88,8 +95,13 @@
       letter-spacing: -0.04em;
     }
 
-    .brand-title span { color: var(--gold); }
-    .brand-title .de { color: var(--red); }
+    .brand-title span {
+      color: var(--gold);
+    }
+
+    .brand-title .de {
+      color: var(--red);
+    }
 
     .brand-sub {
       font-size: 10px;
@@ -156,7 +168,9 @@
       color: var(--navy);
     }
 
-    .input-group input, .input-group select, .input-group textarea {
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
       height: 44px;
       padding: 0 14px;
       border: 1.5px solid var(--line);
@@ -169,7 +183,9 @@
       transition: border-color 0.2s;
     }
 
-    .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+    .input-group input:focus,
+    .input-group select:focus,
+    .input-group textarea:focus {
       border-color: var(--blue-600);
       box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
     }
@@ -222,7 +238,7 @@
     .btn-spinner {
       width: 15px;
       height: 15px;
-      border: 2px solid rgba(255,255,255,.42);
+      border: 2px solid rgba(255, 255, 255, .42);
       border-top-color: #fff;
       border-radius: 999px;
       animation: btnSpin .75s linear infinite;
@@ -230,7 +246,9 @@
     }
 
     @keyframes btnSpin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .alert {
@@ -273,6 +291,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="auth-container">
     <div class="brand-group">
@@ -304,13 +323,16 @@
         <button type="submit" class="btn-submit">Sign In</button>
       </form>
       <div class="footer-link">
-        No account? <a href="./register.html">Register here</a> &nbsp;·&nbsp; <a href="#" onclick="switchTab('forgot'); return false;">Forgot password?</a>
+        No account? <a href="./register.html">Register here</a> &nbsp;·&nbsp; <a href="#"
+          onclick="switchTab('forgot'); return false;">Forgot password?</a>
       </div>
     </div>
 
     <!-- Forgot Password Section -->
     <div id="forgotSection" class="form-section">
-      <div style="font-family: var(--font-heading); font-weight: 800; font-size: 13px; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">Reset Password</div>
+      <div
+        style="font-family: var(--font-heading); font-weight: 800; font-size: 13px; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">
+        Reset Password</div>
       <!-- Step 1: Enter email & send OTP -->
       <div id="forgotStep1">
         <div class="input-group">
@@ -333,7 +355,8 @@
           <label for="forgotConfirmPass">Confirm Password</label>
           <input type="password" id="forgotConfirmPass" placeholder="Repeat password">
         </div>
-        <button type="button" class="btn-submit" onclick="submitForgotPassword()" style="margin-top:0;">Reset Password</button>
+        <button type="button" class="btn-submit" onclick="submitForgotPassword()" style="margin-top:0;">Reset
+          Password</button>
       </div>
       <div class="footer-link" style="margin-top:16px;">
         <a href="#" onclick="switchTab('deped'); return false;">← Back to login</a>
@@ -363,7 +386,8 @@
         </div>
         <div class="input-group">
           <label for="guestPurpose">Purpose of Access</label>
-          <textarea id="guestPurpose" rows="3" placeholder="Describe the reason for accessing the database..." required></textarea>
+          <textarea id="guestPurpose" rows="3" placeholder="Describe the reason for accessing the database..."
+            required></textarea>
         </div>
         <button type="submit" class="btn-submit">Request Access</button>
       </form>
@@ -435,21 +459,21 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to send OTP.');
-        return data;
-      })
-      .then(data => {
-        if (data.dev_otp) {
-          document.getElementById('forgotOtp').value = data.dev_otp;
-        }
-        document.getElementById('forgotStep1').style.display = 'none';
-        document.getElementById('forgotStep2').style.display = 'block';
-        showAlert('OTP sent! Check your email.', 'success');
-      })
-      .catch(err => showAlert(err.message))
-      .finally(() => setButtonLoading(btn, false));
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to send OTP.');
+          return data;
+        })
+        .then(data => {
+          if (data.dev_otp) {
+            document.getElementById('forgotOtp').value = data.dev_otp;
+          }
+          document.getElementById('forgotStep1').style.display = 'none';
+          document.getElementById('forgotStep2').style.display = 'block';
+          showAlert('OTP sent! Check your email.', 'success');
+        })
+        .catch(err => showAlert(err.message))
+        .finally(() => setButtonLoading(btn, false));
     }
 
     function submitForgotPassword() {
@@ -470,17 +494,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp_code, newPassword })
       })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Reset failed.');
-        return data;
-      })
-      .then(() => {
-        showAlert('Password reset! You can now log in.', 'success');
-        setTimeout(() => switchTab('deped'), 2000);
-      })
-      .catch(err => showAlert(err.message))
-      .finally(() => setButtonLoading(btn, false));
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Reset failed.');
+          return data;
+        })
+        .then(() => {
+          showAlert('Password reset! You can now log in.', 'success');
+          setTimeout(() => switchTab('deped'), 2000);
+        })
+        .catch(err => showAlert(err.message))
+        .finally(() => setButtonLoading(btn, false));
     }
 
     function handleDepEdLogin(event) {
@@ -502,36 +526,36 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Login failed.');
-        }
-        return data;
-      })
-      .then(data => {
-        const user = data.user;
-        const sessionData = {
-          name: `${user.first_name} ${user.last_name}`,
-          email: user.email,
-          role: user.role || 'structural',
-          region: user.region || '',
-          division: user.division || '',
-          district: user.district || '',
-          station: user.station_level || '',
-          position: user.position || '',
-          token: data.token
-        };
-        localStorage.setItem('stride_session', JSON.stringify(sessionData));
-        showAlert('Login successful! Redirecting...', 'success');
-        setTimeout(() => {
-          window.location.href = './new_stride.html';
-        }, 1000);
-      })
-      .catch(err => {
-        showAlert(err.message);
-      })
-      .finally(() => setButtonLoading(submitBtn, false));
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Login failed.');
+          }
+          return data;
+        })
+        .then(data => {
+          const user = data.user;
+          const sessionData = {
+            name: `${user.first_name} ${user.last_name}`,
+            email: user.email,
+            role: user.role || 'structural',
+            region: user.region || '',
+            division: user.division || '',
+            district: user.district || '',
+            station: user.station_level || '',
+            position: user.position || '',
+            token: data.token
+          };
+          localStorage.setItem('stride_session', JSON.stringify(sessionData));
+          showAlert('Login successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = './new_stride.html';
+          }, 1000);
+        })
+        .catch(err => {
+          showAlert(err.message);
+        })
+        .finally(() => setButtonLoading(submitBtn, false));
     }
 
     function handleGuestAccess(event) {
@@ -562,38 +586,14 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, organization, purpose, region })
       })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Guest registration failed.');
-        }
-        return data;
-      })
-      .then(data => {
-        const guestSession = {
-          name: name,
-          email: email,
-          role: 'guest',
-          region: region,
-          division: '',
-          district: '',
-          station: 'Guest Access',
-          position: 'Visitor',
-          no_csv: true
-        };
-        localStorage.setItem('stride_session', JSON.stringify(guestSession));
-        showAlert('Guest access granted! Redirecting...', 'success');
-        setTimeout(() => {
-          const dest = region
-            ? './new_stride.html?mode=guest&region=' + encodeURIComponent(region) + '&role=guest'
-            : './new_stride.html?mode=guest&role=guest';
-          window.location.href = dest;
-        }, 1000);
-      })
-      .catch(err => {
-        // If the server is unavailable but inputs are valid, allow guest access locally
-        if (err.message === 'Failed to fetch' || err.message.includes('500') || err.message.includes('Internal Server')) {
-          console.warn('Server unavailable — falling back to local guest session.');
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Guest registration failed.');
+          }
+          return data;
+        })
+        .then(data => {
           const guestSession = {
             name: name,
             email: email,
@@ -613,23 +613,47 @@
               : './new_stride.html?mode=guest&role=guest';
             window.location.href = dest;
           }, 1000);
-        } else {
-          showAlert(err.message);
-        }
-      })
-      .finally(() => setButtonLoading(submitBtn, false));
+        })
+        .catch(err => {
+          // If the server is unavailable but inputs are valid, allow guest access locally
+          if (err.message === 'Failed to fetch' || err.message.includes('500') || err.message.includes('Internal Server')) {
+            console.warn('Server unavailable — falling back to local guest session.');
+            const guestSession = {
+              name: name,
+              email: email,
+              role: 'guest',
+              region: region,
+              division: '',
+              district: '',
+              station: 'Guest Access',
+              position: 'Visitor',
+              no_csv: true
+            };
+            localStorage.setItem('stride_session', JSON.stringify(guestSession));
+            showAlert('Guest access granted! Redirecting...', 'success');
+            setTimeout(() => {
+              const dest = region
+                ? './new_stride.html?mode=guest&region=' + encodeURIComponent(region) + '&role=guest'
+                : './new_stride.html?mode=guest&role=guest';
+              window.location.href = dest;
+            }, 1000);
+          } else {
+            showAlert(err.message);
+          }
+        })
+        .finally(() => setButtonLoading(submitBtn, false));
     }
 
     // ── Guest Region loader ──
     (function loadGuestRegions() {
       const sel = document.getElementById('guestRegion');
-      const FALLBACK = ['BARMM','CAR','NCR','NIR','REGION I','REGION II','REGION III',
-        'REGION IV-A','REGION IV-B','REGION V','REGION VI','REGION VII','REGION VIII',
-        'REGION IX','REGION X','REGION XI','REGION XII','REGION XIII'];
+      const FALLBACK = ['BARMM', 'CAR', 'NCR', 'NIR', 'REGION I', 'REGION II', 'REGION III',
+        'REGION IV-A', 'REGION IV-B', 'REGION V', 'REGION VI', 'REGION VII', 'REGION VIII',
+        'REGION IX', 'REGION X', 'REGION XI', 'REGION XII', 'REGION XIII'];
 
       function populate(regions) {
         // No blank/all-regions option — guests must pick a specific region
-        regions.sort().forEach(function(r) {
+        regions.sort().forEach(function (r) {
           const o = document.createElement('option');
           o.value = r; o.textContent = r;
           sel.appendChild(o);
@@ -637,25 +661,28 @@
       }
 
       fetch('./stride_school_unique.csv')
-        .then(function(r) { if (!r.ok) throw new Error('fetch failed'); return r.text(); })
-        .then(function(text) {
+        .then(function (r) { if (!r.ok) throw new Error('fetch failed'); return r.text(); })
+        .then(function (text) {
           const lines = text.split(/\r?\n/);
           if (lines.length < 2) throw new Error('empty');
-          const headers = lines[0].split(',').map(function(h) { return h.replace(/"/g,'').toLowerCase().trim(); });
-          const rIdx = headers.findIndex(function(h) { return h === 'region_v2' || h === 'region' || h === 'beis_region'; });
+          const headers = lines[0].split(',').map(function (h) { return h.replace(/"/g, '').toLowerCase().trim(); });
+          const rIdx = headers.findIndex(function (h) { return h === 'region_v2' || h === 'region' || h === 'beis_region'; });
           if (rIdx === -1) throw new Error('column missing');
           const regionSet = new Set();
           for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
             const cols = lines[i].split(',');
-            const reg = (cols[rIdx]||'').replace(/"/g,'').trim();
+            const reg = (cols[rIdx] || '').replace(/"/g, '').trim();
             if (reg) regionSet.add(reg);
           }
           if (!regionSet.size) throw new Error('no data');
           populate([...regionSet]);
         })
-        .catch(function() { populate(FALLBACK); });
+        .catch(function () { populate(FALLBACK); });
     })();
   </script>
 </body>
+
 </html>
+
+//comment
